@@ -128,10 +128,57 @@ Without changing architecture:
 
 ---
 
-## 5. Remaining Known Issues
+---
+
+## 5. Smoke Test Incidents (2026-03-23)
+
+### 5.1 Seed 44 Never Finished — Killed
+
+**What happened:** The smoke test ran 3 seeds (42, 43, 44) sequentially. Seeds 42 and 43 each completed in ~132 minutes. Seed 44 ran for over 216 minutes without saving a `final` checkpoint, and its output file stopped growing entirely (line count frozen at 8,278 for multiple consecutive checks). The process was still alive (no crash notification received) but appeared hung — likely a SUMO subprocess that stalled waiting on a TraCI response.
+
+**Action taken:** Seed 44 was manually killed. Evaluation was re-run using `--eval_only` on seeds 42 and 43 only:
+
+```bash
+python run_experiments.py --seeds 2 --first_seed 42 --eval_episodes 5 \
+    --eval_only --checkpoint_root results/experiments/20260323_125850
+```
+
+**Impact:** Results table has n=2 seeds instead of n=3. Statistical tests (t-tests) are less reliable at n=2. For the full training run, monitor seed health and consider adding a timeout guard.
+
+---
+
+### 5.2 QMIX Evaluation Crash — `action_selector` AttributeError
+
+**File:** `pymarl/src/evaluate.py`, line 131
+
+**What happened:** When `evaluate.py` loaded a trained QMIX model and attempted to force greedy action selection, it crashed immediately:
+
+```
+AttributeError: 'BasicMAC' object has no attribute 'action_selector'
+mac.action_selector.epsilon = 0.0
+```
+
+**Root cause:** `evaluate.py` assumed `BasicMAC` had a standalone `action_selector` object (matching an older PyMARL API). In this codebase, `BasicMAC` handles epsilon-greedy internally via `_get_epsilon()` and already switches to pure greedy when `test_mode=True` is passed to `select_actions()`. The explicit `epsilon = 0.0` assignment was unnecessary and incorrect.
+
+**Fix:** Removed the offending line in `evaluate.py`:
+
+```python
+# Before (broken):
+mac.action_selector.epsilon = 0.0
+
+# After (correct):
+# Greedy action selection is handled by test_mode=True in the runner
+```
+
+**Impact:** Seed 42's QMIX evaluation had already failed before the fix was applied and could not be recovered in this run. Seed 43's QMIX evaluation will use the fixed code. The aggregate QMIX results table will therefore have n=1 for QMIX (seed 43 only) vs n=2 for baselines.
+
+---
+
+## 6. Remaining Known Issues
 
 | Issue | Location | Status |
 |---|---|---|
 | `mean_waiting_time` always 0.0 | `_handle_arrivals()` | Known — fix requires mid-episode accumulation |
 | k-shortest paths duplicates first route for k>1 | `_compute_k_shortest_paths()` | Known — marked TODO in code |
 | Seeds run sequentially | `run_experiments.py` | By design; parallelize via separate VMs |
+| No timeout guard on SUMO subprocess | `sumo_grid_reroute.py` | Can cause seed to hang indefinitely (see §5.1) |

@@ -127,8 +127,7 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
                 mac.mixer.load_state_dict(torch.load(mixer_path, map_location="cpu"))
                 print("  [OK] Mixer network loaded")
 
-        # Force greedy action selection
-        mac.action_selector.epsilon = 0.0
+        # Greedy action selection is handled by test_mode=True in the runner
 
     else:  # baseline
         args["baseline_policy"] = baseline_type
