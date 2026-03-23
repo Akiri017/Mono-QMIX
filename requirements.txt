@@ -1,0 +1,7 @@
+# Core environment deps for Mono_QMIX (Step 1)
+# SUMO itself is installed separately; these are Python-side deps.
+traci>=1.25
+sumolib>=1.25
+numpy
+# Torch wheels vary by CUDA/CPU; pip will pick a default build.
+torch

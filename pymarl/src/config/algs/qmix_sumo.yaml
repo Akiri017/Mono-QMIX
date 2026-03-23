@@ -1,0 +1,133 @@
+# QMIX Algorithm Configuration for SUMO Grid Rerouting
+# Based on standard QMIX hyperparameters adapted for traffic control
+
+# Algorithm name
+name: "qmix"
+
+# Agent network architecture
+agent: "rnn"  # RNN-based agent for partial observability
+agent_hidden_dim: 64  # Hidden dimension of agent RNN
+agent_rnn_type: "gru"  # RNN type: gru or lstm
+
+# Mixer network configuration
+mixer: "qmix"  # QMIX mixing network
+mixing_embed_dim: 32  # Embedding dimension for mixing network
+hypernet_layers: 2  # Number of hypernetwork layers
+hypernet_embed: 64  # Hypernetwork embedding dimension
+
+# Action selection
+action_selector: "epsilon_greedy"
+epsilon_start: 1.0  # Initial exploration rate
+epsilon_finish: 0.05  # Final exploration rate
+epsilon_anneal_time: 500000  # Steps to anneal epsilon (500k steps)
+
+# Training configuration
+batch_size: 32  # Number of episodes per batch
+batch_size_run: 1  # Episodes collected before training update (parallel envs)
+buffer_size: 200  # Replay buffer size (episodes). 5000 requires ~41GB RAM; 200 ≈ 3.5GB
+buffer_cpu_only: true  # Keep buffer on CPU to save GPU memory
+
+# Learning
+lr: 0.0005  # Learning rate (Adam optimizer)
+optim_alpha: 0.99  # RMSprop alpha (if using RMSprop)
+optim_eps: 0.00001  # Optimizer epsilon
+grad_norm_clip: 10  # Gradient norm clipping
+weight_decay: 0  # L2 regularization
+
+# TD learning
+gamma: 0.99  # Discount factor
+td_lambda: 0.8  # TD(lambda) for multi-step returns
+
+# Target network
+target_update_interval: 200  # Update target network every N training steps
+target_update_mode: "hard"  # "hard" or "soft" update
+tau: 0.001  # Soft update coefficient (if soft update)
+
+# Training schedule
+t_max: 2000000  # Total training timesteps (2M steps)
+test_interval: 10000  # Test every N training steps
+test_nepisode: 5  # Number of test episodes
+save_model_interval: 100000  # Save model every N steps
+log_interval: 5000  # Log metrics every N steps
+
+# Episode configuration
+episode_limit: 1000  # Max steps per episode (matches env config)
+
+# Reward configuration
+reward_standardization: false  # Standardize rewards (mean=0, std=1)
+
+# Multi-agent specific
+mac: "basic_mac"  # Multi-agent controller type
+obs_agent_id: false  # Include agent ID in observation
+obs_last_action: false  # Include last action in observation
+
+# Double Q-learning
+double_q: true  # Use double Q-learning to reduce overestimation
+
+# Prioritized Experience Replay (optional, disabled by default)
+use_per: false  # Use prioritized experience replay
+per_alpha: 0.6  # PER alpha parameter
+per_beta_start: 0.4  # PER beta start
+per_beta_frames: 100000  # Frames to anneal beta to 1.0
+
+# Masked Q-learning (for variable action availability)
+mask_before_softmax: true  # Mask unavailable actions before softmax
+
+# RNN configuration
+use_rnn: true  # Use RNN in agents
+rnn_hidden_dim: 64  # Same as agent_hidden_dim
+
+# Evaluation configuration
+evaluate: false  # Run evaluation during training
+evaluation_epsilon: 0.0  # Epsilon for evaluation episodes
+save_replay: false  # Save replay buffers
+
+# Checkpoint configuration
+load_step: 0  # Load model from this step (0 = train from scratch)
+save_model: true  # Save model checkpoints
+checkpoint_path: "results/models"  # Path to save checkpoints
+
+# Logging configuration
+use_tensorboard: true  # Use TensorBoard logging
+use_wandb: false  # Use Weights & Biases logging
+log_prefix: "qmix_sumo"  # Prefix for logging
+
+# Seed configuration
+seed: 42  # Random seed
+use_cuda: true  # Use GPU if available
+cuda_deterministic: false  # Use deterministic CUDA operations (slower)
+
+# Runner configuration
+runner: "episode"  # Episode-based runner (not parallel)
+runner_log_interval: 5000  # Log runner stats every N steps
+
+# Environment-specific adjustments for SUMO
+sumo_warmup_steps: 0  # No warmup exploration (start training immediately)
+sumo_update_frequency: 1  # Update agent every episode (no multi-step batching)
+
+# QMIX-specific parameters
+mixing_embed_dim: 32  # Dimension of mixing network embeddings
+qmix_hidden_dim: 32  # Hidden dim of QMIX mixing network
+
+# Exploration schedule
+# Early exploration is important for discovering good routes
+epsilon_schedule: "linear"  # linear or exponential
+
+# Learning rate schedule (optional)
+lr_schedule: null  # null, "linear", or "exponential"
+lr_decay_rate: 1.0  # LR decay multiplier
+
+# Save frequency
+save_every_episodes: 1000  # Save checkpoint every N episodes
+
+# Summary
+# This config implements standard QMIX with:
+# - RNN agents (GRU, hidden_dim=64) for handling partial observability
+# - QMIX mixer network for value decomposition
+# - Epsilon-greedy exploration (1.0 -> 0.05 over 500k steps)
+# - Target network updated every 200 steps
+# - Replay buffer size 5000 episodes
+# - Batch size 32 episodes
+# - Learning rate 0.0005 (Adam)
+# - Discount factor 0.99
+# - TD(lambda) with lambda=0.8

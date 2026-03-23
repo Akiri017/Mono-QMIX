@@ -1,0 +1,85 @@
+# SUMO 4x4 Grid Rerouting Environment Configuration
+# Compatible with PyMARL QMIX
+
+env_args:
+  # Scenario paths (relative to repo root)
+  sumo_cfg: "sumo/scenarios/4by4_map/train_med.sumocfg"
+  network_file: "4by4_map/final_map.net.xml"
+  controlled_routes: "sumo/scenarios/4by4_map/controlled_init.rou.xml"
+
+  # Agent configuration
+  n_agents: 32  # N_controlled: fixed number of agent slots
+  n_actions: 4  # M: number of candidate routes per agent
+
+  # Decision period
+  decision_period: 10  # K: seconds between rerouting decisions
+  sumo_step_length: 1.0  # SUMO simulation step length in seconds
+
+  # Adaptive decision period (optional)
+  adaptive_decision_period: false  # enable adaptive K over time
+  decision_period_warmup: 10  # K during warmup phase (first N seconds)
+  decision_period_steady: 5  # K after warmup phase
+  warmup_duration: 300  # seconds of warmup before switching to steady K
+
+  # Episode configuration
+  max_episode_steps: 1000  # T_max: maximum simulation time in seconds
+  episode_limit: 1000  # PyMARL episode limit (same as max_episode_steps for SUMO)
+
+  # Replacement/lifelong agent configuration
+  replacement_enabled: true
+  replacement_delay: 3  # seconds of inactivity before spawning replacement vehicle
+
+  # Observation space configuration
+  obs_ego_dim: 5  # ego vehicle features (speed, normalized speed, route length, etc.)
+  obs_edge_encoding: "onehot"  # "onehot" or "embedding"
+  obs_edge_dim: 48  # number of edges in network (for one-hot) or embedding dim
+  obs_local_traffic: true
+  obs_max_outgoing_edges: 4  # max outgoing edges to observe at next intersection
+  obs_traffic_features: 3  # occupancy, mean speed, queue length per edge
+  # Total obs_dim = obs_ego_dim + obs_edge_dim + (obs_max_outgoing_edges * obs_traffic_features)
+  # Example: 5 + 48 + (4 * 3) = 65
+
+  # Global state configuration
+  state_concat_obs: true  # concatenate all agent observations
+  state_include_global_stats: false  # optionally add network-level statistics
+  state_global_stats_dim: 0  # dimension of global stats (e.g., 5)
+  # Total state_dim = n_agents * obs_dim [+ state_global_stats_dim]
+
+  # Action space configuration
+  route_generation_method: "k_shortest"  # k-shortest paths algorithm
+  route_cost_metric: "length"  # "length" (static) or "traveltime" (dynamic)
+  route_refresh_each_step: true  # recompute candidates at each decision timestep
+  action_mask_enabled: true  # use availability masking for invalid actions
+  action_noop_as_keep_route: true  # action 0 = keep current route (no reroute)
+
+  # Reward configuration
+  reward_global: true  # compute reward over all vehicles (controlled + background)
+  reward_time_weight: 1.0  # w_time: weight for travel time component
+  reward_stops_weight: 0.05  # w_stops: weight for stops/congestion component
+  reward_emissions_weight: 0.001  # w_emissions: weight for emissions component (if enabled)
+  reward_stop_speed_threshold: 0.1  # m/s: speed below which vehicle is "stopped"
+  reward_reroute_penalty: 0.0  # optional: penalty for changing route (stabilizer)
+
+  # Emissions configuration
+  emissions_enabled: true  # enable SUMO emissions model
+  emissions_device: "CO2"  # CO2, NOx, PMx, fuel, etc.
+
+  # Masking configuration (for mid-episode replacement)
+  use_active_mask: true  # mask inactive agent slots
+  use_reset_mask: true  # signal when slots are reassigned (for RNN reset)
+
+  # SUMO simulation settings
+  sumo_gui: false  # use sumo-gui (true) or sumo (false)
+  sumo_seed: null  # random seed for SUMO (null = random)
+  sumo_warnings: false  # suppress SUMO warnings
+
+  # Debugging
+  verbose: false  # print detailed environment info
+  render_mode: null  # "human" for visualization, null for headless
+
+# Additional PyMARL environment info
+episode_limit: 1000  # redundant but PyMARL expects this at top level
+obs_shape: 65  # will be computed dynamically, this is an example
+state_shape: 2080  # n_agents * obs_shape (32 * 65)
+n_actions: 4
+n_agents: 32

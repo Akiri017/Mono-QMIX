@@ -1,0 +1,24 @@
+<configuration>
+	<input>
+	<net-file value="final_map.net.xml"/>
+	<route-files value="trips_high.xml"/>
+	</input>
+
+	<processing>
+		<time-to-teleport value="300"/>
+		<ignore-junction-blocker value="1"/>
+		<duration-log.statistics value="true"/>
+	</processing>
+
+	<time>
+		<begin value="0"/>
+		<end value="3600"/>
+	</time>
+	
+	<output>
+		<tripinfo-output value="data\data_selfish_high_tripinfo.xml"/>
+        	<summary-output value="data\data_selfish_high_summary.xml"/>
+        	<statistic-output value="data\data_selfish_high_stats.xml"/>
+	</output>
+
+</configuration>

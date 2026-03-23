@@ -1,0 +1,18 @@
+<configuration>
+  <input>
+    <net-file value="../../../4by4_map/final_map.net.xml"/>
+    <!-- Order does not matter; SUMO loads all vehicles from both files -->
+    <route-files value="controlled_init.rou.xml,../../../4by4_map/routes_med.rou.xml"/>
+  </input>
+
+  <processing>
+    <time-to-teleport value="300"/>
+    <ignore-junction-blocker value="1"/>
+  </processing>
+
+  <time>
+    <begin value="0"/>
+    <end value="3600"/>
+    <step-length value="1.0"/>
+  </time>
+</configuration>

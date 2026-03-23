@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# SUMO outputs / logs
+*.log
+*.xml~
+*.rou.alt.xml
+tripinfo*.xml
+summary*.xml
+
+# Training artifacts (large, not for version control)
+pymarl/src/results/models/
+pymarl/src/results/experiments/
+pymarl/src/results/tb_logs/
+
+# Evaluation outputs are small and useful to share
+# pymarl/src/results/eval/ -- intentionally NOT ignored
+
+# TensorBoard
+runs/
