@@ -16,6 +16,8 @@ Key features:
 
 import os
 import sys
+import time
+import threading
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 import logging
@@ -110,6 +112,20 @@ class SUMOGridRerouteEnv:
         self.sumo_warnings = env_args.get("sumo_warnings", False)
         self.verbose = env_args.get("verbose", False)
 
+        # Watchdog configuration.
+        # sumo_step_timeout: seconds of TraCI silence (no completed simulationStep)
+        # before the watchdog considers SUMO hung and kills the connection.
+        # This is a *silence* threshold, not a per-step wall-clock limit, so a
+        # legitimately slow step at high vehicle density won't trigger it —
+        # only a step that never completes (hung TraCI socket) will.
+        self.sumo_step_timeout = env_args.get("sumo_step_timeout", 60)
+
+        # Watchdog runtime state (set up properly in _start_watchdog)
+        self._traci_heartbeat: float = 0.0   # monotonic time of last completed step
+        self._watchdog_thread: threading.Thread = None
+        self._watchdog_stop = threading.Event()
+        self._watchdog_fired: bool = False
+
         # Compute observation and state dimensions
         self.obs_dim = (self.obs_ego_dim +
                        self.obs_edge_dim +
@@ -152,6 +168,15 @@ class SUMOGridRerouteEnv:
         self.vehicle_spawn_times = {}  # Map vehicle_id -> spawn time
         self.vehicle_travel_times = []  # List of completed travel times
         self.vehicle_waiting_times = []  # List of total waiting times per vehicle
+        self.vehicle_accumulated_waiting = {}  # Running waiting-time sum per vehicle (seconds)
+
+        # Episode-level congestion tracking — used to produce mean_vehicle_count
+        # and mean_speed in _compute_episode_metrics so a single episode run can
+        # confirm whether the network is actually congesting.
+        self._sub_step_count: int = 0
+        self._total_vehicle_steps: int = 0     # sum of vehicle counts per sub-step
+        self._total_speed_sum: float = 0.0     # sum of all vehicle speeds across sub-steps
+        self._total_speed_veh_steps: int = 0   # count of (vehicle, sub-step) pairs
         self.episode_stops_count = 0  # Total stop events in episode
         self.episode_emissions = 0.0  # Total emissions in episode
         self.episode_arrivals = 0  # Number of arrivals in episode
@@ -205,6 +230,11 @@ class SUMOGridRerouteEnv:
         self.vehicle_spawn_times.clear()
         self.vehicle_travel_times = []
         self.vehicle_waiting_times = []
+        self.vehicle_accumulated_waiting.clear()
+        self._sub_step_count = 0
+        self._total_vehicle_steps = 0
+        self._total_speed_sum = 0.0
+        self._total_speed_veh_steps = 0
         self.episode_stops_count = 0
         self.episode_emissions = 0.0
         self.episode_arrivals = 0
@@ -219,6 +249,9 @@ class SUMOGridRerouteEnv:
 
         # Start SUMO
         self._start_sumo()
+
+        # Start watchdog after SUMO is up so it can guard the warmup steps too
+        self._start_watchdog()
 
         # Load network for k-shortest paths
         if self.net is None:
@@ -491,6 +524,55 @@ class SUMOGridRerouteEnv:
                 except Exception as e:
                     logger.warning(f"Failed to set route for {vehicle_id}: {e}")
 
+    def _start_watchdog(self) -> None:
+        """Start the background watchdog thread for a new episode."""
+        self._stop_watchdog()  # ensure any previous watchdog is gone
+        self._traci_heartbeat = time.monotonic()
+        self._watchdog_fired = False
+        self._watchdog_stop.clear()
+        self._watchdog_thread = threading.Thread(
+            target=self._watchdog_loop, daemon=True, name="sumo-watchdog"
+        )
+        self._watchdog_thread.start()
+
+    def _stop_watchdog(self) -> None:
+        """Signal the watchdog to stop and wait for it to exit."""
+        self._watchdog_stop.set()
+        if self._watchdog_thread is not None:
+            self._watchdog_thread.join(timeout=2.0)
+            self._watchdog_thread = None
+
+    def _watchdog_loop(self) -> None:
+        """
+        Background thread: kill SUMO if no TraCI heartbeat for sumo_step_timeout seconds.
+
+        The heartbeat (_traci_heartbeat) is a monotonic timestamp that the main
+        thread updates *before* every traci.simulationStep() call.  A legitimately
+        slow step at high vehicle density will keep advancing the heartbeat, so it
+        won't be mistaken for a hang.  Only continuous silence — a step that never
+        returns — will exceed the threshold.
+
+        On timeout: set _watchdog_fired, close the TraCI connection.  This
+        unblocks the pending simulationStep() on the main thread with a socket
+        error, which propagates up through the training loop and causes the
+        subprocess to exit with a non-zero code.  run_experiments.py logs the
+        warning and moves on to the next seed.
+        """
+        while not self._watchdog_stop.wait(timeout=5.0):
+            silence = time.monotonic() - self._traci_heartbeat
+            if silence > self.sumo_step_timeout:
+                self._watchdog_fired = True
+                logger.error(
+                    f"[WATCHDOG] No TraCI heartbeat for {silence:.0f}s "
+                    f"(threshold={self.sumo_step_timeout}s) — "
+                    "SUMO process appears hung. Closing connection."
+                )
+                try:
+                    traci.close()
+                except Exception:
+                    pass
+                break  # fire once, then exit
+
     def _advance_simulation(self) -> float:
         """Advance SUMO simulation for decision period and accumulate reward."""
         # Determine current decision period (adaptive or fixed)
@@ -499,8 +581,10 @@ class SUMOGridRerouteEnv:
 
         total_reward = 0.0
 
-        for _ in range(steps_to_advance):
-            # Step simulation
+        for sub_step in range(steps_to_advance):
+            # Update heartbeat before the call so the watchdog's silence timer
+            # resets on every step — a slow-but-progressing step won't trigger it.
+            self._traci_heartbeat = time.monotonic()
             traci.simulationStep()
             self.sim_time = traci.simulation.getTime()
 
@@ -509,6 +593,33 @@ class SUMOGridRerouteEnv:
 
             # Track newly entered vehicles (Step 6 - for background vehicles)
             self._track_new_vehicles(current_vehicles)
+
+            # Single speed pass: accumulates per-vehicle waiting time AND
+            # the episode-level mean-vehicle-count / mean-speed stats in one loop.
+            speed_sum = 0.0
+            speed_count = 0
+            for veh_id in current_vehicles:
+                try:
+                    speed = traci.vehicle.getSpeed(veh_id)
+                    speed_sum += speed
+                    speed_count += 1
+                    if speed < self.reward_stop_speed_threshold:
+                        self.vehicle_accumulated_waiting[veh_id] += self.sumo_step_length
+                except Exception:
+                    pass
+
+            self._sub_step_count += 1
+            self._total_vehicle_steps += len(current_vehicles)
+            self._total_speed_sum += speed_sum
+            self._total_speed_veh_steps += speed_count
+
+            if self.verbose and sub_step == 0 and current_vehicles:
+                mean_spd = speed_sum / speed_count if speed_count > 0 else 0.0
+                logger.info(
+                    f"[congestion] t={self.sim_time:.0f}s  "
+                    f"vehicles={len(current_vehicles)}  "
+                    f"mean_speed={mean_spd:.2f}m/s"
+                )
 
             # Compute reward for this timestep
             step_reward = self._compute_reward(current_vehicles)
@@ -622,8 +733,11 @@ class SUMOGridRerouteEnv:
                         else:
                             self.background_travel_times.append(travel_time)
 
-                        # Waiting time cannot be retrieved after vehicle has left;
-                        # it is tracked continuously in get_obs instead (future work)
+                            # Capture accumulated waiting time while we still have the
+                        # vehicle ID.  vehicle_accumulated_waiting is updated every
+                        # sub-step so this gives the full episode total.
+                        waiting_time = self.vehicle_accumulated_waiting.pop(vehicle_id, 0.0)
+                        self.vehicle_waiting_times.append(waiting_time)
 
                         # Clean up
                         del self.vehicle_spawn_times[vehicle_id]
@@ -654,6 +768,10 @@ class SUMOGridRerouteEnv:
                     # If we can't get departure time, use current sim time
                     self.vehicle_spawn_times[veh_id] = self.sim_time
                     self.total_spawned += 1
+
+                # Initialize waiting-time accumulator so vehicles that never stop
+                # still appear in the denominator when computing mean_waiting_time.
+                self.vehicle_accumulated_waiting.setdefault(veh_id, 0.0)
 
     def _check_termination(self) -> bool:
         """Check if episode should terminate."""
@@ -714,13 +832,35 @@ class SUMOGridRerouteEnv:
             metrics["background_mean_travel_time"] = 0.0
             metrics["background_arrivals"] = 0
 
-        # Waiting time metrics
-        if len(self.vehicle_waiting_times) > 0:
-            metrics["mean_waiting_time"] = float(np.mean(self.vehicle_waiting_times))
-            metrics["total_waiting_time"] = float(np.sum(self.vehicle_waiting_times))
+        # Waiting time metrics.
+        # vehicle_waiting_times holds values for vehicles that arrived during the
+        # episode (flushed in _handle_arrivals).  vehicle_accumulated_waiting holds
+        # values for vehicles still active at episode end.  Both are included so the
+        # mean is over *all* vehicles that appeared in the episode — including those
+        # that never stopped (waiting time = 0.0) so the denominator is correct.
+        all_waiting = list(self.vehicle_waiting_times)
+        all_waiting.extend(self.vehicle_accumulated_waiting.values())
+
+        if len(all_waiting) > 0:
+            metrics["mean_waiting_time"] = float(np.mean(all_waiting))
+            metrics["total_waiting_time"] = float(np.sum(all_waiting))
         else:
             metrics["mean_waiting_time"] = 0.0
             metrics["total_waiting_time"] = 0.0
+
+        # Congestion diagnostics — episode-level averages so a single run reveals
+        # whether the network is actually saturating or vehicles route through freely.
+        if self._sub_step_count > 0:
+            metrics["mean_vehicle_count"] = (
+                float(self._total_vehicle_steps) / self._sub_step_count
+            )
+        else:
+            metrics["mean_vehicle_count"] = 0.0
+
+        if self._total_speed_veh_steps > 0:
+            metrics["mean_speed"] = self._total_speed_sum / self._total_speed_veh_steps
+        else:
+            metrics["mean_speed"] = 0.0
 
         # Stops and emissions
         metrics["total_stops"] = int(self.episode_stops_count)
@@ -1057,6 +1197,7 @@ class SUMOGridRerouteEnv:
 
     def close(self) -> None:
         """Close the environment and clean up resources."""
+        self._stop_watchdog()
         if self.traci_connection is not None:
             try:
                 traci.close()

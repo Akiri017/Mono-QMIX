@@ -24,13 +24,12 @@ epsilon_anneal_time: 500000  # Steps to anneal epsilon (500k steps)
 # Training configuration
 batch_size: 32  # Number of episodes per batch
 batch_size_run: 1  # Episodes collected before training update (parallel envs)
-buffer_size: 200  # Replay buffer size (episodes). 5000 requires ~41GB RAM; 200 ≈ 3.5GB
+buffer_size: 400  # Replay buffer size (episodes). ~16.6MB/episode → 400 ≈ 6.5GB RAM
 buffer_cpu_only: true  # Keep buffer on CPU to save GPU memory
 
 # Learning
 lr: 0.0005  # Learning rate (Adam optimizer)
-optim_alpha: 0.99  # RMSprop alpha (if using RMSprop)
-optim_eps: 0.00001  # Optimizer epsilon
+optim_eps: 0.00001  # Adam epsilon
 grad_norm_clip: 10  # Gradient norm clipping
 weight_decay: 0  # L2 regularization
 
@@ -39,7 +38,7 @@ gamma: 0.99  # Discount factor
 td_lambda: 0.8  # TD(lambda) for multi-step returns
 
 # Target network
-target_update_interval: 200  # Update target network every N training steps
+target_update_interval: 200  # Update target network every N episodes
 target_update_mode: "hard"  # "hard" or "soft" update
 tau: 0.001  # Soft update coefficient (if soft update)
 
@@ -126,7 +125,7 @@ save_every_episodes: 1000  # Save checkpoint every N episodes
 # - QMIX mixer network for value decomposition
 # - Epsilon-greedy exploration (1.0 -> 0.05 over 500k steps)
 # - Target network updated every 200 steps
-# - Replay buffer size 5000 episodes
+# - Replay buffer size 400 episodes (~6.5GB RAM)
 # - Batch size 32 episodes
 # - Learning rate 0.0005 (Adam)
 # - Discount factor 0.99

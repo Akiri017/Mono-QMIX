@@ -68,8 +68,7 @@ class QLearner:
         self.optimizer = optim.Adam(params, lr=args.get("lr", 0.0005))
 
         # Training stats
-        self.training_steps = 0
-        self.last_target_update = 0
+        self.last_target_update_episode = 0
 
         self.log_stats_t = -1
 
@@ -171,11 +170,10 @@ class QLearner:
         )
         self.optimizer.step()
 
-        # Update target networks
-        self.training_steps += 1
-        if self.training_steps - self.last_target_update >= self.target_update_interval:
+        # Update target networks every N episodes
+        if episode_num - self.last_target_update_episode >= self.target_update_interval:
             self._update_targets()
-            self.last_target_update = self.training_steps
+            self.last_target_update_episode = episode_num
 
         # Logging
         if t_env - self.log_stats_t >= self.args.get("log_interval", 5000):
