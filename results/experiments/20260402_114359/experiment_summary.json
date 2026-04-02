@@ -1,0 +1,26 @@
+{
+  "timestamp": "20260402_114359",
+  "seeds": [
+    42
+  ],
+  "t_max": 2000,
+  "eval_episodes": 0,
+  "baselines": [
+    "noop",
+    "greedy_shortest"
+  ],
+  "aggregated": {
+    "qmix": {
+      "returns": null,
+      "metrics": null
+    },
+    "noop": {
+      "returns": null,
+      "metrics": null
+    },
+    "greedy_shortest": {
+      "returns": null,
+      "metrics": null
+    }
+  }
+}
