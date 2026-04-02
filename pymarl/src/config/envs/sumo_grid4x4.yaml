@@ -3,13 +3,17 @@
 
 env_args:
   # Scenario paths (relative to repo root)
-  sumo_cfg: "sumo/scenarios/4by4_map/train_med.sumocfg"
+  # los_level selects the background traffic demand: "low" (~562 veh/hr),
+  # "med" (~1125 veh/hr), or "high" (~1406 veh/hr). The env resolves the
+  # matching sumocfg automatically. Override sumo_cfg directly to bypass.
+  los_level: "med"
+  sumo_cfg: null  # if null, derived from los_level
   network_file: "4by4_map/final_map.net.xml"
   controlled_routes: "sumo/scenarios/4by4_map/controlled_init.rou.xml"
 
   # Agent configuration
   n_agents: 32  # N_controlled: fixed number of agent slots
-  n_actions: 4  # M: number of candidate routes per agent
+  n_actions: 2  # M: number of candidate routes per agent
 
   # Decision period
   decision_period: 10  # K: seconds between rerouting decisions
@@ -81,5 +85,5 @@ env_args:
 episode_limit: 1000  # redundant but PyMARL expects this at top level
 obs_shape: 65  # will be computed dynamically, this is an example
 state_shape: 2080  # n_agents * obs_shape (32 * 65)
-n_actions: 4
+n_actions: 2
 n_agents: 32

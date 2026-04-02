@@ -27,3 +27,6 @@ pymarl/src/results/tb_logs/
 
 # TensorBoard
 runs/
+
+# Claude
+.claude

@@ -17,9 +17,10 @@ Key features:
 import os
 import sys
 import time
+import heapq
 import threading
 import numpy as np
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Set
 import logging
 
 # SUMO imports
@@ -59,7 +60,23 @@ class SUMOGridRerouteEnv:
         self.max_episode_steps = env_args["max_episode_steps"]
 
         # File paths (resolve relative to repo root)
-        self.sumo_cfg = self._resolve_path(env_args["sumo_cfg"])
+        # sumo_cfg may be null/None in the config, in which case it is derived
+        # from los_level so callers only need to set one value per run.
+        _LOS_CFG = {
+            "low":  "sumo/scenarios/4by4_map/train_low.sumocfg",
+            "med":  "sumo/scenarios/4by4_map/train_med.sumocfg",
+            "high": "sumo/scenarios/4by4_map/train_high.sumocfg",
+        }
+        self.los_level = env_args.get("los_level", "med")
+        _raw_cfg = env_args.get("sumo_cfg") or None  # treat empty string as None
+        if _raw_cfg is None:
+            if self.los_level not in _LOS_CFG:
+                raise ValueError(
+                    f"Unknown los_level '{self.los_level}'. "
+                    f"Valid options: {list(_LOS_CFG.keys())}"
+                )
+            _raw_cfg = _LOS_CFG[self.los_level]
+        self.sumo_cfg = self._resolve_path(_raw_cfg)
         self.network_file = self._resolve_path(env_args.get("network_file", ""))
         self.controlled_routes_file = self._resolve_path(env_args["controlled_routes"])
 
@@ -150,6 +167,11 @@ class SUMOGridRerouteEnv:
         self.route_candidates = {}  # Map agent_id -> list of route candidates
         self.route_masks = {}  # Map agent_id -> availability mask
 
+        # Yen's k-shortest paths cache: (from_edge_id, to_edge_id) -> (routes, mask)
+        # Static cost metric means results are deterministic per OD pair within an episode.
+        # Cleared at episode reset.
+        self._yen_cache = {}
+
         # OD pair cache (loaded once from XML, not re-parsed on every replacement)
         self._od_pairs_cache = None
 
@@ -187,6 +209,7 @@ class SUMOGridRerouteEnv:
 
         if self.verbose:
             logger.info(f"SUMOGridRerouteEnv initialized:")
+            logger.info(f"  los_level={self.los_level}, sumo_cfg={self.sumo_cfg}")
             logger.info(f"  n_agents={self.n_agents}, n_actions={self.n_actions}")
             logger.info(f"  obs_dim={self.obs_dim}, state_dim={self.state_dim}")
             logger.info(f"  decision_period={self.decision_period}s")
@@ -246,6 +269,7 @@ class SUMOGridRerouteEnv:
         # Clear caches
         self.route_candidates.clear()
         self.route_masks.clear()
+        self._yen_cache.clear()
 
         # Start SUMO
         self._start_sumo()
@@ -912,13 +936,19 @@ class SUMOGridRerouteEnv:
 
                 dest_edge_id = current_route[-1]
 
-                # Compute k-shortest paths
-                routes, mask = self._compute_k_shortest_paths(
-                    current_edge_id, dest_edge_id, k=self.n_actions
-                )
+                # Compute k-shortest paths (cache hit skips Yen's entirely)
+                cache_key = (current_edge_id, dest_edge_id)
+                if cache_key in self._yen_cache:
+                    routes, mask = self._yen_cache[cache_key]
+                else:
+                    routes, mask = self._compute_k_shortest_paths(
+                        current_edge_id, dest_edge_id, k=self.n_actions
+                    )
+                    self._yen_cache[cache_key] = (routes, mask)
 
                 self.route_candidates[agent_id] = routes
                 self.route_masks[agent_id] = mask
+
 
             except Exception as e:
                 logger.warning(f"Failed to generate routes for agent {agent_id}: {e}")
@@ -928,62 +958,159 @@ class SUMOGridRerouteEnv:
     def _compute_k_shortest_paths(self, from_edge_id: str, to_edge_id: str,
                                    k: int) -> Tuple[List[List[str]], List[int]]:
         """
-        Compute k-shortest paths using sumolib.
+        Compute k-shortest simple paths using Yen's algorithm.
+
+        Yen's algorithm iteratively finds alternatives by running Dijkstra with
+        specific edges forbidden, ensuring each candidate diverges from previously
+        accepted paths at some spur node. This guarantees truly distinct routes
+        rather than duplicates of the first shortest path.
 
         Returns:
-            routes: List of k routes (each is list of edge IDs)
-            mask: Binary mask indicating valid routes
+            routes: List of k routes (each is a list of non-internal edge IDs),
+                    padded with None where fewer than k paths exist.
+            mask:   Binary list of length k (1 = valid route, 0 = no route).
         """
         try:
             from_edge = self.net.getEdge(from_edge_id)
             to_edge = self.net.getEdge(to_edge_id)
-        except:
+        except Exception:
             return [None] * k, [0] * k
 
-        routes = []
+        def path_cost(path):
+            return sum(e.getLength() / max(e.getSpeed(), 0.1) for e in path)
 
-        # Simple approach: compute shortest path, then find alternatives
-        # by temporarily removing edges from the network
+        # accepted: list of Edge-object paths, in cost order
+        accepted = []
+
+        # Step 1: first shortest path (no forbidden edges)
         try:
-            # Get first shortest path
-            result = self.net.getShortestPath(from_edge, to_edge)
-            if result and result[0]:
-                first_route = [edge.getID() for edge in result[0]]
-                routes.append(first_route)
-
-                # For k>1, try to find alternative routes by avoiding some edges
-                # This is a simplified heuristic approach
-                if k > 1 and len(first_route) > 2:
-                    # Try alternative paths by preferring different intermediate edges
-                    # For now, just use the first path multiple times
-                    # This ensures we always have valid actions even if k-shortest is not available
-                    for i in range(1, min(k, 4)):
-                        # For simplicity, reuse the first route
-                        # TODO: Implement proper k-shortest paths algorithm
-                        if i < len(routes):
-                            routes.append(first_route)
-
+            p0 = self._dijkstra(from_edge, to_edge, forbidden_edges=set())
         except Exception as e:
             logger.warning(f"Shortest path computation failed: {e}")
+            return [None] * k, [0] * k
 
-        # If we couldn't compute any routes, create empty routes
-        if not routes:
-            routes = [None] * k
-            mask = [0] * k
-        else:
-            # Pad with None if fewer than k routes
-            num_valid = len(routes)
-            while len(routes) < k:
-                routes.append(None)
+        if p0 is None:
+            return [None] * k, [0] * k
 
-            # Create mask (1 = valid, 0 = invalid)
-            mask = [1 if route is not None else 0 for route in routes]
+        accepted.append(p0)
 
-            # If action 0 is "keep current route", ensure its always valid
-            if self.action_noop_as_keep_route and num_valid > 0:
-                mask[0] = 1
+        # candidates heap: (cost, tie-breaker index, path)
+        candidates = []
+        candidate_set = set()  # avoid duplicate candidates
+        tie = 0
+
+        # Step 2: Yen's main loop — find paths 2..k
+        for i in range(1, k):
+            prev_path = accepted[i - 1]
+
+            for spur_idx in range(len(prev_path) - 1):
+                spur_node = prev_path[spur_idx]
+                root_path = prev_path[:spur_idx + 1]
+
+                forbidden: Set = set()
+
+                # Forbid the next edge used by any accepted path that shares
+                # the same root — this forces the spur to diverge.
+                for acc in accepted:
+                    if acc[:spur_idx + 1] == root_path and spur_idx + 1 < len(acc):
+                        forbidden.add(acc[spur_idx + 1])
+
+                # Forbid all edges in the root path except the spur node itself
+                # to prevent the spur path from looping back through them.
+                for edge in root_path[:-1]:
+                    forbidden.add(edge)
+
+                try:
+                    spur_path = self._dijkstra(spur_node, to_edge, forbidden_edges=forbidden)
+                except Exception:
+                    spur_path = None
+
+                if spur_path is not None:
+                    # Combine: root up to (not including) spur_node + full spur path
+                    candidate = root_path[:-1] + spur_path
+                    candidate_key = tuple(e.getID() for e in candidate)
+                    if candidate_key not in candidate_set:
+                        candidate_set.add(candidate_key)
+                        heapq.heappush(candidates, (path_cost(candidate), tie, candidate))
+                        tie += 1
+
+            if not candidates:
+                # Fewer than k paths exist in this network segment
+                break
+
+            _, _, best = heapq.heappop(candidates)
+            accepted.append(best)
+
+        # Convert Edge-object paths to non-internal edge ID lists
+        raw_routes = []
+        for path in accepted:
+            edge_ids = [e.getID() for e in path if not e.getID().startswith(':')]
+            raw_routes.append(edge_ids)
+
+        # Drop near-duplicate routes (>85% edge overlap) that Yen's may still produce
+        # on dense or nearly-direct graph segments.
+        unique_routes = self._deduplicate_routes(raw_routes, threshold=0.85)
+        num_valid = len(unique_routes)
+
+        # Pad to length k with None
+        routes = unique_routes + [None] * (k - num_valid)
+
+        mask = [1 if r is not None else 0 for r in routes]
+
+        # Action 0 is "keep current route" — always available for active agents
+        if self.action_noop_as_keep_route and num_valid > 0:
+            mask[0] = 1
 
         return routes, mask
+
+    def _dijkstra(self, from_edge, to_edge, forbidden_edges: Set) -> Optional[list]:
+        """
+        Dijkstra shortest-path over the sumolib edge graph.
+
+        Cost metric: travel time (edge.getLength() / edge.getSpeed()).
+        Returns a list of sumolib Edge objects from from_edge to to_edge
+        (inclusive), or None if no path exists.
+
+        forbidden_edges: set of sumolib Edge objects to skip during traversal.
+        Used by Yen's algorithm to force route divergence at spur nodes.
+
+        Uses a predecessor dict instead of carrying the full path in each heap
+        entry, reducing complexity from O(n^2) to O(n log n) per call.
+        """
+        if from_edge == to_edge:
+            return [from_edge]
+
+        dist = {from_edge: 0.0}
+        prev = {from_edge: None}
+        # heap entries: (cumulative_cost, tie_breaker, edge)
+        heap = [(0.0, 0, from_edge)]
+        tie = 0
+
+        while heap:
+            cost, _, current = heapq.heappop(heap)
+
+            if current == to_edge:
+                # Reconstruct path by backtracking through prev
+                path, node = [], to_edge
+                while node is not None:
+                    path.append(node)
+                    node = prev[node]
+                return path[::-1]
+
+            if cost > dist.get(current, float('inf')):
+                continue
+
+            for next_edge in current.getOutgoing():
+                if next_edge in forbidden_edges:
+                    continue
+                new_cost = cost + next_edge.getLength() / max(next_edge.getSpeed(), 0.1)
+                if new_cost < dist.get(next_edge, float('inf')):
+                    dist[next_edge] = new_cost
+                    prev[next_edge] = current
+                    tie += 1
+                    heapq.heappush(heap, (new_cost, tie, next_edge))
+
+        return None  # no path found
 
     def _deduplicate_routes(self, routes: List[List[str]], threshold: float = 0.85) -> List[List[str]]:
         """Remove near-duplicate routes based on edge overlap."""
