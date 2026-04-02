@@ -67,54 +67,27 @@ No changes to `sumo_grid_reroute.py` are needed. The Yen's implementation alread
 
 ---
 
-## 6. Deferred Until After Documentation
+## 6. ~~Deferred Until After Documentation~~ — DONE (2026-04-02)
 
-This change has not been made yet. It will be applied before the 500k smoke test run.
-
-After the change, re-run the 2000-step debug verification to confirm:
-- Masks are `[1, 0]` or `[1, 1]` (no more `[1, 0, 0, 0]`)
-- QMIX and noop no longer produce identical results (agents with 2 valid paths now have a real choice)
-- The debug print can then be removed
+- `n_actions: 2` applied to `pymarl/src/config/envs/sumo_grid4x4.yaml` (both `env_args` and top-level PyMARL block).
+- 2000-step debug verification run confirmed masks are `[1, 0]` or `[1, 1]` — no more `[1, 0, 0, 0]`.
+- Debug print removed from `_generate_route_candidates()`.
 
 ---
 
-## 7. Dijkstra Performance Issue and Deferred Fix
+## 7. ~~Dijkstra Performance Issue and Deferred Fix~~ — DONE (2026-04-02)
 
-**Observed:** The current `_dijkstra()` implementation carries the full path as a list inside each heap entry (`path + [next_edge]` on every push). This is O(n²) in time and memory per call. On the 4×4 grid, with ~51,000 Dijkstra calls per episode (100 decision steps × 32 agents × ~16 Yen's spur calls), this caused a single training episode to take approximately **70 minutes**.
+**Original issue:** `_dijkstra()` carried the full path list in every heap entry (`path + [next_edge]` on every push) — O(n²) per call. With ~51,000 calls per episode this caused ~70 min/episode.
 
-**Deferred fix — predecessor dict approach:**
+**Fixes applied to `pymarl/src/envs/sumo_grid_reroute.py`:**
 
-Replace path-in-heap with a `dist` dict and `prev` dict. Reconstruct the path once at the end by backtracking through `prev`. Heap entries become `(cost, tie, edge)` instead of `(cost, tie, full_path_list)`, eliminating the O(n²) copying.
+**Fix 1 — Predecessor dict Dijkstra:** Replaced path-in-heap with `dist` + `prev` dicts. Heap entries are now `(cost, tie, edge)`. Path reconstructed once at the end by backtracking through `prev`. O(n²) → O(n log n) per call.
 
-```python
-dist = {from_edge: 0.0}
-prev = {from_edge: None}
-heap = [(0.0, 0, from_edge)]
+**Fix 2 — OD-pair cache (`_yen_cache`):** Added `self._yen_cache: dict` keyed on `(from_edge_id, to_edge_id)`. On a cache hit, Yen's algorithm is skipped entirely. Cache is cleared at `reset()`. Since cost metric is static (edge length), results are deterministic per OD pair and safe to reuse within an episode.
 
-while heap:
-    cost, _, current = heapq.heappop(heap)
-    if current == to_edge:
-        path, node = [], to_edge
-        while node is not None:
-            path.append(node)
-            node = prev[node]
-        return path[::-1]
-    if cost > dist.get(current, float('inf')):
-        continue
-    for next_edge in current.getOutgoing():
-        if next_edge in forbidden_edges:
-            continue
-        new_cost = cost + next_edge.getLength() / max(next_edge.getSpeed(), 0.1)
-        if new_cost < dist.get(next_edge, float('inf')):
-            dist[next_edge] = new_cost
-            prev[next_edge] = current
-            heapq.heappush(heap, (new_cost, tie, next_edge))
-```
+**Tradeoff (still applies for BGC migration):** The predecessor dict tracks only the cheapest path per node. On a larger graph (e.g., BGC OSM) with k≥4, suboptimal partial paths discarded by `prev` could cause Yen's to miss valid candidates. At that scale, the correct solution is either:
 
-**Tradeoff:** The predecessor dict tracks only one path per node — the cheapest. For Yen's algorithm with small k and a small grid, this is fine. On a larger graph (e.g., BGC OSM) with k≥4, suboptimal partial paths discarded by the predecessor dict could cause Yen's to miss valid candidates. At that scale, the correct solution is either:
+1. **Use `networkx.shortest_simple_paths()`** — battle-tested Yen's implementation.
+2. **Precompute offline** — run k-shortest paths for all OD pairs before training and load from disk.
 
-1. **Cache routes at episode start** — compute once per OD pair at `reset()`, not every decision step. Eliminates ~99% of Dijkstra calls regardless of algorithm.
-2. **Use `networkx.shortest_simple_paths()`** — battle-tested Yen's implementation. Build a NetworkX graph once from sumolib at load time and query it at runtime.
-3. **Precompute offline** — run k-shortest paths for all OD pairs before training and load from disk.
-
-**This is a known scalability gap.** It is documented here as a pre-BGC migration task, not a 4×4 grid blocker (since the 4×4 prototype will use caching or `n_actions=2` to limit call volume).
+These remain pre-BGC migration tasks. For the 4×4 prototype, Fix 1 + Fix 2 are sufficient.

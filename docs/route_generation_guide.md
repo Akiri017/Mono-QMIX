@@ -131,7 +131,7 @@ def deduplicate_routes(routes, similarity_threshold=0.9):
 
 **Recommendation:** Use **on-demand computation** initially. Profile if performance becomes an issue.
 
-### Caching within an episode
+### Caching within an episode — **IMPLEMENTED (2026-04-02)**
 
 If using static cost metric (edge length), cache routes within an episode:
 
