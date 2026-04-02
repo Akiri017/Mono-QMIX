@@ -3,5 +3,6 @@
 traci>=1.25
 sumolib>=1.25
 numpy
+pyyaml
 # Torch wheels vary by CUDA/CPU; pip will pick a default build.
 torch
