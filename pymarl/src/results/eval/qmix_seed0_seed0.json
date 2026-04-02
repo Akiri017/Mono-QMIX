@@ -1,6 +1,6 @@
 {
   "policy_type": "qmix",
-  "policy_name": "/home/mariannesantos174/Mono-QMIX/results/models/seed0/best",
+  "policy_name": "C:\\Users\\otaku\\Documents\\VSC\\Mono QMIX\\Mono-QMIX\\results\\models\\seed0\\best",
   "n_episodes": 5,
   "seed": 0,
   "returns": {
@@ -75,17 +75,17 @@
       ]
     },
     "total_emissions": {
-      "mean": 557327.9146812169,
+      "mean": 557327.9146812168,
       "std": 0.0,
-      "median": 557327.9146812169,
-      "min": 557327.9146812169,
-      "max": 557327.9146812169,
+      "median": 557327.9146812168,
+      "min": 557327.9146812168,
+      "max": 557327.9146812168,
       "raw": [
-        557327.9146812169,
-        557327.9146812169,
-        557327.9146812169,
-        557327.9146812169,
-        557327.9146812169
+        557327.9146812168,
+        557327.9146812168,
+        557327.9146812168,
+        557327.9146812168,
+        557327.9146812168
       ]
     },
     "arrival_rate": {

@@ -271,6 +271,13 @@ class SUMOGridRerouteEnv:
         self.route_masks.clear()
         self._yen_cache.clear()
 
+        # Generate a per-episode SUMO seed from NumPy's already-seeded RNG.
+        # Without this, SUMO falls back to its compiled-in default seed (23423)
+        # every restart, producing identical background-traffic demand and zero
+        # variance across episodes.  Setting sumo_seed here lets _start_sumo()
+        # pass --seed automatically via the existing guard on line ~311.
+        self.sumo_seed = int(np.random.randint(0, 2**31 - 1))
+
         # Start SUMO
         self._start_sumo()
 
@@ -435,8 +442,11 @@ class SUMOGridRerouteEnv:
             self.agent_active[agent_id] = True
             self.agent_reset_mask[agent_id] = True  # Mark as just reset
 
-            # Track spawn time and controlled vehicles (Step 6)
-            self.vehicle_spawn_times[vehicle_id] = depart_time
+            # Track spawn time and controlled vehicles (Step 6).
+            # Use float(int(depart_time)) to match the integer step SUMO actually
+            # inserts the vehicle (traci.vehicle.add uses str(int(depart_time))).
+            # Keeping the raw float would underestimate travel time by up to 1s.
+            self.vehicle_spawn_times[vehicle_id] = float(int(depart_time))
             self.controlled_vehicle_ids.add(vehicle_id)
             self.total_spawned += 1
 
