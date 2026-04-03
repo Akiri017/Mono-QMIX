@@ -179,7 +179,10 @@ class QLearner:
         if t_env - self.log_stats_t >= self.args.get("log_interval", 5000):
             self.logger.log_stat("loss", loss.item(), t_env)
             self.logger.log_stat("grad_norm", grad_norm.item(), t_env)
-            self.logger.log_stat("q_taken_mean", (chosen_action_qvals * mask).sum().item() / mask.sum().item(), t_env)
+            # chosen_action_qvals was reshaped to (batch*T, n_agents) for the
+            # mixer; reshape back before multiplying with mask (batch, T, 1).
+            q_log = chosen_action_qvals.view(batch_size, max_t, self.n_agents)
+            self.logger.log_stat("q_taken_mean", (q_log * mask).sum().item() / (mask.sum().item() * self.n_agents), t_env)
             self.logger.log_stat("target_mean", (targets * mask).sum().item() / mask.sum().item(), t_env)
             self.log_stats_t = t_env
 

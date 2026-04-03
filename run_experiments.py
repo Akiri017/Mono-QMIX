@@ -24,6 +24,7 @@ import sys
 import json
 import argparse
 import subprocess
+import time
 import numpy as np
 from pathlib import Path
 from datetime import datetime
@@ -223,6 +224,8 @@ def main():
         train_extra.append("--use_gui")
         eval_extra.append("--use_gui")
 
+    run_start = time.time()
+    print(f"\nStarted : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"\nExperiment plan:")
     print(f"  Seeds         : {args.seeds}")
     print(f"  t_max         : {args.t_max:,}")
@@ -309,6 +312,11 @@ def main():
     # Save aggregate summary
     save_summary(policy_aggs, args.seeds, args.t_max)
 
+    elapsed = time.time() - run_start
+    h, rem = divmod(int(elapsed), 3600)
+    m, s = divmod(rem, 60)
+    print(f"\nFinished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Elapsed : {h:02d}:{m:02d}:{s:02d}")
     print("\nAll experiments complete!")
 
 
