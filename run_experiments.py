@@ -86,7 +86,7 @@ def run_evaluation(policy_type: str, seed: int, eval_episodes: int,
     Returns path to the saved JSON results file.
     """
     extra_args = extra_args or []
-    eval_dir = RESULTS_DIR / "eval"
+    eval_dir = SRC_DIR / "results" / "eval"  # evaluate.py runs with cwd=SRC_DIR, so files land here
 
     if policy_type == "qmix":
         stem = f"qmix_seed{seed}"

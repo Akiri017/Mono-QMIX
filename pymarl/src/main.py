@@ -145,6 +145,8 @@ def run_training(args):
     print(f"Buffer size: {args.get('buffer_size', 5000)}")
     print("========================\n")
 
+    recent_train_returns = []  # accumulates between log intervals for smoothed mean
+
     try:
         while runner.t_env < t_max:
             # Run episode
@@ -154,6 +156,7 @@ def run_training(args):
             buffer.insert_episode_batch(episode_batch)
 
             episode_num += 1
+            recent_train_returns.append(episode_batch["reward"][:, :-1].sum().item())
 
             # Train if buffer has enough episodes
             if buffer.can_sample(batch_size):
@@ -240,6 +243,22 @@ def run_training(args):
             # Logging
             if runner.t_env - last_log_t >= log_interval:
                 logger.print_recent_stats()
+
+                # Epsilon (replicated from basic_controller._get_epsilon)
+                eps_start = args.get("epsilon_start", 1.0)
+                eps_finish = args.get("epsilon_finish", 0.05)
+                eps_anneal = args.get("epsilon_anneal_time", 50000)
+                epsilon = eps_start - (eps_start - eps_finish) * min(1.0, runner.t_env / eps_anneal)
+                logger.log_stat("epsilon", epsilon, runner.t_env)
+
+                # Buffer fill ratio (0→1 as replay warms up)
+                logger.log_stat("buffer_fill", buffer.episodes_in_buffer / buffer.buffer_size, runner.t_env)
+
+                # Smoothed training return over the last log_interval window
+                if recent_train_returns:
+                    logger.log_stat("train_return_mean", float(np.mean(recent_train_returns)), runner.t_env)
+                    recent_train_returns.clear()
+
                 last_log_t = runner.t_env
 
             # Save model
