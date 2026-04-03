@@ -9,6 +9,7 @@ Implements non-learning baseline policies for evaluation:
 
 import torch
 import numpy as np
+import traci
 
 
 class BaselineMAC:
@@ -170,27 +171,15 @@ class BaselineMAC:
                 continue
 
             try:
-                edge = self.env.net.getEdge(edge_id)
-
-                # Use length as cost metric (can extend to travel time)
-                if self.env.route_cost_metric == "length":
+                # Use current congestion-aware travel time from SUMO
+                total_cost += traci.edge.getTraveltime(edge_id)
+            except Exception:
+                # Fall back to static length if traci call fails
+                try:
+                    edge = self.env.net.getEdge(edge_id)
                     total_cost += edge.getLength()
-                elif self.env.route_cost_metric == "traveltime":
-                    # Use edge travel time if available
-                    try:
-                        travel_time = edge.getMeanSpeed()
-                        if travel_time > 0:
-                            total_cost += edge.getLength() / travel_time
-                        else:
-                            total_cost += edge.getLength()  # Fallback to length
-                    except:
-                        total_cost += edge.getLength()
-                else:
-                    total_cost += edge.getLength()
-
-            except Exception as e:
-                # Edge not found, skip
-                pass
+                except Exception:
+                    pass
 
         return total_cost
 

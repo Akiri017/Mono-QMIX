@@ -378,7 +378,7 @@ def main():
         policy_stem = args_cmd.output or args_cmd.baseline
 
     # Save results
-    output_path = f"results/eval/{policy_stem}_seed{args['seed']}.json"
+    output_path = f"results/eval/{policy_stem}.json"
     save_results(results, output_path)
 
     print("\nEvaluation complete!")
