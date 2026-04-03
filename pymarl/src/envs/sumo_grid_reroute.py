@@ -24,7 +24,8 @@ from typing import Dict, List, Tuple, Optional, Set
 import logging
 
 # SUMO imports
-import traci
+from envs.sumo_backend import backend as traci
+from envs.sumo_backend import set_backend as _set_sumo_backend, is_libsumo as _is_libsumo
 import sumolib
 
 # Set up logging
@@ -123,25 +124,31 @@ class SUMOGridRerouteEnv:
         self.use_active_mask = env_args.get("use_active_mask", True)
         self.use_reset_mask = env_args.get("use_reset_mask", True)
 
+        # Watchdog runtime state — must be initialised before any call that
+        # might raise, because __del__ calls _stop_watchdog unconditionally.
+        self.sumo_step_timeout = env_args.get("sumo_step_timeout", 60)
+        self._traci_heartbeat: float = 0.0
+        self._watchdog_thread: threading.Thread = None
+        self._watchdog_stop = threading.Event()
+        self._watchdog_fired: bool = False
+
+        # SUMO backend selection (libsumo = fast in-process, traci = supports GUI)
+        self.sumo_backend = env_args.get("sumo_backend", "libsumo")
+
         # SUMO simulation settings
         self.sumo_gui = env_args.get("sumo_gui", False)
         self.sumo_seed = env_args.get("sumo_seed", None)
         self.sumo_warnings = env_args.get("sumo_warnings", False)
         self.verbose = env_args.get("verbose", False)
 
-        # Watchdog configuration.
-        # sumo_step_timeout: seconds of TraCI silence (no completed simulationStep)
-        # before the watchdog considers SUMO hung and kills the connection.
-        # This is a *silence* threshold, not a per-step wall-clock limit, so a
-        # legitimately slow step at high vehicle density won't trigger it —
-        # only a step that never completes (hung TraCI socket) will.
-        self.sumo_step_timeout = env_args.get("sumo_step_timeout", 60)
+        # Auto-fallback: sumo-gui requires TraCI (libsumo has no GUI support)
+        if self.sumo_gui and self.sumo_backend == "libsumo":
+            logger.warning(
+                "sumo-gui requires the TraCI backend; falling back to 'traci'."
+            )
+            self.sumo_backend = "traci"
 
-        # Watchdog runtime state (set up properly in _start_watchdog)
-        self._traci_heartbeat: float = 0.0   # monotonic time of last completed step
-        self._watchdog_thread: threading.Thread = None
-        self._watchdog_stop = threading.Event()
-        self._watchdog_fired: bool = False
+        _set_sumo_backend(self.sumo_backend)
 
         # Compute observation and state dimensions
         self.obs_dim = (self.obs_ego_dim +
@@ -559,7 +566,14 @@ class SUMOGridRerouteEnv:
                     logger.warning(f"Failed to set route for {vehicle_id}: {e}")
 
     def _start_watchdog(self) -> None:
-        """Start the background watchdog thread for a new episode."""
+        """Start the background watchdog thread for a new episode.
+
+        Skipped when using libsumo — it runs in-process (no socket to
+        deadlock) and is not thread-safe, so calling close() from the
+        watchdog thread would be unsafe.
+        """
+        if _is_libsumo():
+            return
         self._stop_watchdog()  # ensure any previous watchdog is gone
         self._traci_heartbeat = time.monotonic()
         self._watchdog_fired = False

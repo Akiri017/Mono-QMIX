@@ -73,7 +73,8 @@ env_args:
   use_reset_mask: true  # signal when slots are reassigned (for RNN reset)
 
   # SUMO simulation settings
-  sumo_gui: false  # use sumo-gui (true) or sumo (false)
+  sumo_backend: "libsumo"  # "libsumo" (default, faster) or "traci" (supports GUI)
+  sumo_gui: false  # use sumo-gui (true) or sumo (false, required for libsumo)
   sumo_seed: null  # random seed for SUMO (null = random)
   sumo_warnings: false  # suppress SUMO warnings
 

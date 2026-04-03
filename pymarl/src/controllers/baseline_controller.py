@@ -9,7 +9,7 @@ Implements non-learning baseline policies for evaluation:
 
 import torch
 import numpy as np
-import traci
+from envs.sumo_backend import backend as traci
 
 
 class BaselineMAC:
