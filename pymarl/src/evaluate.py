@@ -377,8 +377,13 @@ def main():
         results = evaluate_policy(args, policy_type="baseline", baseline_type=args_cmd.baseline)
         policy_stem = args_cmd.output or args_cmd.baseline
 
-    # Save results
-    output_path = f"results/eval/{policy_stem}_seed{args['seed']}.json"
+    # Save results. If an explicit --output stem was provided by the caller
+    # (e.g. "qmix_seed0"), use it directly — the seed is already embedded.
+    # Otherwise fall back to appending _seed{N} for standalone invocations.
+    if args_cmd.output:
+        output_path = f"results/eval/{policy_stem}.json"
+    else:
+        output_path = f"results/eval/{policy_stem}_seed{args['seed']}.json"
     save_results(results, output_path)
 
     print("\nEvaluation complete!")
