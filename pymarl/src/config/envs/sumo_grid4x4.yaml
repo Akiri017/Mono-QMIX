@@ -6,7 +6,7 @@ env_args:
   # los_level selects the background traffic demand: "low" (~562 veh/hr),
   # "med" (~1125 veh/hr), or "high" (~1406 veh/hr). The env resolves the
   # matching sumocfg automatically. Override sumo_cfg directly to bypass.
-  los_level: "med"
+  los_level: "low"
   sumo_cfg: null  # if null, derived from los_level
   network_file: "4by4_map/final_map.net.xml"
   controlled_routes: "sumo/scenarios/4by4_map/controlled_init.rou.xml"
