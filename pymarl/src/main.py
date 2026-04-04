@@ -6,6 +6,7 @@ Trains QMIX agents to control traffic lights in a SUMO grid network.
 
 import os
 import sys
+import json
 import yaml
 import torch
 import numpy as np
@@ -132,6 +133,26 @@ def run_training(args):
     # Best model tracking (Step 6)
     best_validation_return = float('-inf')  # Track best validation performance
     best_model_t = 0
+
+    # Resume from checkpoint if requested
+    resume_from = args.get("resume_from", None)
+    if resume_from:
+        print(f"\n[Resuming from checkpoint: {resume_from}]")
+        learner.load_models(resume_from)
+        state_path = os.path.join(resume_from, "training_state.json")
+        if os.path.exists(state_path):
+            with open(state_path, "r") as f:
+                state = json.load(f)
+            runner.t_env = state.get("t_env", 0)
+            episode_num = state.get("episode_num", 0)
+            # Don't re-save immediately; align all intervals to resume point
+            last_save_t = runner.t_env
+            last_test_t = runner.t_env - test_interval  # allow test shortly after resume
+            last_log_t = runner.t_env
+            last_validation_t = runner.t_env - validation_interval
+            print(f"  Resumed at t_env={runner.t_env}, episode_num={episode_num}")
+        else:
+            print("  [WARNING] training_state.json not found — step count starts at 0")
 
     print("\n=== Starting Training ===")
     print(f"Environment: SUMO Grid {args.get('grid_size', '4x4')}")
@@ -266,7 +287,10 @@ def run_training(args):
                 save_dir = os.path.join(save_path, f"step_{runner.t_env}")
                 os.makedirs(save_dir, exist_ok=True)
                 learner.save_models(save_dir)
-                print(f"Model saved at t={runner.t_env}")
+                # Save training state so the run can be resumed from this checkpoint
+                with open(os.path.join(save_dir, "training_state.json"), "w") as f:
+                    json.dump({"t_env": runner.t_env, "episode_num": episode_num}, f)
+                print(f"Checkpoint saved at t={runner.t_env} -> {save_dir}")
                 last_save_t = runner.t_env
 
     except KeyboardInterrupt:
@@ -320,6 +344,8 @@ def main():
     parser.add_argument("--buffer_size", type=int, default=None)
     parser.add_argument("--checkpoint_path", type=str, default=None,
                         help="Directory to save model checkpoints")
+    parser.add_argument("--resume_from", type=str, default=None,
+                        help="Path to a checkpoint directory to resume training from")
     parser.add_argument("--log_dir", type=str, default=None,
                         help="Directory for TensorBoard logs")
     # Step 6 validation flags
@@ -346,6 +372,8 @@ def main():
         args["buffer_size"] = cmd_args.buffer_size
     if cmd_args.checkpoint_path is not None:
         args["checkpoint_path"] = cmd_args.checkpoint_path
+    if cmd_args.resume_from is not None:
+        args["resume_from"] = cmd_args.resume_from
     if cmd_args.log_dir is not None:
         args["log_dir"] = cmd_args.log_dir
     if cmd_args.no_validation:

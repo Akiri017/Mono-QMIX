@@ -5,6 +5,7 @@ Implements Q-learning with QMIX value function factorization.
 Handles training loop, target networks, gradient computation, and optimization.
 """
 
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -225,12 +226,17 @@ class QLearner:
         self.device = torch.device("cpu")
 
     def save_models(self, path):
-        """Save model parameters."""
+        """Save model parameters and optimizer state."""
         self.mac.save_models(path)
         torch.save(self.mixer.state_dict(), f"{path}/mixer.pth")
+        # Optimizer state preserves Adam momentum/variance across resume
+        torch.save(self.optimizer.state_dict(), f"{path}/optimizer.pth")
 
     def load_models(self, path):
-        """Load model parameters."""
+        """Load model parameters and optimizer state."""
         self.mac.load_models(path)
         self.mixer.load_state_dict(torch.load(f"{path}/mixer.pth", map_location=self.device))
         self._update_targets()
+        opt_path = f"{path}/optimizer.pth"
+        if os.path.exists(opt_path):
+            self.optimizer.load_state_dict(torch.load(opt_path, map_location=self.device))
