@@ -58,13 +58,17 @@ info "Upgrading pip..."
 # guard on Ubuntu 22.04+. Safe here since this is a single-purpose training VM.
 python3 -m pip install --upgrade pip --break-system-packages -q
 
-info "Installing Python packages (traci, sumolib, numpy, torch)..."
+info "Installing Python packages (traci, sumolib, numpy, torch, libsumo, tensorboard)..."
+# setuptools pinned to avoid tensorboard import breakage on newer versions
 python3 -m pip install --break-system-packages \
     "traci>=1.25" \
     "sumolib>=1.25" \
     numpy \
     pyyaml \
-    torch
+    torch \
+    libsumo \
+    "tensorboard==2.20.0" \
+    "setuptools==69.5.1"
 
 # ── 6. smoke check ────────────────────────────────────────────────────────────
 info "Verifying installs..."
@@ -103,6 +107,18 @@ try:
     results.append(f"  torch     OK ({torch.__version__})")
 except Exception as e:
     results.append(f"  torch     FAILED: {e}")
+
+try:
+    import libsumo
+    results.append(f"  libsumo   OK")
+except Exception as e:
+    results.append(f"  libsumo   FAILED: {e}")
+
+try:
+    import tensorboard
+    results.append(f"  tensorboard OK ({tensorboard.__version__})")
+except Exception as e:
+    results.append(f"  tensorboard FAILED: {e}")
 
 for r in results:
     print(r)

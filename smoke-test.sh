@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# smoke_test.sh — Quick 10k-step training smoke test for Mono_QMIX
+# smoke_test.sh — 500k-step training smoke test for Mono_QMIX
 # Run from the repo root after setup.sh has been executed.
 # Usage: bash smoke_test.sh
 
@@ -11,7 +11,6 @@ error() { echo "[ERROR] $*" >&2; exit 1; }
 
 # ── resolve repo root ─────────────────────────────────────────────────────────
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VENV_DIR="$REPO_DIR/.venv"
 
 # ── ensure SUMO_HOME is set ───────────────────────────────────────────────────
 if [ -z "${SUMO_HOME:-}" ]; then
@@ -24,32 +23,19 @@ fi
 [ -n "${SUMO_HOME:-}" ] || error "SUMO_HOME is not set. Run setup.sh first."
 export PYTHONPATH="$SUMO_HOME/tools:${PYTHONPATH:-}"
 
-# ── create venv and install deps if not already done ─────────────────────────
-if [ ! -f "$VENV_DIR/bin/python" ]; then
-    info "Creating virtual environment at .venv..."
-    python3 -m venv "$VENV_DIR"
-fi
+# ── verify deps are in place (setup.sh should have handled this) ──────────────
+python3 -c "import torch, traci, libsumo, tensorboard" 2>/dev/null \
+    || error "Missing Python dependencies. Run setup.sh first."
 
-PYTHON="$VENV_DIR/bin/python"
-PIP="$VENV_DIR/bin/pip"
-
-if ! "$PYTHON" -c "import torch" &>/dev/null; then
-    info "Installing Python dependencies into .venv..."
-    "$PIP" install --upgrade pip -q
-    "$PIP" install -r "$REPO_DIR/requirements.txt"
-else
-    info "Dependencies already installed in .venv."
-fi
-
-info "Using Python: $PYTHON"
+info "Using Python: $(which python3)"
 
 # ── run the smoke test ────────────────────────────────────────────────────────
-info "Starting 10k smoke test (seed=0, t_max=10000, eval_episodes=5)..."
+info "Starting 500k smoke test (seed=0, t_max=500000, eval_episodes=5)..."
 echo ""
 
-"$PYTHON" "$REPO_DIR/run_experiments.py" \
+python3 "$REPO_DIR/run_experiments.py" \
     --seeds 0 \
-    --t_max 10000 \
+    --t_max 500000 \
     --eval_episodes 5
 
 echo ""

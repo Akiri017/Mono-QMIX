@@ -8,4 +8,5 @@ pyyaml
 torch
 
 libsumo
-tensorboard
+tensorboard==2.20.0
+setuptools==69.5.1
