@@ -26,7 +26,7 @@ epsilon_anneal_time: 500000
 # Training configuration
 batch_size: 32
 batch_size_run: 1
-buffer_size: 400
+buffer_size: 100 # <---- CHANGE TO 400 FOR FULL TRAINING, 100 FOR TESTING; MUST BE >= batch_size * t_max (200k) for full training to avoid buffer overflow
 buffer_cpu_only: true
 
 # Learning
@@ -128,7 +128,7 @@ obs_dim: 65                     # per-agent observation dimension
 # GlobalQMixer parameters (Phase 2 — set now for config completeness)
 global_mixing_embed_dim: 32     # embedding dim for global mixing network
 max_rsus: 12                    # TEMPORARY — update to BGC Full node count when known
-global_state_dim: 4485          # peak_total_agents (69) * obs_dim (65) — LOS E train_high 3600-step run
+global_state_dim: 2080          # n_agents (32) * obs_dim (65) = state_dim; batch["state"] serves as global_states
 
 # RSU config path (used by CiviqRunner to load zone manager)
 rsu_config: "config/envs/rsu/synthetic_4x4.yaml"

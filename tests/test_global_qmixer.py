@@ -20,7 +20,7 @@ from modules.mixers.global_qmixer import GlobalQMixer
 # ---------------------------------------------------------------------------
 ARGS = {
     "max_rsus": 12,
-    "global_state_dim": 4485,
+    "global_state_dim": 2080,   # n_agents(32) * obs_dim(65) = state_dim
     "global_mixing_embed_dim": 32,
     "hypernet_layers": 2,
     "hypernet_embed": 64,
@@ -120,7 +120,7 @@ def test_gradient_flow():
 if __name__ == "__main__":
     print(f"\nGlobalQMixer unit tests")
     print(f"  max_rsus         = {MAX_RSUS}")
-    print(f"  global_state_dim = {GLOBAL_STATE_DIM}  (peak 69 agents * obs_dim 65 — LOS E validated)")
+    print(f"  global_state_dim = {GLOBAL_STATE_DIM}  (n_agents=32 * obs_dim=65 = state_dim)")
     print(f"  embed_dim        = {ARGS['global_mixing_embed_dim']}")
     print(f"  hypernet_layers  = {ARGS['hypernet_layers']}")
     print()

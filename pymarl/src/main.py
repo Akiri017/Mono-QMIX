@@ -34,21 +34,57 @@ def load_config(alg_config_path, env_config_path):
     return config
 
 
-def get_scheme(env_info):
+def get_scheme(env_info, args=None):
     """
     Create data scheme for episode buffer.
 
-    Defines what data to store for each timestep.
+    Defines what data to store for each timestep. When args["mixer"] == "civiq",
+    adds Civiq hierarchical fields (zone_assignments, rsu_agent_qs,
+    agent_masks_per_rsu, local_states).
+
+    Note: global_states is NOT a separate field — batch["state"] serves as the
+    GlobalQMixer input (state_dim = n_agents * obs_dim = global_state_dim).
     """
-    return {
+    scheme = {
         "state": {"vshape": env_info["state_shape"]},
         "obs": {"vshape": env_info["obs_shape"], "group": "agents"},
         "actions": {"vshape": (1,), "group": "agents", "dtype": torch.long},
         "avail_actions": {"vshape": (env_info["n_actions"],), "group": "agents", "dtype": torch.int},
         "reward": {"vshape": (1,)},
         "terminated": {"vshape": (1,), "dtype": torch.uint8},
-        "filled": {"vshape": (1,), "dtype": torch.uint8}  # Mask for valid timesteps
+        "filled": {"vshape": (1,), "dtype": torch.uint8},  # Mask for valid timesteps
     }
+
+    if args is not None and args.get("mixer") == "civiq":
+        max_rsus = args["max_rsus"]
+        max_agents_per_rsu = args["max_agents_per_rsu"]
+        obs_dim = args["obs_dim"]
+        n_agents = env_info["n_agents"]
+        scheme.update({
+            # RSU id per agent slot; -1 = inactive/unassigned
+            "zone_assignments": {
+                "vshape": (n_agents,),
+                "dtype": torch.int32,
+            },
+            # Populated in HierarchicalQLearner.train() from chosen_action_qvals
+            # by slicing per zone_assignments — left as zeros in the runner
+            "rsu_agent_qs": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            # 1.0 = real agent slot, 0.0 = padding
+            "agent_masks_per_rsu": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            # Padded per-RSU concatenated agent observations
+            "local_states": {
+                "vshape": (max_rsus, max_agents_per_rsu * obs_dim),
+                "dtype": torch.float32,
+            },
+        })
+
+    return scheme
 
 
 def run_training(args):
@@ -78,7 +114,7 @@ def run_training(args):
     args.update(env_info)
 
     # Create data scheme
-    scheme = get_scheme(env_info)
+    scheme = get_scheme(env_info, args)
     groups = {"agents": args["n_agents"]}
     preprocess = {}
 

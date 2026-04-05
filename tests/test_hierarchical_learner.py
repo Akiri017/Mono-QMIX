@@ -93,7 +93,7 @@ ARGS = {
     "hypernet_embed": 64,
     # GlobalQMixer
     "max_rsus": 12,
-    "global_state_dim": 4485,
+    "global_state_dim": 2080,   # n_agents(32) * obs_dim(65) = state_dim
     "global_mixing_embed_dim": 32,
     # RSU zone manager
     "rsu_config": RSU_CONFIG_PATH,

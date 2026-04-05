@@ -51,7 +51,13 @@ class EpisodeRunner:
 
         # Use env_args from config if available, otherwise use defaults
         if "env_args" in self.args:
-            env_args = self.args["env_args"]
+            # Copy so we don't mutate the original config
+            env_args = dict(self.args["env_args"])
+            # Forward Civiq-specific keys that live in the alg config but are
+            # needed by the environment (e.g. rsu_config for zone_manager)
+            for key in ("rsu_config", "max_rsus", "max_agents_per_rsu", "obs_dim"):
+                if key in self.args and key not in env_args:
+                    env_args[key] = self.args[key]
         else:
             # Fallback: pass entire args dict to environment
             env_args = self.args
@@ -126,6 +132,16 @@ class EpisodeRunner:
             "obs": [obs]
         }
 
+        # Civiq: collect zone data at ts=0 (zone_manager present when using civiq config)
+        _civiq = hasattr(self.env, "zone_manager") and self.env.zone_manager is not None
+        if _civiq:
+            _zone = self.env.get_zone_assignments()
+            pre_transition_data["local_states"] = [self.env.get_local_obs_padded(_zone)]
+            pre_transition_data["agent_masks_per_rsu"] = [self.env.get_agent_masks_padded(_zone)]
+            pre_transition_data["zone_assignments"] = [self.env.get_zone_assignments_flat(_zone)]
+            # rsu_agent_qs is NOT populated here — computed in HierarchicalQLearner.train()
+            # from chosen_action_qvals sliced per zone_assignments
+
         self.batch.update(pre_transition_data, ts=0)
 
         # Run episode
@@ -163,6 +179,13 @@ class EpisodeRunner:
                 "avail_actions": [avail_actions],
                 "obs": [obs]
             }
+
+            # Civiq: collect zone data at ts=t+1
+            if _civiq:
+                _zone = self.env.get_zone_assignments()
+                pre_transition_data["local_states"] = [self.env.get_local_obs_padded(_zone)]
+                pre_transition_data["agent_masks_per_rsu"] = [self.env.get_agent_masks_padded(_zone)]
+                pre_transition_data["zone_assignments"] = [self.env.get_zone_assignments_flat(_zone)]
 
             self.batch.update(pre_transition_data, ts=self.t + 1)
 
