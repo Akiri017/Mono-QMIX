@@ -1,0 +1,134 @@
+# Civiq Algorithm Configuration for SUMO Grid Rerouting
+# Extends qmix_sumo.yaml with hierarchical LocalQMixer + GlobalQMixer parameters.
+# All training hyperparameters are identical to qmix_sumo.yaml — only
+# Civiq-specific keys are added at the bottom.
+
+# Algorithm name
+name: "civiq"
+
+# Agent network architecture
+agent: "rnn"
+agent_hidden_dim: 64
+agent_rnn_type: "gru"
+
+# Mixer network configuration
+mixer: "civiq"              # hierarchical local+global mixing
+mixing_embed_dim: 32        # kept for compatibility — LocalQMixer uses local_mixing_embed_dim
+hypernet_layers: 2
+hypernet_embed: 64
+
+# Action selection
+action_selector: "epsilon_greedy"
+epsilon_start: 1.0
+epsilon_finish: 0.05
+epsilon_anneal_time: 500000
+
+# Training configuration
+batch_size: 32
+batch_size_run: 1
+buffer_size: 400
+buffer_cpu_only: true
+
+# Learning
+lr: 0.0005
+optim_eps: 0.00001
+grad_norm_clip: 10000
+weight_decay: 0
+
+# TD learning
+gamma: 0.99
+td_lambda: 0.8
+
+# Target network
+target_update_interval: 200
+target_update_mode: "hard"
+tau: 0.001
+
+# Training schedule
+t_max: 2000000
+test_interval: 10000
+test_nepisode: 5
+save_model_interval: 50000
+log_interval: 5000
+
+# Episode configuration
+episode_limit: 1000
+
+# Reward configuration
+reward_standardization: false
+
+# Multi-agent specific
+mac: "basic_mac"
+obs_agent_id: false
+obs_last_action: false
+
+# Double Q-learning
+double_q: true
+
+# Prioritized Experience Replay
+use_per: false
+per_alpha: 0.6
+per_beta_start: 0.4
+per_beta_frames: 100000
+
+# Masked Q-learning
+mask_before_softmax: true
+
+# RNN configuration
+use_rnn: true
+rnn_hidden_dim: 64
+
+# Evaluation
+evaluate: false
+evaluation_epsilon: 0.0
+save_replay: false
+
+# Checkpoint configuration
+load_step: 0
+save_model: true
+checkpoint_path: "results/models"
+
+# Logging
+use_tensorboard: true
+use_wandb: false
+log_prefix: "civiq_sumo"
+
+# Seed
+seed: 42
+use_cuda: true
+cuda_deterministic: false
+
+# Runner
+runner: "episode"
+runner_log_interval: 5000
+
+# SUMO-specific
+sumo_warmup_steps: 0
+sumo_update_frequency: 1
+
+# Exploration schedule
+epsilon_schedule: "linear"
+
+# Learning rate schedule
+lr_schedule: null
+lr_decay_rate: 1.0
+
+# Save frequency
+save_every_episodes: 1000
+
+# ---------------------------------------------------------------------------
+# Civiq-specific parameters (not present in qmix_sumo.yaml)
+# ---------------------------------------------------------------------------
+
+# LocalQMixer parameters
+local_mixing_embed_dim: 32      # embedding dim for per-RSU mixing network
+max_agents_per_rsu: 28          # padded agent slots per RSU zone (LOS E validated)
+obs_dim: 65                     # per-agent observation dimension
+
+# GlobalQMixer parameters (Phase 2 — set now for config completeness)
+global_mixing_embed_dim: 32     # embedding dim for global mixing network
+max_rsus: 12                    # TEMPORARY — update to BGC Full node count when known
+global_state_dim: 4485          # peak_total_agents (69) * obs_dim (65) — LOS E train_high 3600-step run
+
+# RSU config path (used by CiviqRunner to load zone manager)
+rsu_config: "config/envs/rsu/synthetic_4x4.yaml"
