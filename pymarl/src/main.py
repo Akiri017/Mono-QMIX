@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from controllers.basic_controller import BasicMAC
 from learners.q_learner import QLearner
+from learners.hierarchical_q_learner import HierarchicalQLearner
 from runners.episode_runner import EpisodeRunner
 from components.episode_buffer import ReplayBuffer
 from utils.logging import Logger
@@ -133,8 +134,12 @@ def run_training(args):
         device="cpu"  # Keep buffer on CPU to save GPU memory
     )
 
-    # Create learner
-    learner = QLearner(mac, scheme, logger, args)
+    # Create learner — select based on args["learner"] key
+    learner_key = args.get("learner", "q_learner")
+    if learner_key == "hierarchical_q_learner":
+        learner = HierarchicalQLearner(mac, scheme, logger, args)
+    else:
+        learner = QLearner(mac, scheme, logger, args)
 
     # Move to GPU if available
     if args.get("use_cuda", False) and torch.cuda.is_available():
@@ -355,7 +360,16 @@ def main():
     """Main entry point."""
     # Get config paths
     script_dir = Path(__file__).parent
-    alg_config_path = script_dir / "config" / "algs" / "qmix_sumo.yaml"
+
+    # Parse --alg_config early (before full argparse) so we can load the right config
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--alg_config", type=str, default=None,
+                        help="Algorithm config filename under config/algs/ (e.g. civiq_sumo.yaml)")
+    pre_args, _ = parser.parse_known_args()
+
+    alg_config_name = pre_args.alg_config if pre_args.alg_config else "qmix_sumo.yaml"
+    alg_config_path = script_dir / "config" / "algs" / alg_config_name
     env_config_path = script_dir / "config" / "envs" / "sumo_grid4x4.yaml"
 
     # Load config
@@ -370,8 +384,9 @@ def main():
     args = load_config(str(alg_config_path), str(env_config_path))
 
     # Override with command line args if needed
-    import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument("--alg_config", type=str, default=None,
+                        help="Algorithm config filename under config/algs/")
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--use_cuda", action="store_true")
     parser.add_argument("--use_gui", action="store_true")

@@ -1,0 +1,103 @@
+# Civiq Single-RSU Config — Phase 5 Equivalence Check Only
+# Copy of civiq_sumo.yaml with max_rsus=1 and single-RSU zone config.
+# This approximates Mono QMIX behavior (1 RSU = 1 global zone).
+# NOT for production training — temporary equivalence gate only.
+
+name: "civiq"
+agent: "rnn"
+agent_hidden_dim: 64
+agent_rnn_type: "gru"
+
+mixer: "civiq"
+mixing_embed_dim: 32
+hypernet_layers: 2
+hypernet_embed: 64
+
+action_selector: "epsilon_greedy"
+epsilon_start: 1.0
+epsilon_finish: 0.05
+epsilon_anneal_time: 500000
+
+batch_size: 1
+batch_size_run: 1
+buffer_size: 10
+buffer_cpu_only: true
+
+lr: 0.0005
+optim_eps: 0.00001
+grad_norm_clip: 10000
+weight_decay: 0
+
+gamma: 0.99
+td_lambda: 0.8
+
+target_update_interval: 200
+target_update_mode: "hard"
+tau: 0.001
+
+t_max: 5000
+test_interval: 5000
+test_nepisode: 1
+save_model_interval: 100000
+log_interval: 2500
+
+episode_limit: 1000
+
+reward_standardization: false
+
+mac: "basic_mac"
+learner: "hierarchical_q_learner"
+obs_agent_id: false
+obs_last_action: false
+
+double_q: true
+
+use_per: false
+per_alpha: 0.6
+per_beta_start: 0.4
+per_beta_frames: 100000
+
+mask_before_softmax: true
+
+use_rnn: true
+rnn_hidden_dim: 64
+
+evaluate: false
+evaluation_epsilon: 0.0
+save_replay: false
+
+load_step: 0
+save_model: false
+checkpoint_path: "results/models"
+
+use_tensorboard: false
+use_wandb: false
+log_prefix: "civiq_single_rsu"
+
+seed: 42
+use_cuda: false
+cuda_deterministic: false
+
+runner: "episode"
+runner_log_interval: 5000
+
+sumo_warmup_steps: 0
+sumo_update_frequency: 1
+
+epsilon_schedule: "linear"
+lr_schedule: null
+lr_decay_rate: 1.0
+save_every_episodes: 1000
+
+# ---------------------------------------------------------------------------
+# Civiq-specific: single-RSU override
+# ---------------------------------------------------------------------------
+local_mixing_embed_dim: 32
+max_agents_per_rsu: 32          # single RSU covers all 32 agents
+obs_dim: 65
+
+global_mixing_embed_dim: 32
+max_rsus: 1                     # SINGLE RSU (equivalence check only)
+global_state_dim: 2080
+
+rsu_config: "config/envs/rsu/synthetic_single_rsu.yaml"

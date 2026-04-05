@@ -72,7 +72,13 @@ class HierarchicalQLearner:
         self.target_mac = copy.deepcopy(mac)
 
         # RSU zone manager — loaded from rsu_config yaml path
+        # Resolve relative paths the same way the env does (repo root = 3 levels up)
         rsu_config_path = args["rsu_config"]
+        if not os.path.isabs(rsu_config_path):
+            repo_root = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), "../../..")
+            )
+            rsu_config_path = os.path.join(repo_root, rsu_config_path)
         with open(rsu_config_path) as f:
             rsu_config_dict = yaml.safe_load(f)
         self.zone_manager = RSUZoneManager(rsu_config_dict)
@@ -152,45 +158,135 @@ class HierarchicalQLearner:
             target_max_qvals = target_mac_out[:, 1:].max(dim=3)[0]
 
         # -----------------------------------------------------------------------
-        # TODO (Phase 4): Hierarchical mixing forward pass
-        #
-        # Replace this block once the episode runner populates these batch fields:
-        #   batch["rsu_agent_qs"]         (batch, T, max_rsus, max_agents_per_rsu)
-        #   batch["agent_masks_per_rsu"]  (batch, T, max_rsus, max_agents_per_rsu)
-        #   batch["local_states"]         (batch, T, max_rsus, max_agents_per_rsu * obs_dim)
-        #   batch["zone_assignments"]     (batch, T, n_agents)
-        #   batch["global_states"]        (batch, T+1, global_state_dim)
-        #
-        # Implementation will be:
-        #
-        #   # --- online path ---
-        #   rsu_agent_qs   = batch["rsu_agent_qs"][:, :-1]           # (B, T, R, A)
-        #   agent_masks    = batch["agent_masks_per_rsu"][:, :-1]     # (B, T, R, A)
-        #   local_states   = batch["local_states"][:, :-1]            # (B, T, R, A*obs)
-        #   global_states  = batch["global_states"][:, :-1]           # (B, T, G)
-        #   rsu_mask       = (agent_masks.sum(-1) > 0).float()        # (B, T, R)
-        #
-        #   BT = batch_size * max_t
-        #   R  = max_rsus
-        #   local_qtots = self.local_mixer(
-        #       rsu_agent_qs.view(BT * R, max_agents_per_rsu),
-        #       local_states.view(BT * R, -1),
-        #       agent_masks.view(BT * R, max_agents_per_rsu)
-        #   ).view(BT, R)                                             # (BT, R)
-        #   q_tot = self.global_mixer(
-        #       local_qtots,
-        #       global_states.view(BT, -1),
-        #       rsu_mask.view(BT, R)
-        #   ).view(batch_size, max_t, 1)
-        #
-        #   # --- target path (same reshape, use target mixers) ---
-        #   ...
-        #
+        # Hierarchical mixing forward pass (Phase 5)
         # -----------------------------------------------------------------------
-        raise NotImplementedError(
-            "HierarchicalQLearner.train() mixing section requires Phase 4 batch fields. "
-            "See TODO block above."
+        max_rsus = self.args["max_rsus"]
+        max_agents_per_rsu = self.args["max_agents_per_rsu"]
+
+        # Batch fields (online timesteps: [0..T-1], i.e. :-1)
+        zone_assignments_t = batch["zone_assignments"][:, :-1].long().to(self.device)  # (B, T, n_agents)
+        agent_masks = batch["agent_masks_per_rsu"][:, :-1].to(self.device)             # (B, T, R, A)
+        local_states = batch["local_states"][:, :-1].to(self.device)                   # (B, T, R, A*obs)
+        global_states = batch["state"][:, :-1].to(self.device)                         # (B, T, G)
+
+        # -- Online path --
+        # Build rsu_agent_qs by scattering chosen_action_qvals into RSU slots.
+        # Agents are ordered within each RSU by ascending agent index (matching
+        # the ordering used by _build_agents_per_rsu in the env).
+        # scatter_add_ is safe: non-RSU agents contribute src=0 (no effect).
+        rsu_agent_qs = torch.zeros(
+            batch_size, max_t, max_rsus, max_agents_per_rsu, device=self.device
         )
+        for r in range(max_rsus):
+            in_rsu = (zone_assignments_t == r)                                # (B, T, n_agents)
+            cumsum = in_rsu.long().cumsum(dim=-1)                              # (B, T, n_agents)
+            slot_idx = (cumsum - 1).clamp(0, max_agents_per_rsu - 1)          # (B, T, n_agents)
+            src = chosen_action_qvals * in_rsu.float()                         # (B, T, n_agents)
+            rsu_agent_qs[:, :, r, :].scatter_add_(dim=-1, index=slot_idx, src=src)
+
+        # RSU-level mask: 1.0 if RSU has at least one real agent
+        rsu_mask = (agent_masks.sum(-1) > 0).float()                          # (B, T, R)
+
+        BT = batch_size * max_t
+        R  = max_rsus
+
+        # Level 2: LocalQMixer — per-RSU agent Qs → local Q_tot
+        local_qtots = self.local_mixer(
+            rsu_agent_qs.view(BT * R, max_agents_per_rsu),
+            local_states.view(BT * R, -1),
+            agent_masks.view(BT * R, max_agents_per_rsu)
+        ).view(BT, R)                                                          # (BT, R)
+
+        # Level 3: GlobalQMixer — RSU Q_tots → global Q_tot
+        global_qtot = self.global_mixer(
+            local_qtots,
+            global_states.view(BT, -1),
+            rsu_mask.view(BT, R)
+        ).view(batch_size, max_t, 1)                                           # (B, T, 1)
+
+        # -- Target path --
+        # Use next-timestep zone data (batch fields at [1:]) for bootstrapping.
+        target_zone_assignments = batch["zone_assignments"][:, 1:].long().to(self.device)  # (B, T, n_agents)
+        target_agent_masks = batch["agent_masks_per_rsu"][:, 1:].to(self.device)           # (B, T, R, A)
+        target_local_states = batch["local_states"][:, 1:].to(self.device)                 # (B, T, R, A*obs)
+        target_global_states = batch["state"][:, 1:].to(self.device)                       # (B, T, G)
+
+        target_rsu_agent_qs = torch.zeros(
+            batch_size, max_t, max_rsus, max_agents_per_rsu, device=self.device
+        )
+        for r in range(max_rsus):
+            in_rsu = (target_zone_assignments == r)
+            cumsum = in_rsu.long().cumsum(dim=-1)
+            slot_idx = (cumsum - 1).clamp(0, max_agents_per_rsu - 1)
+            src = target_max_qvals * in_rsu.float()
+            target_rsu_agent_qs[:, :, r, :].scatter_add_(dim=-1, index=slot_idx, src=src)
+
+        target_rsu_mask = (target_agent_masks.sum(-1) > 0).float()            # (B, T, R)
+
+        target_local_qtots = self.target_local_mixer(
+            target_rsu_agent_qs.view(BT * R, max_agents_per_rsu),
+            target_local_states.view(BT * R, -1),
+            target_agent_masks.view(BT * R, max_agents_per_rsu)
+        ).view(BT, R)
+
+        target_global_qtot = self.target_global_mixer(
+            target_local_qtots,
+            target_global_states.view(BT, -1),
+            target_rsu_mask.view(BT, R)
+        ).view(batch_size, max_t, 1)                                           # (B, T, 1)
+
+        # -----------------------------------------------------------------------
+        # TD loss — identical to QLearner
+        # -----------------------------------------------------------------------
+        targets = rewards + self.gamma * (1 - terminated) * target_global_qtot
+
+        td_error = global_qtot - targets.detach()
+
+        mask = mask.expand_as(td_error)
+        masked_td_error = td_error * mask
+        loss = (masked_td_error ** 2).sum() / mask.sum()
+
+        # Optimize
+        self.optimizer.zero_grad()
+        loss.backward()
+
+        # Per-component grad norms (before clip)
+        def _grad_norm(params):
+            total = sum(
+                p.grad.data.norm(2).item() ** 2
+                for p in params if p.grad is not None
+            )
+            return total ** 0.5
+
+        agent_grad_norm       = _grad_norm(self.mac.parameters())
+        local_mixer_grad_norm = _grad_norm(self.local_mixer.parameters())
+        global_mixer_grad_norm = _grad_norm(self.global_mixer.parameters())
+
+        # Clip all params together
+        torch.nn.utils.clip_grad_norm_(self.params, self.grad_norm_clip)
+        self.optimizer.step()
+
+        # Target network update
+        if episode_num - self.last_target_update_episode >= self.target_update_interval:
+            self._update_targets()
+            self.last_target_update_episode = episode_num
+
+        # Logging
+        if t_env - self.log_stats_t >= self.args.get("log_interval", 5000):
+            self.logger.log_stat("loss", loss.item(), t_env)
+            self.logger.log_stat("global_qtot_mean", global_qtot.mean().item(), t_env)
+            self.logger.log_stat("agent_grad_norm", agent_grad_norm, t_env)
+            self.logger.log_stat("local_mixer_grad_norm", local_mixer_grad_norm, t_env)
+            self.logger.log_stat("global_mixer_grad_norm", global_mixer_grad_norm, t_env)
+            self.log_stats_t = t_env
+
+        return {
+            "loss": loss.item(),
+            "global_qtot_mean": global_qtot.mean().item(),
+            "agent_grad_norm": agent_grad_norm,
+            "local_mixer_grad_norm": local_mixer_grad_norm,
+            "global_mixer_grad_norm": global_mixer_grad_norm,
+        }
 
     def _update_targets(self):
         """Update target networks — mirrors QLearner pattern."""
