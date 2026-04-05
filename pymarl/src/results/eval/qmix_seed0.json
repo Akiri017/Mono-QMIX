@@ -1,6 +1,6 @@
 {
   "policy_type": "qmix",
-  "policy_name": "C:\\Users\\Ianne\\Mono_QMIX\\results\\models\\seed0\\best",
+  "policy_name": "C:\\Users\\otaku\\Documents\\VSC\\Mono QMIX\\Mono-QMIX\\results\\models\\seed0\\best",
   "n_episodes": 5,
   "seed": 0,
   "returns": {
@@ -76,14 +76,14 @@
     },
     "total_emissions": {
       "mean": 437040.4731666039,
-      "std": 52753.745164293265,
-      "median": 416774.0184825836,
-      "min": 391054.0488326755,
+      "std": 52753.74516429329,
+      "median": 416774.0184825835,
+      "min": 391054.0488326754,
       "max": 537006.7122754793,
       "raw": [
-        391054.0488326755,
+        391054.0488326754,
         440527.8764125214,
-        416774.0184825836,
+        416774.0184825835,
         399839.7098297595,
         537006.7122754793
       ]
