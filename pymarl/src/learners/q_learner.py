@@ -43,6 +43,7 @@ class QLearner:
         self.td_lambda = args.get("td_lambda", 0.8)
         self.double_q = args.get("double_q", True)
         self.grad_norm_clip = args.get("grad_norm_clip", 10)
+        self.reward_scale = args.get("reward_scale", 1.0)
 
         # Target network update
         self.target_update_interval = args.get("target_update_interval", 200)
@@ -98,6 +99,7 @@ class QLearner:
 
         # Move to device
         rewards = rewards.to(self.device)
+        rewards = rewards / self.reward_scale  # normalize reward scale before TD computation
         actions = actions.to(self.device)
         terminated = terminated.to(self.device)
         mask = mask.to(self.device)

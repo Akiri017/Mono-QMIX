@@ -53,7 +53,8 @@ log_interval: 5000  # Log metrics every N steps
 episode_limit: 1000  # Max steps per episode (matches env config)
 
 # Reward configuration
-reward_standardization: false  # Standardize rewards (mean=0, std=1)
+reward_standardization: false  # Standardize rewards (mean=0, std=1) — flag exists but is not implemented
+reward_scale: 250.0  # Divisor applied to raw rewards before TD computation (decision_period_steady=5 × ~50 mean vehicles)
 
 # Multi-agent specific
 mac: "basic_mac"  # Multi-agent controller type
