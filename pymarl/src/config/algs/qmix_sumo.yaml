@@ -54,7 +54,7 @@ episode_limit: 1000  # Max steps per episode (matches env config)
 
 # Reward configuration
 reward_standardization: false  # Standardize rewards (mean=0, std=1) — flag exists but is not implemented
-reward_scale: 250.0  # Divisor applied to raw rewards before TD computation (decision_period_steady=5 × ~50 mean vehicles)
+reward_scale: 375.0  # Divisor applied to raw rewards before TD computation (decision_period_steady=5 x ~75 peak vehicles — bumped from 250 to account for higher vehicle density as policy improves throughput; diagnostic fix pending proper running normalization)
 
 # Multi-agent specific
 mac: "basic_mac"  # Multi-agent controller type
