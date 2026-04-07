@@ -30,7 +30,7 @@ buffer_cpu_only: true  # Keep buffer on CPU to save GPU memory
 # Learning
 lr: 0.0005  # Learning rate (Adam optimizer)
 optim_eps: 0.00001  # Adam epsilon
-grad_norm_clip: 10000  # Gradient norm clipping — scaled to match reward magnitude (~300k/episode)
+grad_norm_clip: 10  # Gradient norm clipping — scaled before to 10000 tto match reward scale, bumped down again with reward normalization in place
 weight_decay: 0  # L2 regularization
 
 # TD learning
@@ -53,8 +53,8 @@ log_interval: 5000  # Log metrics every N steps
 episode_limit: 1000  # Max steps per episode (matches env config)
 
 # Reward configuration
-reward_standardization: false  # Standardize rewards (mean=0, std=1) — flag exists but is not implemented
-reward_scale: 375.0  # Divisor applied to raw rewards before TD computation (decision_period_steady=5 x ~75 peak vehicles — bumped from 250 to account for higher vehicle density as policy improves throughput; diagnostic fix pending proper running normalization)
+reward_standardization: false  # PyMARL flag — not implemented; running normalisation is handled directly in QLearner
+reward_ema_decay: 0.99  # EMA decay for running reward mean/var normalisation — replaces fixed reward_scale
 
 # Multi-agent specific
 mac: "basic_mac"  # Multi-agent controller type
