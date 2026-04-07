@@ -44,6 +44,13 @@ class QLearner:
         self.double_q = args.get("double_q", True)
         self.grad_norm_clip = args.get("grad_norm_clip", 10)
 
+        # Running reward normalisation — EMA over per-batch mean and variance.
+        # Keeps TD targets in a stable range regardless of how vehicle density
+        # grows as the policy improves, replacing the fixed reward_scale scalar.
+        self.ema_decay = args.get("reward_ema_decay", 0.99)
+        self.reward_running_mean = 0.0
+        self.reward_running_var = 1.0  # initialised to 1 to avoid div-by-zero on first batch
+
         # Target network update
         self.target_update_interval = args.get("target_update_interval", 200)
         self.target_update_mode = args.get("target_update_mode", "hard")
@@ -96,13 +103,23 @@ class QLearner:
         batch_size = batch.batch_size
         max_t = rewards.shape[1]
 
-        # Move to device
+        # Move to device — mask first so it's available for EMA indexing below
         rewards = rewards.to(self.device)
+        mask = mask.to(self.device)
         actions = actions.to(self.device)
         terminated = terminated.to(self.device)
-        mask = mask.to(self.device)
         states = states.to(self.device)
         avail_actions = avail_actions.to(self.device)
+
+        # Update running mean/var from valid timesteps only, then normalize.
+        # Using EMA so recent experience is weighted more heavily than early
+        # noisy episodes, and the scale adapts as vehicle density grows.
+        valid_rewards = rewards[mask.bool()]
+        batch_mean = valid_rewards.mean().item()
+        batch_var = valid_rewards.var().item() if valid_rewards.numel() > 1 else 1.0
+        self.reward_running_mean = self.ema_decay * self.reward_running_mean + (1 - self.ema_decay) * batch_mean
+        self.reward_running_var = self.ema_decay * self.reward_running_var + (1 - self.ema_decay) * batch_var
+        rewards = (rewards - self.reward_running_mean) / (self.reward_running_var ** 0.5 + 1e-8)
 
         # Calculate Q-values
         mac_out = []
@@ -187,6 +204,8 @@ class QLearner:
             self.logger.log_stat("q_taken_mean", valid_q.mean().item(), t_env)
             self.logger.log_stat("q_taken_std", valid_q.std().item(), t_env)
             self.logger.log_stat("target_mean", (targets * mask).sum().item() / mask.sum().item(), t_env)
+            self.logger.log_stat("reward_running_mean", self.reward_running_mean, t_env)
+            self.logger.log_stat("reward_running_std", self.reward_running_var ** 0.5, t_env)
             self.log_stats_t = t_env
 
         return {
@@ -231,6 +250,12 @@ class QLearner:
         torch.save(self.mixer.state_dict(), f"{path}/mixer.pth")
         # Optimizer state preserves Adam momentum/variance across resume
         torch.save(self.optimizer.state_dict(), f"{path}/optimizer.pth")
+        # Reward normalisation state — must be restored on resume so the scale
+        # doesn't reset mid-training and destabilise the TD targets
+        torch.save(
+            {"running_mean": self.reward_running_mean, "running_var": self.reward_running_var},
+            f"{path}/reward_stats.pth"
+        )
 
     def load_models(self, path):
         """Load model parameters and optimizer state."""
@@ -240,3 +265,8 @@ class QLearner:
         opt_path = f"{path}/optimizer.pth"
         if os.path.exists(opt_path):
             self.optimizer.load_state_dict(torch.load(opt_path, map_location=self.device))
+        stats_path = f"{path}/reward_stats.pth"
+        if os.path.exists(stats_path):
+            stats = torch.load(stats_path, map_location="cpu")
+            self.reward_running_mean = stats["running_mean"]
+            self.reward_running_var = stats["running_var"]

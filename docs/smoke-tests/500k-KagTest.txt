@@ -1,0 +1,3136 @@
+[INFO]  Using Python: /usr/bin/python3
+[INFO]  Starting 500k smoke test (seed=0, t_max=500000, eval_episodes=5)...
+
+2026-04-06 14:36:24.579860: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1775486184.603370    3306 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1775486184.611104    3306 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1775486184.631526    3306 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1775486184.631552    3306 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1775486184.631555    3306 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1775486184.631558    3306 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+INFO:numexpr.utils:NumExpr defaulting to 4 threads.
+INFO:envs.sumo_backend:SUMO backend set to 'libsumo'
+TensorBoard logging enabled. Run: tensorboard --logdir=results/logs
+Using CUDA
+
+=== Starting Training ===
+Environment: SUMO Grid 4x4
+Agents: 32
+Actions per agent: 2
+State shape: 2080
+Obs shape: 65
+Episode limit: 1000
+Total timesteps: 500000
+Batch size: 32
+Buffer size: 400
+========================
+
+
+[Testing at t=100]
+Test results: avg_return=-188198.43, std=63405.60
+  mean_travel_time=36.4s, arrival_rate=0.641
+
+[Validation at t=100]
+Validation results: avg_return=-244467.52, std=33504.30
+  mean_travel_time=13.6s
+  [NEW BEST] Model saved (travel_time=13.6s)
+
+--- Recent Stats ---
+episode_return: -222084.6366 (t=5000)
+train_mean_travel_time: 18.4344 (t=5000)
+train_mean_waiting_time: 23.4145 (t=5000)
+train_total_stops: 54223.0000 (t=5000)
+train_total_emissions: 411486.6340 (t=5000)
+train_arrival_rate: 0.6403 (t=5000)
+train_controlled_mean_travel_time: 18.4344 (t=5000)
+test_return: -223354.6623 (t=100)
+test_mean_travel_time: 15.0566 (t=100)
+test_mean_waiting_time: 18.3467 (t=100)
+test_total_stops: 46832.0000 (t=100)
+test_total_emissions: 396062.3385 (t=100)
+test_arrival_rate: 0.6902 (t=100)
+test_controlled_mean_travel_time: 15.0566 (t=100)
+test_return_mean: -188198.4273 (t=100)
+test_mean_travel_time_avg: 36.4448 (t=100)
+test_mean_waiting_time_avg: 18.0669 (t=100)
+test_total_stops_avg: 43266.4000 (t=100)
+test_total_emissions_avg: 345710.9503 (t=100)
+test_arrival_rate_avg: 0.6413 (t=100)
+test_controlled_mean_travel_time_avg: 36.4448 (t=100)
+validation_return_mean: -244467.5250 (t=100)
+validation_mean_travel_time: 13.5844 (t=100)
+best_validation_metric: -13.5844 (t=100)
+loss: 8.1914 (t=5000)
+grad_norm: 730.2256 (t=5000)
+q_taken_mean: -0.5865 (t=5000)
+q_taken_std: 0.2469 (t=5000)
+target_mean: -22.2981 (t=5000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.9905 (t=5000)
+buffer_fill: 0.1250 (t=5000)
+train_return_mean: -252604.2622 (t=5000)
+episode_return: -229016.6826 (t=10000)
+train_mean_travel_time: 14.0141 (t=10000)
+train_mean_waiting_time: 19.5871 (t=10000)
+train_total_stops: 51131.0000 (t=10000)
+train_total_emissions: 402132.6288 (t=10000)
+train_arrival_rate: 0.6983 (t=10000)
+train_controlled_mean_travel_time: 14.0141 (t=10000)
+loss: 3.4792 (t=10000)
+grad_norm: 51.3847 (t=10000)
+q_taken_mean: -0.6649 (t=10000)
+q_taken_std: 0.2755 (t=10000)
+target_mean: -21.9789 (t=10000)
+-------------------
+
+
+[Testing at t=10100]
+Test results: avg_return=-225866.12, std=4150.22
+  mean_travel_time=14.6s, arrival_rate=0.684
+
+--- Recent Stats ---
+epsilon: 0.9810 (t=10000)
+buffer_fill: 0.2500 (t=10000)
+train_return_mean: -250830.0909 (t=10000)
+episode_return: -227742.3232 (t=15000)
+train_mean_travel_time: 15.7743 (t=15000)
+train_mean_waiting_time: 22.4459 (t=15000)
+train_total_stops: 53736.0000 (t=15000)
+train_total_emissions: 405523.1659 (t=15000)
+train_arrival_rate: 0.6783 (t=15000)
+train_controlled_mean_travel_time: 15.7743 (t=15000)
+test_return: -221470.3924 (t=10100)
+test_mean_travel_time: 14.8299 (t=10100)
+test_mean_waiting_time: 19.6721 (t=10100)
+test_total_stops: 50111.0000 (t=10100)
+test_total_emissions: 399842.4247 (t=10100)
+test_arrival_rate: 0.6897 (t=10100)
+test_controlled_mean_travel_time: 14.8299 (t=10100)
+test_return_mean: -225866.1219 (t=10100)
+test_mean_travel_time_avg: 14.5665 (t=10100)
+test_mean_waiting_time_avg: 20.8848 (t=10100)
+test_total_stops_avg: 53869.4000 (t=10100)
+test_total_emissions_avg: 409048.2435 (t=10100)
+test_arrival_rate_avg: 0.6841 (t=10100)
+test_controlled_mean_travel_time_avg: 14.5665 (t=10100)
+loss: 3.1766 (t=15000)
+grad_norm: 36.9392 (t=15000)
+q_taken_mean: -0.6715 (t=15000)
+q_taken_std: 0.2722 (t=15000)
+target_mean: -21.5849 (t=15000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.9715 (t=15000)
+buffer_fill: 0.3750 (t=15000)
+train_return_mean: -245022.7950 (t=15000)
+episode_return: -248620.8203 (t=20000)
+train_mean_travel_time: 12.8149 (t=20000)
+train_mean_waiting_time: 23.5923 (t=20000)
+train_total_stops: 65414.0000 (t=20000)
+train_total_emissions: 440120.3040 (t=20000)
+train_arrival_rate: 0.7022 (t=20000)
+train_controlled_mean_travel_time: 12.8149 (t=20000)
+loss: 3.0021 (t=20000)
+grad_norm: 20.6707 (t=20000)
+q_taken_mean: -0.6473 (t=20000)
+q_taken_std: 0.2888 (t=20000)
+target_mean: -23.0503 (t=20000)
+-------------------
+
+
+[Testing at t=20100]
+Test results: avg_return=-276165.97, std=38508.79
+  mean_travel_time=10.8s, arrival_rate=0.726
+
+--- Recent Stats ---
+epsilon: 0.9620 (t=20000)
+buffer_fill: 0.5000 (t=20000)
+train_return_mean: -251617.1013 (t=20000)
+episode_return: -307902.7171 (t=25000)
+train_mean_travel_time: 8.7501 (t=25000)
+train_mean_waiting_time: 31.3706 (t=25000)
+train_total_stops: 107246.0000 (t=25000)
+train_total_emissions: 530417.0849 (t=25000)
+train_arrival_rate: 0.7458 (t=25000)
+train_controlled_mean_travel_time: 8.7501 (t=25000)
+test_return: -318092.0415 (t=20100)
+test_mean_travel_time: 8.9001 (t=20100)
+test_mean_waiting_time: 33.5288 (t=20100)
+test_total_stops: 114041.0000 (t=20100)
+test_total_emissions: 539991.5224 (t=20100)
+test_arrival_rate: 0.7440 (t=20100)
+test_controlled_mean_travel_time: 8.9001 (t=20100)
+test_return_mean: -276165.9688 (t=20100)
+test_mean_travel_time_avg: 10.7995 (t=20100)
+test_mean_waiting_time_avg: 26.8029 (t=20100)
+test_total_stops_avg: 85084.0000 (t=20100)
+test_total_emissions_avg: 480968.3085 (t=20100)
+test_arrival_rate_avg: 0.7258 (t=20100)
+test_controlled_mean_travel_time_avg: 10.7995 (t=20100)
+loss: 7.9016 (t=25000)
+grad_norm: 113.4588 (t=25000)
+q_taken_mean: -0.6640 (t=25000)
+q_taken_std: 0.2778 (t=25000)
+target_mean: -31.5828 (t=25000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.9525 (t=25000)
+buffer_fill: 0.6250 (t=25000)
+train_return_mean: -251024.2659 (t=25000)
+episode_return: -216266.7596 (t=30000)
+train_mean_travel_time: 15.9223 (t=30000)
+train_mean_waiting_time: 19.3227 (t=30000)
+train_total_stops: 47709.0000 (t=30000)
+train_total_emissions: 391309.6447 (t=30000)
+train_arrival_rate: 0.6810 (t=30000)
+train_controlled_mean_travel_time: 15.9223 (t=30000)
+loss: 7.0447 (t=30000)
+grad_norm: 34.5838 (t=30000)
+q_taken_mean: -0.6610 (t=30000)
+q_taken_std: 0.2792 (t=30000)
+target_mean: -31.6089 (t=30000)
+-------------------
+
+
+[Testing at t=30100]
+Test results: avg_return=-261110.58, std=36484.10
+  mean_travel_time=12.2s, arrival_rate=0.716
+
+--- Recent Stats ---
+epsilon: 0.9430 (t=30000)
+buffer_fill: 0.7500 (t=30000)
+train_return_mean: -248820.0928 (t=30000)
+episode_return: -283364.8687 (t=35000)
+train_mean_travel_time: 9.6905 (t=35000)
+train_mean_waiting_time: 26.6036 (t=35000)
+train_total_stops: 88346.0000 (t=35000)
+train_total_emissions: 494568.7234 (t=35000)
+train_arrival_rate: 0.7419 (t=35000)
+train_controlled_mean_travel_time: 9.6905 (t=35000)
+test_return: -294633.2987 (t=30100)
+test_mean_travel_time: 10.3767 (t=30100)
+test_mean_waiting_time: 29.9589 (t=30100)
+test_total_stops: 95949.0000 (t=30100)
+test_total_emissions: 521848.6832 (t=30100)
+test_arrival_rate: 0.7161 (t=30100)
+test_controlled_mean_travel_time: 10.3767 (t=30100)
+test_return_mean: -261110.5844 (t=30100)
+test_mean_travel_time_avg: 12.2061 (t=30100)
+test_mean_waiting_time_avg: 25.0074 (t=30100)
+test_total_stops_avg: 75565.4000 (t=30100)
+test_total_emissions_avg: 457509.0011 (t=30100)
+test_arrival_rate_avg: 0.7161 (t=30100)
+test_controlled_mean_travel_time_avg: 12.2061 (t=30100)
+loss: 6.7306 (t=35000)
+grad_norm: 48.1731 (t=35000)
+q_taken_mean: -0.6620 (t=35000)
+q_taken_std: 0.2786 (t=35000)
+target_mean: -31.7088 (t=35000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.9335 (t=35000)
+buffer_fill: 0.8750 (t=35000)
+train_return_mean: -241094.1509 (t=35000)
+episode_return: -305634.6423 (t=40000)
+train_mean_travel_time: 8.8629 (t=40000)
+train_mean_waiting_time: 28.0817 (t=40000)
+train_total_stops: 99851.0000 (t=40000)
+train_total_emissions: 532092.2940 (t=40000)
+train_arrival_rate: 0.7382 (t=40000)
+train_controlled_mean_travel_time: 8.8629 (t=40000)
+loss: 6.3377 (t=40000)
+grad_norm: 17.1790 (t=40000)
+q_taken_mean: -0.6666 (t=40000)
+q_taken_std: 0.2741 (t=40000)
+target_mean: -31.1186 (t=40000)
+-------------------
+
+
+[Testing at t=40100]
+Test results: avg_return=-268492.97, std=39156.49
+  mean_travel_time=11.2s, arrival_rate=0.724
+
+--- Recent Stats ---
+epsilon: 0.9240 (t=40000)
+buffer_fill: 1.0000 (t=40000)
+train_return_mean: -245908.2406 (t=40000)
+episode_return: -227266.1855 (t=45000)
+train_mean_travel_time: 15.1338 (t=45000)
+train_mean_waiting_time: 19.1962 (t=45000)
+train_total_stops: 50127.0000 (t=45000)
+train_total_emissions: 402835.5300 (t=45000)
+train_arrival_rate: 0.6981 (t=45000)
+train_controlled_mean_travel_time: 15.1338 (t=45000)
+test_return: -222314.5546 (t=40100)
+test_mean_travel_time: 14.1239 (t=40100)
+test_mean_waiting_time: 20.6436 (t=40100)
+test_total_stops: 53405.0000 (t=40100)
+test_total_emissions: 403304.5624 (t=40100)
+test_arrival_rate: 0.6854 (t=40100)
+test_controlled_mean_travel_time: 14.1239 (t=40100)
+test_return_mean: -268492.9656 (t=40100)
+test_mean_travel_time_avg: 11.2027 (t=40100)
+test_mean_waiting_time_avg: 26.5090 (t=40100)
+test_total_stops_avg: 82689.0000 (t=40100)
+test_total_emissions_avg: 469309.0556 (t=40100)
+test_arrival_rate_avg: 0.7241 (t=40100)
+test_controlled_mean_travel_time_avg: 11.2027 (t=40100)
+loss: 15.3709 (t=45000)
+grad_norm: 239.1442 (t=45000)
+q_taken_mean: -0.6544 (t=45000)
+q_taken_std: 0.2839 (t=45000)
+target_mean: -42.0182 (t=45000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.9145 (t=45000)
+buffer_fill: 1.0000 (t=45000)
+train_return_mean: -250920.0747 (t=45000)
+episode_return: -248898.7964 (t=50000)
+train_mean_travel_time: 13.4146 (t=50000)
+train_mean_waiting_time: 25.9964 (t=50000)
+train_total_stops: 70603.0000 (t=50000)
+train_total_emissions: 431646.3952 (t=50000)
+train_arrival_rate: 0.7209 (t=50000)
+train_controlled_mean_travel_time: 13.4146 (t=50000)
+loss: 14.3288 (t=50000)
+grad_norm: 60.2584 (t=50000)
+q_taken_mean: -0.6630 (t=50000)
+q_taken_std: 0.2782 (t=50000)
+target_mean: -40.5901 (t=50000)
+-------------------
+
+Checkpoint saved at t=50000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_50000
+
+[Testing at t=50100]
+Test results: avg_return=-225584.38, std=7480.42
+  mean_travel_time=14.6s, arrival_rate=0.693
+
+[Validation at t=50100]
+Validation results: avg_return=-257283.69, std=32029.99
+  mean_travel_time=12.3s
+  [NEW BEST] Model saved (travel_time=12.3s)
+
+--- Recent Stats ---
+epsilon: 0.9050 (t=50000)
+buffer_fill: 1.0000 (t=50000)
+train_return_mean: -260684.2831 (t=50000)
+episode_return: -231594.1685 (t=55000)
+train_mean_travel_time: 12.8462 (t=55000)
+train_mean_waiting_time: 18.4382 (t=55000)
+train_total_stops: 50455.0000 (t=55000)
+train_total_emissions: 406418.4549 (t=55000)
+train_arrival_rate: 0.7143 (t=55000)
+train_controlled_mean_travel_time: 12.8462 (t=55000)
+test_return: -240459.0090 (t=50100)
+test_mean_travel_time: 13.2608 (t=50100)
+test_mean_waiting_time: 21.1315 (t=50100)
+test_total_stops: 57495.0000 (t=50100)
+test_total_emissions: 422258.9792 (t=50100)
+test_arrival_rate: 0.7091 (t=50100)
+test_controlled_mean_travel_time: 13.2608 (t=50100)
+test_return_mean: -225584.3844 (t=50100)
+test_mean_travel_time_avg: 14.6435 (t=50100)
+test_mean_waiting_time_avg: 19.8707 (t=50100)
+test_total_stops_avg: 50824.8000 (t=50100)
+test_total_emissions_avg: 401747.1141 (t=50100)
+test_arrival_rate_avg: 0.6928 (t=50100)
+test_controlled_mean_travel_time_avg: 14.6435 (t=50100)
+validation_return_mean: -257283.6938 (t=50100)
+validation_mean_travel_time: 12.3434 (t=50100)
+best_validation_metric: -12.3434 (t=50100)
+loss: 14.2561 (t=55000)
+grad_norm: 31.0491 (t=55000)
+q_taken_mean: -0.6584 (t=55000)
+q_taken_std: 0.2821 (t=55000)
+target_mean: -41.4402 (t=55000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.8955 (t=55000)
+buffer_fill: 1.0000 (t=55000)
+train_return_mean: -245049.6588 (t=55000)
+episode_return: -225155.8656 (t=60000)
+train_mean_travel_time: 15.4152 (t=60000)
+train_mean_waiting_time: 22.3533 (t=60000)
+train_total_stops: 55087.0000 (t=60000)
+train_total_emissions: 409515.6142 (t=60000)
+train_arrival_rate: 0.6673 (t=60000)
+train_controlled_mean_travel_time: 15.4152 (t=60000)
+loss: 12.9310 (t=60000)
+grad_norm: 45.5376 (t=60000)
+q_taken_mean: -0.6674 (t=60000)
+q_taken_std: 0.2732 (t=60000)
+target_mean: -39.8243 (t=60000)
+-------------------
+
+
+[Testing at t=60100]
+Test results: avg_return=-239876.15, std=30232.22
+  mean_travel_time=13.4s, arrival_rate=0.699
+
+--- Recent Stats ---
+epsilon: 0.8860 (t=60000)
+buffer_fill: 1.0000 (t=60000)
+train_return_mean: -248800.5450 (t=60000)
+episode_return: -223254.3729 (t=65000)
+train_mean_travel_time: 14.7199 (t=65000)
+train_mean_waiting_time: 19.9298 (t=65000)
+train_total_stops: 50931.0000 (t=65000)
+train_total_emissions: 403822.8542 (t=65000)
+train_arrival_rate: 0.6777 (t=65000)
+train_controlled_mean_travel_time: 14.7199 (t=65000)
+test_return: -246367.8857 (t=60100)
+test_mean_travel_time: 12.9450 (t=60100)
+test_mean_waiting_time: 26.3456 (t=60100)
+test_total_stops: 71416.0000 (t=60100)
+test_total_emissions: 428085.6885 (t=60100)
+test_arrival_rate: 0.7201 (t=60100)
+test_controlled_mean_travel_time: 12.9450 (t=60100)
+test_return_mean: -239876.1531 (t=60100)
+test_mean_travel_time_avg: 13.3571 (t=60100)
+test_mean_waiting_time_avg: 22.4444 (t=60100)
+test_total_stops_avg: 62584.2000 (t=60100)
+test_total_emissions_avg: 426947.8689 (t=60100)
+test_arrival_rate_avg: 0.6994 (t=60100)
+test_controlled_mean_travel_time_avg: 13.3571 (t=60100)
+loss: 22.8158 (t=65000)
+grad_norm: 177.4786 (t=65000)
+q_taken_mean: -0.6701 (t=65000)
+q_taken_std: 0.2724 (t=65000)
+target_mean: -48.7258 (t=65000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.8765 (t=65000)
+buffer_fill: 1.0000 (t=65000)
+train_return_mean: -254611.2153 (t=65000)
+episode_return: -241076.7308 (t=70000)
+train_mean_travel_time: 14.1676 (t=70000)
+train_mean_waiting_time: 24.9975 (t=70000)
+train_total_stops: 65229.0000 (t=70000)
+train_total_emissions: 432280.8420 (t=70000)
+train_arrival_rate: 0.6981 (t=70000)
+train_controlled_mean_travel_time: 14.1676 (t=70000)
+loss: 23.8633 (t=70000)
+grad_norm: 94.5257 (t=70000)
+q_taken_mean: -0.6618 (t=70000)
+q_taken_std: 0.2789 (t=70000)
+target_mean: -50.1719 (t=70000)
+-------------------
+
+
+[Testing at t=70100]
+Test results: avg_return=-244554.41, std=39668.54
+  mean_travel_time=13.6s, arrival_rate=0.705
+
+--- Recent Stats ---
+epsilon: 0.8670 (t=70000)
+buffer_fill: 1.0000 (t=70000)
+train_return_mean: -246599.2366 (t=70000)
+episode_return: -301880.1252 (t=75000)
+train_mean_travel_time: 8.9592 (t=75000)
+train_mean_waiting_time: 31.1440 (t=75000)
+train_total_stops: 104869.0000 (t=75000)
+train_total_emissions: 517675.2092 (t=75000)
+train_arrival_rate: 0.7427 (t=75000)
+train_controlled_mean_travel_time: 8.9592 (t=75000)
+test_return: -228394.6648 (t=70100)
+test_mean_travel_time: 14.4295 (t=70100)
+test_mean_waiting_time: 21.6116 (t=70100)
+test_total_stops: 55615.0000 (t=70100)
+test_total_emissions: 405914.7959 (t=70100)
+test_arrival_rate: 0.6965 (t=70100)
+test_controlled_mean_travel_time: 14.4295 (t=70100)
+test_return_mean: -244554.4125 (t=70100)
+test_mean_travel_time_avg: 13.5955 (t=70100)
+test_mean_waiting_time_avg: 23.5053 (t=70100)
+test_total_stops_avg: 68231.4000 (t=70100)
+test_total_emissions_avg: 431639.7273 (t=70100)
+test_arrival_rate_avg: 0.7047 (t=70100)
+test_controlled_mean_travel_time_avg: 13.5955 (t=70100)
+loss: 23.3715 (t=75000)
+grad_norm: 40.7382 (t=75000)
+q_taken_mean: -0.6623 (t=75000)
+q_taken_std: 0.2776 (t=75000)
+target_mean: -50.1309 (t=75000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.8575 (t=75000)
+buffer_fill: 1.0000 (t=75000)
+train_return_mean: -251816.1947 (t=75000)
+episode_return: -317564.9546 (t=80000)
+train_mean_travel_time: 8.0879 (t=80000)
+train_mean_waiting_time: 33.8401 (t=80000)
+train_total_stops: 123346.0000 (t=80000)
+train_total_emissions: 540654.6411 (t=80000)
+train_arrival_rate: 0.7582 (t=80000)
+train_controlled_mean_travel_time: 8.0879 (t=80000)
+loss: 23.2060 (t=80000)
+grad_norm: 22.6118 (t=80000)
+q_taken_mean: -0.6577 (t=80000)
+q_taken_std: 0.2824 (t=80000)
+target_mean: -50.7352 (t=80000)
+-------------------
+
+
+[Testing at t=80100]
+Test results: avg_return=-251951.08, std=41753.68
+  mean_travel_time=12.4s, arrival_rate=0.706
+
+--- Recent Stats ---
+epsilon: 0.8480 (t=80000)
+buffer_fill: 1.0000 (t=80000)
+train_return_mean: -246083.2941 (t=80000)
+episode_return: -226678.8727 (t=85000)
+train_mean_travel_time: 13.7364 (t=85000)
+train_mean_waiting_time: 19.0758 (t=85000)
+train_total_stops: 50357.0000 (t=85000)
+train_total_emissions: 402022.6606 (t=85000)
+train_arrival_rate: 0.6957 (t=85000)
+train_controlled_mean_travel_time: 13.7364 (t=85000)
+test_return: -307334.4915 (t=80100)
+test_mean_travel_time: 7.8458 (t=80100)
+test_mean_waiting_time: 26.5010 (t=80100)
+test_total_stops: 94709.0000 (t=80100)
+test_total_emissions: 529041.5293 (t=80100)
+test_arrival_rate: 0.7459 (t=80100)
+test_controlled_mean_travel_time: 7.8458 (t=80100)
+test_return_mean: -251951.0844 (t=80100)
+test_mean_travel_time_avg: 12.3697 (t=80100)
+test_mean_waiting_time_avg: 23.2398 (t=80100)
+test_total_stops_avg: 69280.2000 (t=80100)
+test_total_emissions_avg: 446468.4529 (t=80100)
+test_arrival_rate_avg: 0.7055 (t=80100)
+test_controlled_mean_travel_time_avg: 12.3697 (t=80100)
+loss: 35.1664 (t=85000)
+grad_norm: 38.6472 (t=85000)
+q_taken_mean: -0.6562 (t=85000)
+q_taken_std: 0.2823 (t=85000)
+target_mean: -60.1441 (t=85000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.8385 (t=85000)
+buffer_fill: 1.0000 (t=85000)
+train_return_mean: -246991.0150 (t=85000)
+episode_return: -290260.8668 (t=90000)
+train_mean_travel_time: 9.1792 (t=90000)
+train_mean_waiting_time: 32.6700 (t=90000)
+train_total_stops: 103597.0000 (t=90000)
+train_total_emissions: 493016.8047 (t=90000)
+train_arrival_rate: 0.7449 (t=90000)
+train_controlled_mean_travel_time: 9.1792 (t=90000)
+loss: 34.4255 (t=90000)
+grad_norm: 174.9574 (t=90000)
+q_taken_mean: -0.6599 (t=90000)
+q_taken_std: 0.2803 (t=90000)
+target_mean: -59.4743 (t=90000)
+-------------------
+
+
+[Testing at t=90100]
+Test results: avg_return=-253995.75, std=39277.17
+  mean_travel_time=12.4s, arrival_rate=0.708
+
+--- Recent Stats ---
+epsilon: 0.8290 (t=90000)
+buffer_fill: 1.0000 (t=90000)
+train_return_mean: -249206.7281 (t=90000)
+episode_return: -292842.5009 (t=95000)
+train_mean_travel_time: 8.8897 (t=95000)
+train_mean_waiting_time: 27.6559 (t=95000)
+train_total_stops: 96094.0000 (t=95000)
+train_total_emissions: 503800.8928 (t=95000)
+train_arrival_rate: 0.7510 (t=95000)
+train_controlled_mean_travel_time: 8.8897 (t=95000)
+test_return: -220349.2928 (t=90100)
+test_mean_travel_time: 16.0459 (t=90100)
+test_mean_waiting_time: 21.5526 (t=90100)
+test_total_stops: 53101.0000 (t=90100)
+test_total_emissions: 398242.7684 (t=90100)
+test_arrival_rate: 0.6772 (t=90100)
+test_controlled_mean_travel_time: 16.0459 (t=90100)
+test_return_mean: -253995.7531 (t=90100)
+test_mean_travel_time_avg: 12.3652 (t=90100)
+test_mean_waiting_time_avg: 24.6915 (t=90100)
+test_total_stops_avg: 73991.6000 (t=90100)
+test_total_emissions_avg: 449575.8306 (t=90100)
+test_arrival_rate_avg: 0.7084 (t=90100)
+test_controlled_mean_travel_time_avg: 12.3652 (t=90100)
+loss: 34.9375 (t=95000)
+grad_norm: 127.9091 (t=95000)
+q_taken_mean: -0.6616 (t=95000)
+q_taken_std: 0.2784 (t=95000)
+target_mean: -59.2638 (t=95000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.8195 (t=95000)
+buffer_fill: 1.0000 (t=95000)
+train_return_mean: -253298.6859 (t=95000)
+episode_return: -227810.1457 (t=100000)
+train_mean_travel_time: 15.0306 (t=100000)
+train_mean_waiting_time: 20.6808 (t=100000)
+train_total_stops: 52353.0000 (t=100000)
+train_total_emissions: 405495.6972 (t=100000)
+train_arrival_rate: 0.6907 (t=100000)
+train_controlled_mean_travel_time: 15.0306 (t=100000)
+loss: 33.3736 (t=100000)
+grad_norm: 99.7462 (t=100000)
+q_taken_mean: -0.6674 (t=100000)
+q_taken_std: 0.2750 (t=100000)
+target_mean: -58.0477 (t=100000)
+-------------------
+
+Checkpoint saved at t=100000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_100000
+
+[Testing at t=100100]
+Test results: avg_return=-252851.41, std=31481.63
+  mean_travel_time=12.6s, arrival_rate=0.711
+
+[Validation at t=100100]
+Validation results: avg_return=-262541.24, std=37216.39
+  mean_travel_time=11.7s
+  [NEW BEST] Model saved (travel_time=11.7s)
+
+--- Recent Stats ---
+epsilon: 0.8100 (t=100000)
+buffer_fill: 1.0000 (t=100000)
+train_return_mean: -237754.2037 (t=100000)
+episode_return: -317792.4742 (t=105000)
+train_mean_travel_time: 8.2266 (t=105000)
+train_mean_waiting_time: 34.0739 (t=105000)
+train_total_stops: 122419.0000 (t=105000)
+train_total_emissions: 546524.2227 (t=105000)
+train_arrival_rate: 0.7477 (t=105000)
+train_controlled_mean_travel_time: 8.2266 (t=105000)
+test_return: -321197.0656 (t=100100)
+test_mean_travel_time: 7.5665 (t=100100)
+test_mean_waiting_time: 33.6227 (t=100100)
+test_total_stops: 123809.0000 (t=100100)
+test_total_emissions: 544615.5510 (t=100100)
+test_arrival_rate: 0.7636 (t=100100)
+test_controlled_mean_travel_time: 7.5665 (t=100100)
+test_return_mean: -252851.4125 (t=100100)
+test_mean_travel_time_avg: 12.5718 (t=100100)
+test_mean_waiting_time_avg: 25.1559 (t=100100)
+test_total_stops_avg: 73630.2000 (t=100100)
+test_total_emissions_avg: 447300.4700 (t=100100)
+test_arrival_rate_avg: 0.7106 (t=100100)
+test_controlled_mean_travel_time_avg: 12.5718 (t=100100)
+validation_return_mean: -262541.2359 (t=100100)
+validation_mean_travel_time: 11.7275 (t=100100)
+best_validation_metric: -11.7275 (t=100100)
+loss: 48.6041 (t=105000)
+grad_norm: 305.2188 (t=105000)
+q_taken_mean: -0.6623 (t=105000)
+q_taken_std: 0.2780 (t=105000)
+target_mean: -67.9850 (t=105000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.8005 (t=105000)
+buffer_fill: 1.0000 (t=105000)
+train_return_mean: -252222.7509 (t=105000)
+episode_return: -223516.1773 (t=110000)
+train_mean_travel_time: 14.2799 (t=110000)
+train_mean_waiting_time: 18.9332 (t=110000)
+train_total_stops: 49415.0000 (t=110000)
+train_total_emissions: 405427.3280 (t=110000)
+train_arrival_rate: 0.6887 (t=110000)
+train_controlled_mean_travel_time: 14.2799 (t=110000)
+loss: 49.4540 (t=110000)
+grad_norm: 60.8996 (t=110000)
+q_taken_mean: -0.6545 (t=110000)
+q_taken_std: 0.2834 (t=110000)
+target_mean: -69.8173 (t=110000)
+-------------------
+
+
+[Testing at t=110100]
+Test results: avg_return=-244139.66, std=31091.40
+  mean_travel_time=13.5s, arrival_rate=0.697
+
+--- Recent Stats ---
+epsilon: 0.7910 (t=110000)
+buffer_fill: 1.0000 (t=110000)
+train_return_mean: -242958.4322 (t=110000)
+episode_return: -296826.2361 (t=115000)
+train_mean_travel_time: 8.8693 (t=115000)
+train_mean_waiting_time: 28.2829 (t=115000)
+train_total_stops: 98443.0000 (t=115000)
+train_total_emissions: 510086.0796 (t=115000)
+train_arrival_rate: 0.7468 (t=115000)
+train_controlled_mean_travel_time: 8.8693 (t=115000)
+test_return: -222902.6018 (t=110100)
+test_mean_travel_time: 17.4946 (t=110100)
+test_mean_waiting_time: 23.2086 (t=110100)
+test_total_stops: 53531.0000 (t=110100)
+test_total_emissions: 410051.7826 (t=110100)
+test_arrival_rate: 0.6376 (t=110100)
+test_controlled_mean_travel_time: 17.4946 (t=110100)
+test_return_mean: -244139.6625 (t=110100)
+test_mean_travel_time_avg: 13.5061 (t=110100)
+test_mean_waiting_time_avg: 23.4851 (t=110100)
+test_total_stops_avg: 65090.2000 (t=110100)
+test_total_emissions_avg: 433358.9218 (t=110100)
+test_arrival_rate_avg: 0.6970 (t=110100)
+test_controlled_mean_travel_time_avg: 13.5061 (t=110100)
+loss: 44.9342 (t=115000)
+grad_norm: 76.1665 (t=115000)
+q_taken_mean: -0.6665 (t=115000)
+q_taken_std: 0.2752 (t=115000)
+target_mean: -66.9929 (t=115000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.7815 (t=115000)
+buffer_fill: 1.0000 (t=115000)
+train_return_mean: -254463.9722 (t=115000)
+episode_return: -316988.4438 (t=120000)
+train_mean_travel_time: 8.0757 (t=120000)
+train_mean_waiting_time: 30.8694 (t=120000)
+train_total_stops: 110392.0000 (t=120000)
+train_total_emissions: 540843.7986 (t=120000)
+train_arrival_rate: 0.7488 (t=120000)
+train_controlled_mean_travel_time: 8.0757 (t=120000)
+loss: 48.4951 (t=120000)
+grad_norm: 113.4697 (t=120000)
+q_taken_mean: -0.6545 (t=120000)
+q_taken_std: 0.2847 (t=120000)
+target_mean: -69.4774 (t=120000)
+-------------------
+
+
+[Testing at t=120100]
+Test results: avg_return=-232956.91, std=24942.11
+  mean_travel_time=14.3s, arrival_rate=0.688
+
+--- Recent Stats ---
+epsilon: 0.7720 (t=120000)
+buffer_fill: 1.0000 (t=120000)
+train_return_mean: -251234.1306 (t=120000)
+episode_return: -226487.3091 (t=125000)
+train_mean_travel_time: 14.7668 (t=125000)
+train_mean_waiting_time: 18.8513 (t=125000)
+train_total_stops: 49292.0000 (t=125000)
+train_total_emissions: 405709.0885 (t=125000)
+train_arrival_rate: 0.6965 (t=125000)
+train_controlled_mean_travel_time: 14.7668 (t=125000)
+test_return: -231567.7726 (t=120100)
+test_mean_travel_time: 13.6266 (t=120100)
+test_mean_waiting_time: 19.6389 (t=120100)
+test_total_stops: 52589.0000 (t=120100)
+test_total_emissions: 413322.5630 (t=120100)
+test_arrival_rate: 0.7024 (t=120100)
+test_controlled_mean_travel_time: 13.6266 (t=120100)
+test_return_mean: -232956.9094 (t=120100)
+test_mean_travel_time_avg: 14.2753 (t=120100)
+test_mean_waiting_time_avg: 21.3466 (t=120100)
+test_total_stops_avg: 58001.4000 (t=120100)
+test_total_emissions_avg: 419636.3165 (t=120100)
+test_arrival_rate_avg: 0.6876 (t=120100)
+test_controlled_mean_travel_time_avg: 14.2753 (t=120100)
+loss: 67.7168 (t=125000)
+grad_norm: 265.9657 (t=125000)
+q_taken_mean: -0.6549 (t=125000)
+q_taken_std: 0.2831 (t=125000)
+target_mean: -79.0707 (t=125000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.7625 (t=125000)
+buffer_fill: 1.0000 (t=125000)
+train_return_mean: -244217.7784 (t=125000)
+episode_return: -220397.7695 (t=130000)
+train_mean_travel_time: 16.9437 (t=130000)
+train_mean_waiting_time: 20.0078 (t=130000)
+train_total_stops: 49223.0000 (t=130000)
+train_total_emissions: 406619.4871 (t=130000)
+train_arrival_rate: 0.6614 (t=130000)
+train_controlled_mean_travel_time: 16.9437 (t=130000)
+loss: 57.5225 (t=130000)
+grad_norm: 162.7322 (t=130000)
+q_taken_mean: -0.6650 (t=130000)
+q_taken_std: 0.2768 (t=130000)
+target_mean: -75.3539 (t=130000)
+-------------------
+
+
+[Testing at t=130100]
+Test results: avg_return=-221958.26, std=8116.93
+  mean_travel_time=15.7s, arrival_rate=0.678
+
+--- Recent Stats ---
+epsilon: 0.7530 (t=130000)
+buffer_fill: 1.0000 (t=130000)
+train_return_mean: -250097.4950 (t=130000)
+episode_return: -209956.4421 (t=135000)
+train_mean_travel_time: 16.5493 (t=135000)
+train_mean_waiting_time: 19.8678 (t=135000)
+train_total_stops: 47756.0000 (t=135000)
+train_total_emissions: 389642.1381 (t=135000)
+train_arrival_rate: 0.6518 (t=135000)
+train_controlled_mean_travel_time: 16.5493 (t=135000)
+test_return: -231819.8976 (t=130100)
+test_mean_travel_time: 14.5712 (t=130100)
+test_mean_waiting_time: 22.7976 (t=130100)
+test_total_stops: 57613.0000 (t=130100)
+test_total_emissions: 408247.6232 (t=130100)
+test_arrival_rate: 0.7002 (t=130100)
+test_controlled_mean_travel_time: 14.5712 (t=130100)
+test_return_mean: -221958.2594 (t=130100)
+test_mean_travel_time_avg: 15.6726 (t=130100)
+test_mean_waiting_time_avg: 20.7411 (t=130100)
+test_total_stops_avg: 51900.6000 (t=130100)
+test_total_emissions_avg: 402223.7304 (t=130100)
+test_arrival_rate_avg: 0.6775 (t=130100)
+test_controlled_mean_travel_time_avg: 15.6726 (t=130100)
+loss: 58.7790 (t=135000)
+grad_norm: 106.8772 (t=135000)
+q_taken_mean: -0.6653 (t=135000)
+q_taken_std: 0.2769 (t=135000)
+target_mean: -75.4046 (t=135000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.7435 (t=135000)
+buffer_fill: 1.0000 (t=135000)
+train_return_mean: -256342.5469 (t=135000)
+episode_return: -246564.9390 (t=140000)
+train_mean_travel_time: 12.5963 (t=140000)
+train_mean_waiting_time: 21.4637 (t=140000)
+train_total_stops: 59442.0000 (t=140000)
+train_total_emissions: 425838.9920 (t=140000)
+train_arrival_rate: 0.7167 (t=140000)
+train_controlled_mean_travel_time: 12.5963 (t=140000)
+loss: 56.8673 (t=140000)
+grad_norm: 163.6125 (t=140000)
+q_taken_mean: -0.6714 (t=140000)
+q_taken_std: 0.2723 (t=140000)
+target_mean: -74.1381 (t=140000)
+-------------------
+
+
+[Testing at t=140100]
+Test results: avg_return=-246911.27, std=31008.80
+  mean_travel_time=13.3s, arrival_rate=0.698
+
+--- Recent Stats ---
+epsilon: 0.7340 (t=140000)
+buffer_fill: 1.0000 (t=140000)
+train_return_mean: -251352.4738 (t=140000)
+episode_return: -250477.7274 (t=145000)
+train_mean_travel_time: 12.0952 (t=145000)
+train_mean_waiting_time: 26.1453 (t=145000)
+train_total_stops: 71265.0000 (t=145000)
+train_total_emissions: 432477.3668 (t=145000)
+train_arrival_rate: 0.7109 (t=145000)
+train_controlled_mean_travel_time: 12.0952 (t=145000)
+test_return: -202660.2320 (t=140100)
+test_mean_travel_time: 17.8790 (t=140100)
+test_mean_waiting_time: 18.2009 (t=140100)
+test_total_stops: 42759.0000 (t=140100)
+test_total_emissions: 382281.9976 (t=140100)
+test_arrival_rate: 0.6487 (t=140100)
+test_controlled_mean_travel_time: 17.8790 (t=140100)
+test_return_mean: -246911.2687 (t=140100)
+test_mean_travel_time_avg: 13.3407 (t=140100)
+test_mean_waiting_time_avg: 24.3110 (t=140100)
+test_total_stops_avg: 68905.0000 (t=140100)
+test_total_emissions_avg: 441825.5896 (t=140100)
+test_arrival_rate_avg: 0.6979 (t=140100)
+test_controlled_mean_travel_time_avg: 13.3407 (t=140100)
+loss: 82.3033 (t=145000)
+grad_norm: 143.8147 (t=145000)
+q_taken_mean: -0.6552 (t=145000)
+q_taken_std: 0.2828 (t=145000)
+target_mean: -88.0563 (t=145000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.7245 (t=145000)
+buffer_fill: 1.0000 (t=145000)
+train_return_mean: -246027.4650 (t=145000)
+episode_return: -319358.0312 (t=150000)
+train_mean_travel_time: 7.6912 (t=150000)
+train_mean_waiting_time: 33.4526 (t=150000)
+train_total_stops: 123558.0000 (t=150000)
+train_total_emissions: 539131.1525 (t=150000)
+train_arrival_rate: 0.7741 (t=150000)
+train_controlled_mean_travel_time: 7.6912 (t=150000)
+loss: 77.1936 (t=150000)
+grad_norm: 68.2874 (t=150000)
+q_taken_mean: -0.6638 (t=150000)
+q_taken_std: 0.2767 (t=150000)
+target_mean: -84.9388 (t=150000)
+-------------------
+
+Checkpoint saved at t=150000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_150000
+
+[Testing at t=150100]
+Test results: avg_return=-245811.87, std=38513.41
+  mean_travel_time=13.8s, arrival_rate=0.693
+
+[Validation at t=150100]
+Validation results: avg_return=-248458.21, std=38634.44
+  mean_travel_time=13.1s
+  Current best metric: -11.7275 at t=100100
+
+--- Recent Stats ---
+epsilon: 0.7150 (t=150000)
+buffer_fill: 1.0000 (t=150000)
+train_return_mean: -248584.5653 (t=150000)
+episode_return: -241230.1020 (t=155000)
+train_mean_travel_time: 13.9618 (t=155000)
+train_mean_waiting_time: 25.0377 (t=155000)
+train_total_stops: 66618.0000 (t=155000)
+train_total_emissions: 423202.0497 (t=155000)
+train_arrival_rate: 0.7121 (t=155000)
+train_controlled_mean_travel_time: 13.9618 (t=155000)
+test_return: -228702.4496 (t=150100)
+test_mean_travel_time: 14.1277 (t=150100)
+test_mean_waiting_time: 22.0198 (t=150100)
+test_total_stops: 57362.0000 (t=150100)
+test_total_emissions: 412349.6019 (t=150100)
+test_arrival_rate: 0.6988 (t=150100)
+test_controlled_mean_travel_time: 14.1277 (t=150100)
+test_return_mean: -245811.8719 (t=150100)
+test_mean_travel_time_avg: 13.7540 (t=150100)
+test_mean_waiting_time_avg: 24.0873 (t=150100)
+test_total_stops_avg: 67207.8000 (t=150100)
+test_total_emissions_avg: 437883.3540 (t=150100)
+test_arrival_rate_avg: 0.6927 (t=150100)
+test_controlled_mean_travel_time_avg: 13.7540 (t=150100)
+validation_return_mean: -248458.2094 (t=150100)
+validation_mean_travel_time: 13.1332 (t=150100)
+loss: 81.4383 (t=155000)
+grad_norm: 255.8584 (t=155000)
+q_taken_mean: -0.6602 (t=155000)
+q_taken_std: 0.2796 (t=155000)
+target_mean: -86.7335 (t=155000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.7055 (t=155000)
+buffer_fill: 1.0000 (t=155000)
+train_return_mean: -245364.3494 (t=155000)
+episode_return: -318537.3178 (t=160000)
+train_mean_travel_time: 7.9797 (t=160000)
+train_mean_waiting_time: 33.2049 (t=160000)
+train_total_stops: 122264.0000 (t=160000)
+train_total_emissions: 541117.7553 (t=160000)
+train_arrival_rate: 0.7636 (t=160000)
+train_controlled_mean_travel_time: 7.9797 (t=160000)
+loss: 77.7479 (t=160000)
+grad_norm: 146.8932 (t=160000)
+q_taken_mean: -0.6583 (t=160000)
+q_taken_std: 0.2807 (t=160000)
+target_mean: -86.8103 (t=160000)
+-------------------
+
+
+[Testing at t=160100]
+Test results: avg_return=-260157.71, std=37946.35
+  mean_travel_time=12.0s, arrival_rate=0.716
+
+--- Recent Stats ---
+epsilon: 0.6960 (t=160000)
+buffer_fill: 1.0000 (t=160000)
+train_return_mean: -246487.6491 (t=160000)
+episode_return: -217783.0530 (t=165000)
+train_mean_travel_time: 14.2495 (t=165000)
+train_mean_waiting_time: 18.6478 (t=165000)
+train_total_stops: 48134.0000 (t=165000)
+train_total_emissions: 395352.9763 (t=165000)
+train_arrival_rate: 0.6957 (t=165000)
+train_controlled_mean_travel_time: 14.2495 (t=165000)
+test_return: -212030.2442 (t=160100)
+test_mean_travel_time: 17.4495 (t=160100)
+test_mean_waiting_time: 21.0769 (t=160100)
+test_total_stops: 50738.0000 (t=160100)
+test_total_emissions: 393344.2328 (t=160100)
+test_arrival_rate: 0.6659 (t=160100)
+test_controlled_mean_travel_time: 17.4495 (t=160100)
+test_return_mean: -260157.7062 (t=160100)
+test_mean_travel_time_avg: 12.0377 (t=160100)
+test_mean_waiting_time_avg: 25.8255 (t=160100)
+test_total_stops_avg: 79976.6000 (t=160100)
+test_total_emissions_avg: 460076.2402 (t=160100)
+test_arrival_rate_avg: 0.7160 (t=160100)
+test_controlled_mean_travel_time_avg: 12.0377 (t=160100)
+loss: 95.4025 (t=165000)
+grad_norm: 100.3341 (t=165000)
+q_taken_mean: -0.6588 (t=165000)
+q_taken_std: 0.2812 (t=165000)
+target_mean: -95.0106 (t=165000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.6865 (t=165000)
+buffer_fill: 1.0000 (t=165000)
+train_return_mean: -242696.1425 (t=165000)
+episode_return: -200902.9091 (t=170000)
+train_mean_travel_time: 19.1113 (t=170000)
+train_mean_waiting_time: 18.6968 (t=170000)
+train_total_stops: 41640.0000 (t=170000)
+train_total_emissions: 378909.1406 (t=170000)
+train_arrival_rate: 0.6391 (t=170000)
+train_controlled_mean_travel_time: 19.1113 (t=170000)
+loss: 104.5847 (t=170000)
+grad_norm: 195.5206 (t=170000)
+q_taken_mean: -0.6519 (t=170000)
+q_taken_std: 0.2848 (t=170000)
+target_mean: -98.6566 (t=170000)
+-------------------
+
+
+[Testing at t=170100]
+Test results: avg_return=-271997.97, std=41894.79
+  mean_travel_time=11.3s, arrival_rate=0.720
+
+--- Recent Stats ---
+epsilon: 0.6770 (t=170000)
+buffer_fill: 1.0000 (t=170000)
+train_return_mean: -241454.6278 (t=170000)
+episode_return: -209811.2079 (t=175000)
+train_mean_travel_time: 17.8613 (t=175000)
+train_mean_waiting_time: 20.3721 (t=175000)
+train_total_stops: 46759.0000 (t=175000)
+train_total_emissions: 392257.8990 (t=175000)
+train_arrival_rate: 0.6416 (t=175000)
+train_controlled_mean_travel_time: 17.8613 (t=175000)
+test_return: -220676.4732 (t=170100)
+test_mean_travel_time: 15.2725 (t=170100)
+test_mean_waiting_time: 21.6199 (t=170100)
+test_total_stops: 53914.0000 (t=170100)
+test_total_emissions: 401773.2191 (t=170100)
+test_arrival_rate: 0.6688 (t=170100)
+test_controlled_mean_travel_time: 15.2725 (t=170100)
+test_return_mean: -271997.9719 (t=170100)
+test_mean_travel_time_avg: 11.2558 (t=170100)
+test_mean_waiting_time_avg: 27.1831 (t=170100)
+test_total_stops_avg: 86833.2000 (t=170100)
+test_total_emissions_avg: 474314.7341 (t=170100)
+test_arrival_rate_avg: 0.7196 (t=170100)
+test_controlled_mean_travel_time_avg: 11.2558 (t=170100)
+loss: 91.8685 (t=175000)
+grad_norm: 147.1564 (t=175000)
+q_taken_mean: -0.6625 (t=175000)
+q_taken_std: 0.2782 (t=175000)
+target_mean: -94.0325 (t=175000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.6675 (t=175000)
+buffer_fill: 1.0000 (t=175000)
+train_return_mean: -250858.1356 (t=175000)
+episode_return: -211966.8421 (t=180000)
+train_mean_travel_time: 15.8058 (t=180000)
+train_mean_waiting_time: 17.7345 (t=180000)
+train_total_stops: 44740.0000 (t=180000)
+train_total_emissions: 392842.0935 (t=180000)
+train_arrival_rate: 0.6665 (t=180000)
+train_controlled_mean_travel_time: 15.8058 (t=180000)
+loss: 97.6624 (t=180000)
+grad_norm: 83.6174 (t=180000)
+q_taken_mean: -0.6538 (t=180000)
+q_taken_std: 0.2840 (t=180000)
+target_mean: -98.2151 (t=180000)
+-------------------
+
+
+[Testing at t=180100]
+Test results: avg_return=-238343.71, std=23787.06
+  mean_travel_time=14.7s, arrival_rate=0.691
+
+--- Recent Stats ---
+epsilon: 0.6580 (t=180000)
+buffer_fill: 1.0000 (t=180000)
+train_return_mean: -251882.1547 (t=180000)
+episode_return: -227261.3077 (t=185000)
+train_mean_travel_time: 14.6284 (t=185000)
+train_mean_waiting_time: 22.2792 (t=185000)
+train_total_stops: 56887.0000 (t=185000)
+train_total_emissions: 407957.6830 (t=185000)
+train_arrival_rate: 0.6802 (t=185000)
+train_controlled_mean_travel_time: 14.6284 (t=185000)
+test_return: -218538.0651 (t=180100)
+test_mean_travel_time: 16.8241 (t=180100)
+test_mean_waiting_time: 19.8263 (t=180100)
+test_total_stops: 47779.0000 (t=180100)
+test_total_emissions: 399115.0741 (t=180100)
+test_arrival_rate: 0.6602 (t=180100)
+test_controlled_mean_travel_time: 16.8241 (t=180100)
+test_return_mean: -238343.7094 (t=180100)
+test_mean_travel_time_avg: 14.6653 (t=180100)
+test_mean_waiting_time_avg: 25.3415 (t=180100)
+test_total_stops_avg: 66802.0000 (t=180100)
+test_total_emissions_avg: 427204.1108 (t=180100)
+test_arrival_rate_avg: 0.6909 (t=180100)
+test_controlled_mean_travel_time_avg: 14.6653 (t=180100)
+loss: 108.0502 (t=185000)
+grad_norm: 395.2845 (t=185000)
+q_taken_mean: -0.6654 (t=185000)
+q_taken_std: 0.2756 (t=185000)
+target_mean: -101.1323 (t=185000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.6485 (t=185000)
+buffer_fill: 1.0000 (t=185000)
+train_return_mean: -240703.9672 (t=185000)
+episode_return: -239422.7346 (t=190000)
+train_mean_travel_time: 13.7827 (t=190000)
+train_mean_waiting_time: 27.2365 (t=190000)
+train_total_stops: 69713.0000 (t=190000)
+train_total_emissions: 419084.6389 (t=190000)
+train_arrival_rate: 0.7043 (t=190000)
+train_controlled_mean_travel_time: 13.7827 (t=190000)
+loss: 102.8135 (t=190000)
+grad_norm: 236.8070 (t=190000)
+q_taken_mean: -0.6640 (t=190000)
+q_taken_std: 0.2769 (t=190000)
+target_mean: -101.3216 (t=190000)
+-------------------
+
+
+[Testing at t=190100]
+Test results: avg_return=-280978.26, std=39692.14
+  mean_travel_time=11.1s, arrival_rate=0.727
+
+--- Recent Stats ---
+epsilon: 0.6390 (t=190000)
+buffer_fill: 1.0000 (t=190000)
+train_return_mean: -257061.0697 (t=190000)
+episode_return: -217268.3130 (t=195000)
+train_mean_travel_time: 15.9575 (t=195000)
+train_mean_waiting_time: 21.9138 (t=195000)
+train_total_stops: 54387.0000 (t=195000)
+train_total_emissions: 399962.9751 (t=195000)
+train_arrival_rate: 0.6752 (t=195000)
+train_controlled_mean_travel_time: 15.9575 (t=195000)
+test_return: -313521.8423 (t=190100)
+test_mean_travel_time: 8.3918 (t=190100)
+test_mean_waiting_time: 33.0464 (t=190100)
+test_total_stops: 117644.0000 (t=190100)
+test_total_emissions: 530642.3246 (t=190100)
+test_arrival_rate: 0.7568 (t=190100)
+test_controlled_mean_travel_time: 8.3918 (t=190100)
+test_return_mean: -280978.2594 (t=190100)
+test_mean_travel_time_avg: 11.0981 (t=190100)
+test_mean_waiting_time_avg: 29.0723 (t=190100)
+test_total_stops_avg: 94646.4000 (t=190100)
+test_total_emissions_avg: 490337.7544 (t=190100)
+test_arrival_rate_avg: 0.7274 (t=190100)
+test_controlled_mean_travel_time_avg: 11.0981 (t=190100)
+loss: 109.5036 (t=195000)
+grad_norm: 105.8907 (t=195000)
+q_taken_mean: -0.6595 (t=195000)
+q_taken_std: 0.2800 (t=195000)
+target_mean: -103.2142 (t=195000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.6295 (t=195000)
+buffer_fill: 1.0000 (t=195000)
+train_return_mean: -255894.8081 (t=195000)
+episode_return: -332079.3724 (t=200000)
+train_mean_travel_time: 7.5410 (t=200000)
+train_mean_waiting_time: 37.3824 (t=200000)
+train_total_stops: 138123.0000 (t=200000)
+train_total_emissions: 557222.3601 (t=200000)
+train_arrival_rate: 0.7693 (t=200000)
+train_controlled_mean_travel_time: 7.5410 (t=200000)
+loss: 106.2854 (t=200000)
+grad_norm: 87.3819 (t=200000)
+q_taken_mean: -0.6555 (t=200000)
+q_taken_std: 0.2829 (t=200000)
+target_mean: -103.4428 (t=200000)
+-------------------
+
+Checkpoint saved at t=200000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_200000
+
+[Testing at t=200100]
+Test results: avg_return=-259609.38, std=44848.60
+  mean_travel_time=12.8s, arrival_rate=0.708
+
+[Validation at t=200100]
+Validation results: avg_return=-284668.64, std=39776.43
+  mean_travel_time=10.1s
+  [NEW BEST] Model saved (travel_time=10.1s)
+
+--- Recent Stats ---
+epsilon: 0.6200 (t=200000)
+buffer_fill: 1.0000 (t=200000)
+train_return_mean: -247529.1819 (t=200000)
+episode_return: -289884.1699 (t=205000)
+train_mean_travel_time: 8.8598 (t=205000)
+train_mean_waiting_time: 28.9266 (t=205000)
+train_total_stops: 99274.0000 (t=205000)
+train_total_emissions: 506469.8671 (t=205000)
+train_arrival_rate: 0.7476 (t=205000)
+train_controlled_mean_travel_time: 8.8598 (t=205000)
+test_return: -318216.7273 (t=200100)
+test_mean_travel_time: 7.9268 (t=200100)
+test_mean_waiting_time: 32.9837 (t=200100)
+test_total_stops: 115149.0000 (t=200100)
+test_total_emissions: 538277.3240 (t=200100)
+test_arrival_rate: 0.7545 (t=200100)
+test_controlled_mean_travel_time: 7.9268 (t=200100)
+test_return_mean: -259609.3813 (t=200100)
+test_mean_travel_time_avg: 12.8335 (t=200100)
+test_mean_waiting_time_avg: 25.4105 (t=200100)
+test_total_stops_avg: 77301.8000 (t=200100)
+test_total_emissions_avg: 455682.9545 (t=200100)
+test_arrival_rate_avg: 0.7079 (t=200100)
+test_controlled_mean_travel_time_avg: 12.8335 (t=200100)
+validation_return_mean: -284668.6422 (t=200100)
+validation_mean_travel_time: 10.1214 (t=200100)
+best_validation_metric: -10.1214 (t=200100)
+loss: 123.7539 (t=205000)
+grad_norm: 222.9270 (t=205000)
+q_taken_mean: -0.6602 (t=205000)
+q_taken_std: 0.2798 (t=205000)
+target_mean: -110.0900 (t=205000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.6105 (t=205000)
+buffer_fill: 1.0000 (t=205000)
+train_return_mean: -252615.3172 (t=205000)
+episode_return: -230327.4267 (t=210000)
+train_mean_travel_time: 12.8411 (t=210000)
+train_mean_waiting_time: 18.5341 (t=210000)
+train_total_stops: 49851.0000 (t=210000)
+train_total_emissions: 402876.7352 (t=210000)
+train_arrival_rate: 0.7047 (t=210000)
+train_controlled_mean_travel_time: 12.8411 (t=210000)
+loss: 125.0457 (t=210000)
+grad_norm: 210.7203 (t=210000)
+q_taken_mean: -0.6576 (t=210000)
+q_taken_std: 0.2821 (t=210000)
+target_mean: -112.2304 (t=210000)
+-------------------
+
+
+[Testing at t=210100]
+Test results: avg_return=-230187.55, std=31855.54
+  mean_travel_time=14.5s, arrival_rate=0.686
+
+--- Recent Stats ---
+epsilon: 0.6010 (t=210000)
+buffer_fill: 1.0000 (t=210000)
+train_return_mean: -261317.3756 (t=210000)
+episode_return: -296095.1925 (t=215000)
+train_mean_travel_time: 8.9021 (t=215000)
+train_mean_waiting_time: 27.9671 (t=215000)
+train_total_stops: 93769.0000 (t=215000)
+train_total_emissions: 514742.5383 (t=215000)
+train_arrival_rate: 0.7412 (t=215000)
+train_controlled_mean_travel_time: 8.9021 (t=215000)
+test_return: -213673.6382 (t=210100)
+test_mean_travel_time: 15.4105 (t=210100)
+test_mean_waiting_time: 18.8116 (t=210100)
+test_total_stops: 45971.0000 (t=210100)
+test_total_emissions: 392088.2137 (t=210100)
+test_arrival_rate: 0.6725 (t=210100)
+test_controlled_mean_travel_time: 15.4105 (t=210100)
+test_return_mean: -230187.5500 (t=210100)
+test_mean_travel_time_avg: 14.4647 (t=210100)
+test_mean_waiting_time_avg: 21.8410 (t=210100)
+test_total_stops_avg: 58949.2000 (t=210100)
+test_total_emissions_avg: 418293.6422 (t=210100)
+test_arrival_rate_avg: 0.6858 (t=210100)
+test_controlled_mean_travel_time_avg: 14.4647 (t=210100)
+loss: 137.6627 (t=215000)
+grad_norm: 210.6044 (t=215000)
+q_taken_mean: -0.6545 (t=215000)
+q_taken_std: 0.2825 (t=215000)
+target_mean: -114.3642 (t=215000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.5915 (t=215000)
+buffer_fill: 1.0000 (t=215000)
+train_return_mean: -243888.4325 (t=215000)
+episode_return: -309304.8621 (t=220000)
+train_mean_travel_time: 8.5737 (t=220000)
+train_mean_waiting_time: 33.0580 (t=220000)
+train_total_stops: 116843.0000 (t=220000)
+train_total_emissions: 528712.0541 (t=220000)
+train_arrival_rate: 0.7545 (t=220000)
+train_controlled_mean_travel_time: 8.5737 (t=220000)
+loss: 126.5034 (t=220000)
+grad_norm: 112.0281 (t=220000)
+q_taken_mean: -0.6544 (t=220000)
+q_taken_std: 0.2825 (t=220000)
+target_mean: -112.8232 (t=220000)
+-------------------
+
+
+[Testing at t=220100]
+Test results: avg_return=-234723.49, std=11997.45
+  mean_travel_time=13.8s, arrival_rate=0.697
+
+--- Recent Stats ---
+epsilon: 0.5820 (t=220000)
+buffer_fill: 1.0000 (t=220000)
+train_return_mean: -258393.1094 (t=220000)
+episode_return: -201980.4499 (t=225000)
+train_mean_travel_time: 17.9684 (t=225000)
+train_mean_waiting_time: 18.1938 (t=225000)
+train_total_stops: 42669.0000 (t=225000)
+train_total_emissions: 377999.8663 (t=225000)
+train_arrival_rate: 0.6483 (t=225000)
+train_controlled_mean_travel_time: 17.9684 (t=225000)
+test_return: -244535.9117 (t=220100)
+test_mean_travel_time: 13.2207 (t=220100)
+test_mean_waiting_time: 25.2329 (t=220100)
+test_total_stops: 67899.0000 (t=220100)
+test_total_emissions: 424961.6944 (t=220100)
+test_arrival_rate: 0.7125 (t=220100)
+test_controlled_mean_travel_time: 13.2207 (t=220100)
+test_return_mean: -234723.4875 (t=220100)
+test_mean_travel_time_avg: 13.8254 (t=220100)
+test_mean_waiting_time_avg: 22.1958 (t=220100)
+test_total_stops_avg: 58963.6000 (t=220100)
+test_total_emissions_avg: 416909.6023 (t=220100)
+test_arrival_rate_avg: 0.6967 (t=220100)
+test_controlled_mean_travel_time_avg: 13.8254 (t=220100)
+loss: 143.2243 (t=225000)
+grad_norm: 165.4402 (t=225000)
+q_taken_mean: -0.6599 (t=225000)
+q_taken_std: 0.2795 (t=225000)
+target_mean: -118.4717 (t=225000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.5725 (t=225000)
+buffer_fill: 1.0000 (t=225000)
+train_return_mean: -254677.8534 (t=225000)
+episode_return: -290848.1904 (t=230000)
+train_mean_travel_time: 8.3793 (t=230000)
+train_mean_waiting_time: 25.4584 (t=230000)
+train_total_stops: 89801.0000 (t=230000)
+train_total_emissions: 496140.3605 (t=230000)
+train_arrival_rate: 0.7617 (t=230000)
+train_controlled_mean_travel_time: 8.3793 (t=230000)
+loss: 161.7478 (t=230000)
+grad_norm: 398.7187 (t=230000)
+q_taken_mean: -0.6539 (t=230000)
+q_taken_std: 0.2836 (t=230000)
+target_mean: -122.6448 (t=230000)
+-------------------
+
+
+[Testing at t=230100]
+Test results: avg_return=-246793.63, std=30554.34
+  mean_travel_time=12.7s, arrival_rate=0.706
+
+--- Recent Stats ---
+epsilon: 0.5630 (t=230000)
+buffer_fill: 1.0000 (t=230000)
+train_return_mean: -253200.5784 (t=230000)
+episode_return: -226564.1497 (t=235000)
+train_mean_travel_time: 13.8673 (t=235000)
+train_mean_waiting_time: 18.3704 (t=235000)
+train_total_stops: 48715.0000 (t=235000)
+train_total_emissions: 402399.7400 (t=235000)
+train_arrival_rate: 0.6974 (t=235000)
+train_controlled_mean_travel_time: 13.8673 (t=235000)
+test_return: -306126.4458 (t=230100)
+test_mean_travel_time: 7.9835 (t=230100)
+test_mean_waiting_time: 28.3879 (t=230100)
+test_total_stops: 104411.0000 (t=230100)
+test_total_emissions: 527895.8403 (t=230100)
+test_arrival_rate: 0.7409 (t=230100)
+test_controlled_mean_travel_time: 7.9835 (t=230100)
+test_return_mean: -246793.6281 (t=230100)
+test_mean_travel_time_avg: 12.6623 (t=230100)
+test_mean_waiting_time_avg: 22.4292 (t=230100)
+test_total_stops_avg: 65224.4000 (t=230100)
+test_total_emissions_avg: 435797.6318 (t=230100)
+test_arrival_rate_avg: 0.7064 (t=230100)
+test_controlled_mean_travel_time_avg: 12.6623 (t=230100)
+loss: 147.9792 (t=235000)
+grad_norm: 209.4580 (t=235000)
+q_taken_mean: -0.6533 (t=235000)
+q_taken_std: 0.2847 (t=235000)
+target_mean: -122.5097 (t=235000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.5535 (t=235000)
+buffer_fill: 1.0000 (t=235000)
+train_return_mean: -249586.9941 (t=235000)
+episode_return: -230062.4175 (t=240000)
+train_mean_travel_time: 14.2195 (t=240000)
+train_mean_waiting_time: 23.1842 (t=240000)
+train_total_stops: 58878.0000 (t=240000)
+train_total_emissions: 415517.4949 (t=240000)
+train_arrival_rate: 0.6888 (t=240000)
+train_controlled_mean_travel_time: 14.2195 (t=240000)
+loss: 147.7823 (t=240000)
+grad_norm: 148.6380 (t=240000)
+q_taken_mean: -0.6539 (t=240000)
+q_taken_std: 0.2830 (t=240000)
+target_mean: -121.9274 (t=240000)
+-------------------
+
+
+[Testing at t=240100]
+Test results: avg_return=-255747.03, std=41645.96
+  mean_travel_time=12.8s, arrival_rate=0.705
+
+--- Recent Stats ---
+epsilon: 0.5440 (t=240000)
+buffer_fill: 1.0000 (t=240000)
+train_return_mean: -250534.0072 (t=240000)
+episode_return: -204194.5304 (t=245000)
+train_mean_travel_time: 18.1266 (t=245000)
+train_mean_waiting_time: 17.6984 (t=245000)
+train_total_stops: 40958.0000 (t=245000)
+train_total_emissions: 378630.4226 (t=245000)
+train_arrival_rate: 0.6545 (t=245000)
+train_controlled_mean_travel_time: 18.1266 (t=245000)
+test_return: -298547.1964 (t=240100)
+test_mean_travel_time: 9.0849 (t=240100)
+test_mean_waiting_time: 29.3064 (t=240100)
+test_total_stops: 100069.0000 (t=240100)
+test_total_emissions: 512746.4118 (t=240100)
+test_arrival_rate: 0.7469 (t=240100)
+test_controlled_mean_travel_time: 9.0849 (t=240100)
+test_return_mean: -255747.0312 (t=240100)
+test_mean_travel_time_avg: 12.7943 (t=240100)
+test_mean_waiting_time_avg: 25.6448 (t=240100)
+test_total_stops_avg: 76235.6000 (t=240100)
+test_total_emissions_avg: 451450.4946 (t=240100)
+test_arrival_rate_avg: 0.7049 (t=240100)
+test_controlled_mean_travel_time_avg: 12.7943 (t=240100)
+loss: 169.4734 (t=245000)
+grad_norm: 863.7001 (t=245000)
+q_taken_mean: -0.6469 (t=245000)
+q_taken_std: 0.2891 (t=245000)
+target_mean: -133.3512 (t=245000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.5345 (t=245000)
+buffer_fill: 1.0000 (t=245000)
+train_return_mean: -249981.7822 (t=245000)
+episode_return: -218685.7779 (t=250000)
+train_mean_travel_time: 18.3038 (t=250000)
+train_mean_waiting_time: 20.9703 (t=250000)
+train_total_stops: 49363.0000 (t=250000)
+train_total_emissions: 406627.9241 (t=250000)
+train_arrival_rate: 0.6444 (t=250000)
+train_controlled_mean_travel_time: 18.3038 (t=250000)
+loss: 156.8550 (t=250000)
+grad_norm: 140.5638 (t=250000)
+q_taken_mean: -0.6615 (t=250000)
+q_taken_std: 0.2778 (t=250000)
+target_mean: -125.8773 (t=250000)
+-------------------
+
+Checkpoint saved at t=250000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_250000
+
+[Testing at t=250100]
+Test results: avg_return=-249907.99, std=19398.99
+  mean_travel_time=13.0s, arrival_rate=0.696
+
+[Validation at t=250100]
+Validation results: avg_return=-239405.03, std=34970.50
+  mean_travel_time=13.6s
+  Current best metric: -10.1214 at t=200100
+
+--- Recent Stats ---
+epsilon: 0.5250 (t=250000)
+buffer_fill: 1.0000 (t=250000)
+train_return_mean: -244912.6450 (t=250000)
+episode_return: -336268.9301 (t=255000)
+train_mean_travel_time: 7.3133 (t=255000)
+train_mean_waiting_time: 38.8641 (t=255000)
+train_total_stops: 143109.0000 (t=255000)
+train_total_emissions: 563480.1224 (t=255000)
+train_arrival_rate: 0.7702 (t=255000)
+train_controlled_mean_travel_time: 7.3133 (t=255000)
+test_return: -215118.8800 (t=250100)
+test_mean_travel_time: 15.5227 (t=250100)
+test_mean_waiting_time: 19.4206 (t=250100)
+test_total_stops: 49186.0000 (t=250100)
+test_total_emissions: 399580.0278 (t=250100)
+test_arrival_rate: 0.6664 (t=250100)
+test_controlled_mean_travel_time: 15.5227 (t=250100)
+test_return_mean: -249907.9906 (t=250100)
+test_mean_travel_time_avg: 13.0003 (t=250100)
+test_mean_waiting_time_avg: 24.9012 (t=250100)
+test_total_stops_avg: 70021.8000 (t=250100)
+test_total_emissions_avg: 444302.8857 (t=250100)
+test_arrival_rate_avg: 0.6955 (t=250100)
+test_controlled_mean_travel_time_avg: 13.0003 (t=250100)
+validation_return_mean: -239405.0312 (t=250100)
+validation_mean_travel_time: 13.6146 (t=250100)
+loss: 161.3444 (t=255000)
+grad_norm: 611.3333 (t=255000)
+q_taken_mean: -0.6516 (t=255000)
+q_taken_std: 0.2851 (t=255000)
+target_mean: -131.5247 (t=255000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.5155 (t=255000)
+buffer_fill: 1.0000 (t=255000)
+train_return_mean: -252165.6100 (t=255000)
+episode_return: -250008.7762 (t=260000)
+train_mean_travel_time: 12.4853 (t=260000)
+train_mean_waiting_time: 25.7957 (t=260000)
+train_total_stops: 71281.0000 (t=260000)
+train_total_emissions: 435726.2427 (t=260000)
+train_arrival_rate: 0.7169 (t=260000)
+train_controlled_mean_travel_time: 12.4853 (t=260000)
+loss: 175.4825 (t=260000)
+grad_norm: 486.9312 (t=260000)
+q_taken_mean: -0.6542 (t=260000)
+q_taken_std: 0.2846 (t=260000)
+target_mean: -129.0469 (t=260000)
+-------------------
+
+
+[Testing at t=260100]
+Test results: avg_return=-276494.58, std=39302.94
+  mean_travel_time=11.3s, arrival_rate=0.715
+
+--- Recent Stats ---
+epsilon: 0.5060 (t=260000)
+buffer_fill: 1.0000 (t=260000)
+train_return_mean: -246531.8866 (t=260000)
+episode_return: -310645.9381 (t=265000)
+train_mean_travel_time: 8.2457 (t=265000)
+train_mean_waiting_time: 33.1235 (t=265000)
+train_total_stops: 119394.0000 (t=265000)
+train_total_emissions: 529238.0643 (t=265000)
+train_arrival_rate: 0.7634 (t=265000)
+train_controlled_mean_travel_time: 8.2457 (t=265000)
+test_return: -222702.6299 (t=260100)
+test_mean_travel_time: 16.8686 (t=260100)
+test_mean_waiting_time: 21.5652 (t=260100)
+test_total_stops: 52508.0000 (t=260100)
+test_total_emissions: 408229.8627 (t=260100)
+test_arrival_rate: 0.6519 (t=260100)
+test_controlled_mean_travel_time: 16.8686 (t=260100)
+test_return_mean: -276494.5750 (t=260100)
+test_mean_travel_time_avg: 11.3006 (t=260100)
+test_mean_waiting_time_avg: 26.5125 (t=260100)
+test_total_stops_avg: 84401.4000 (t=260100)
+test_total_emissions_avg: 484106.4010 (t=260100)
+test_arrival_rate_avg: 0.7147 (t=260100)
+test_controlled_mean_travel_time_avg: 11.3006 (t=260100)
+loss: 167.7079 (t=265000)
+grad_norm: 243.4411 (t=265000)
+q_taken_mean: -0.6627 (t=265000)
+q_taken_std: 0.2773 (t=265000)
+target_mean: -130.5698 (t=265000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.4965 (t=265000)
+buffer_fill: 1.0000 (t=265000)
+train_return_mean: -242635.7022 (t=265000)
+episode_return: -218705.4870 (t=270000)
+train_mean_travel_time: 16.7408 (t=270000)
+train_mean_waiting_time: 20.2704 (t=270000)
+train_total_stops: 49086.0000 (t=270000)
+train_total_emissions: 397187.0071 (t=270000)
+train_arrival_rate: 0.6752 (t=270000)
+train_controlled_mean_travel_time: 16.7408 (t=270000)
+loss: 190.1210 (t=270000)
+grad_norm: 287.5865 (t=270000)
+q_taken_mean: -0.6532 (t=270000)
+q_taken_std: 0.2846 (t=270000)
+target_mean: -137.8711 (t=270000)
+-------------------
+
+
+[Testing at t=270100]
+Test results: avg_return=-228673.29, std=9689.56
+  mean_travel_time=14.7s, arrival_rate=0.685
+
+--- Recent Stats ---
+epsilon: 0.4870 (t=270000)
+buffer_fill: 1.0000 (t=270000)
+train_return_mean: -243405.8844 (t=270000)
+episode_return: -250624.3405 (t=275000)
+train_mean_travel_time: 13.2920 (t=275000)
+train_mean_waiting_time: 27.9095 (t=275000)
+train_total_stops: 74237.0000 (t=275000)
+train_total_emissions: 438490.4749 (t=275000)
+train_arrival_rate: 0.7122 (t=275000)
+train_controlled_mean_travel_time: 13.2920 (t=275000)
+test_return: -220317.1426 (t=270100)
+test_mean_travel_time: 14.7642 (t=270100)
+test_mean_waiting_time: 18.7521 (t=270100)
+test_total_stops: 47943.0000 (t=270100)
+test_total_emissions: 398992.5505 (t=270100)
+test_arrival_rate: 0.6837 (t=270100)
+test_controlled_mean_travel_time: 14.7642 (t=270100)
+test_return_mean: -228673.2938 (t=270100)
+test_mean_travel_time_avg: 14.6655 (t=270100)
+test_mean_waiting_time_avg: 21.2513 (t=270100)
+test_total_stops_avg: 53985.6000 (t=270100)
+test_total_emissions_avg: 407015.6773 (t=270100)
+test_arrival_rate_avg: 0.6853 (t=270100)
+test_controlled_mean_travel_time_avg: 14.6655 (t=270100)
+loss: 173.7409 (t=275000)
+grad_norm: 207.7988 (t=275000)
+q_taken_mean: -0.6585 (t=275000)
+q_taken_std: 0.2804 (t=275000)
+target_mean: -134.5575 (t=275000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.4775 (t=275000)
+buffer_fill: 1.0000 (t=275000)
+train_return_mean: -254881.2847 (t=275000)
+episode_return: -228091.2134 (t=280000)
+train_mean_travel_time: 15.3262 (t=280000)
+train_mean_waiting_time: 22.9715 (t=280000)
+train_total_stops: 57286.0000 (t=280000)
+train_total_emissions: 416913.3531 (t=280000)
+train_arrival_rate: 0.6674 (t=280000)
+train_controlled_mean_travel_time: 15.3262 (t=280000)
+loss: 175.5105 (t=280000)
+grad_norm: 554.6700 (t=280000)
+q_taken_mean: -0.6593 (t=280000)
+q_taken_std: 0.2798 (t=280000)
+target_mean: -134.8992 (t=280000)
+-------------------
+
+
+[Testing at t=280100]
+Test results: avg_return=-261883.06, std=28530.93
+  mean_travel_time=11.1s, arrival_rate=0.722
+
+--- Recent Stats ---
+epsilon: 0.4680 (t=280000)
+buffer_fill: 1.0000 (t=280000)
+train_return_mean: -253424.9522 (t=280000)
+episode_return: -283623.0827 (t=285000)
+train_mean_travel_time: 9.2613 (t=285000)
+train_mean_waiting_time: 26.1367 (t=285000)
+train_total_stops: 87707.0000 (t=285000)
+train_total_emissions: 501732.6760 (t=285000)
+train_arrival_rate: 0.7346 (t=285000)
+train_controlled_mean_travel_time: 9.2613 (t=285000)
+test_return: -280995.7317 (t=280100)
+test_mean_travel_time: 9.9856 (t=280100)
+test_mean_waiting_time: 27.4841 (t=280100)
+test_total_stops: 88832.0000 (t=280100)
+test_total_emissions: 495131.7117 (t=280100)
+test_arrival_rate: 0.7304 (t=280100)
+test_controlled_mean_travel_time: 9.9856 (t=280100)
+test_return_mean: -261883.0562 (t=280100)
+test_mean_travel_time_avg: 11.0935 (t=280100)
+test_mean_waiting_time_avg: 25.7937 (t=280100)
+test_total_stops_avg: 78185.4000 (t=280100)
+test_total_emissions_avg: 458987.3056 (t=280100)
+test_arrival_rate_avg: 0.7219 (t=280100)
+test_controlled_mean_travel_time_avg: 11.0935 (t=280100)
+loss: 186.7493 (t=285000)
+grad_norm: 695.4924 (t=285000)
+q_taken_mean: -0.6593 (t=285000)
+q_taken_std: 0.2806 (t=285000)
+target_mean: -144.4855 (t=285000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.4585 (t=285000)
+buffer_fill: 1.0000 (t=285000)
+train_return_mean: -245821.6056 (t=285000)
+episode_return: -215747.9596 (t=290000)
+train_mean_travel_time: 15.9091 (t=290000)
+train_mean_waiting_time: 18.6047 (t=290000)
+train_total_stops: 46205.0000 (t=290000)
+train_total_emissions: 392709.6084 (t=290000)
+train_arrival_rate: 0.6800 (t=290000)
+train_controlled_mean_travel_time: 15.9091 (t=290000)
+loss: 192.6141 (t=290000)
+grad_norm: 334.7517 (t=290000)
+q_taken_mean: -0.6609 (t=290000)
+q_taken_std: 0.2803 (t=290000)
+target_mean: -141.2111 (t=290000)
+-------------------
+
+
+[Testing at t=290100]
+Test results: avg_return=-252814.49, std=38788.56
+  mean_travel_time=12.5s, arrival_rate=0.698
+
+--- Recent Stats ---
+epsilon: 0.4490 (t=290000)
+buffer_fill: 1.0000 (t=290000)
+train_return_mean: -249446.7987 (t=290000)
+episode_return: -294561.7124 (t=295000)
+train_mean_travel_time: 8.9257 (t=295000)
+train_mean_waiting_time: 29.3469 (t=295000)
+train_total_stops: 98942.0000 (t=295000)
+train_total_emissions: 510612.3562 (t=295000)
+train_arrival_rate: 0.7456 (t=295000)
+train_controlled_mean_travel_time: 8.9257 (t=295000)
+test_return: -226823.0227 (t=290100)
+test_mean_travel_time: 13.8802 (t=290100)
+test_mean_waiting_time: 20.3421 (t=290100)
+test_total_stops: 53388.0000 (t=290100)
+test_total_emissions: 408622.6619 (t=290100)
+test_arrival_rate: 0.6827 (t=290100)
+test_controlled_mean_travel_time: 13.8802 (t=290100)
+test_return_mean: -252814.4906 (t=290100)
+test_mean_travel_time_avg: 12.5349 (t=290100)
+test_mean_waiting_time_avg: 23.7843 (t=290100)
+test_total_stops_avg: 69855.2000 (t=290100)
+test_total_emissions_avg: 450926.3094 (t=290100)
+test_arrival_rate_avg: 0.6978 (t=290100)
+test_controlled_mean_travel_time_avg: 12.5349 (t=290100)
+loss: 173.8249 (t=295000)
+grad_norm: 305.0740 (t=295000)
+q_taken_mean: -0.6613 (t=295000)
+q_taken_std: 0.2788 (t=295000)
+target_mean: -140.7211 (t=295000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.4395 (t=295000)
+buffer_fill: 1.0000 (t=295000)
+train_return_mean: -242038.9912 (t=295000)
+episode_return: -247734.6637 (t=300000)
+train_mean_travel_time: 12.7331 (t=300000)
+train_mean_waiting_time: 28.1546 (t=300000)
+train_total_stops: 76286.0000 (t=300000)
+train_total_emissions: 434363.6523 (t=300000)
+train_arrival_rate: 0.7090 (t=300000)
+train_controlled_mean_travel_time: 12.7331 (t=300000)
+loss: 209.9720 (t=300000)
+grad_norm: 264.5284 (t=300000)
+q_taken_mean: -0.6543 (t=300000)
+q_taken_std: 0.2831 (t=300000)
+target_mean: -146.8677 (t=300000)
+-------------------
+
+Checkpoint saved at t=300000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_300000
+
+[Testing at t=300100]
+Test results: avg_return=-243034.35, std=35795.69
+  mean_travel_time=14.4s, arrival_rate=0.694
+
+[Validation at t=300100]
+Validation results: avg_return=-243250.78, std=36699.10
+  mean_travel_time=13.2s
+  Current best metric: -10.1214 at t=200100
+
+--- Recent Stats ---
+epsilon: 0.4300 (t=300000)
+buffer_fill: 1.0000 (t=300000)
+train_return_mean: -257757.7681 (t=300000)
+episode_return: -306372.4987 (t=305000)
+train_mean_travel_time: 7.8523 (t=305000)
+train_mean_waiting_time: 31.7819 (t=305000)
+train_total_stops: 115341.0000 (t=305000)
+train_total_emissions: 523448.6835 (t=305000)
+train_arrival_rate: 0.7613 (t=305000)
+train_controlled_mean_travel_time: 7.8523 (t=305000)
+test_return: -237617.6850 (t=300100)
+test_mean_travel_time: 13.5753 (t=300100)
+test_mean_waiting_time: 24.1306 (t=300100)
+test_total_stops: 63889.0000 (t=300100)
+test_total_emissions: 416235.0442 (t=300100)
+test_arrival_rate: 0.7136 (t=300100)
+test_controlled_mean_travel_time: 13.5753 (t=300100)
+test_return_mean: -243034.3531 (t=300100)
+test_mean_travel_time_avg: 14.4374 (t=300100)
+test_mean_waiting_time_avg: 22.0657 (t=300100)
+test_total_stops_avg: 61519.0000 (t=300100)
+test_total_emissions_avg: 432998.7810 (t=300100)
+test_arrival_rate_avg: 0.6935 (t=300100)
+test_controlled_mean_travel_time_avg: 14.4374 (t=300100)
+validation_return_mean: -243250.7828 (t=300100)
+validation_mean_travel_time: 13.2360 (t=300100)
+loss: 219.8150 (t=305000)
+grad_norm: 681.3358 (t=305000)
+q_taken_mean: -0.6590 (t=305000)
+q_taken_std: 0.2801 (t=305000)
+target_mean: -152.1799 (t=305000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.4205 (t=305000)
+buffer_fill: 1.0000 (t=305000)
+train_return_mean: -244859.7128 (t=305000)
+episode_return: -292996.3362 (t=310000)
+train_mean_travel_time: 9.2536 (t=310000)
+train_mean_waiting_time: 29.1973 (t=310000)
+train_total_stops: 97589.0000 (t=310000)
+train_total_emissions: 514886.1567 (t=310000)
+train_arrival_rate: 0.7295 (t=310000)
+train_controlled_mean_travel_time: 9.2536 (t=310000)
+loss: 218.1451 (t=310000)
+grad_norm: 337.3326 (t=310000)
+q_taken_mean: -0.6530 (t=310000)
+q_taken_std: 0.2839 (t=310000)
+target_mean: -153.9387 (t=310000)
+-------------------
+
+
+[Testing at t=310100]
+Test results: avg_return=-268564.52, std=36366.03
+  mean_travel_time=11.5s, arrival_rate=0.716
+
+--- Recent Stats ---
+epsilon: 0.4110 (t=310000)
+buffer_fill: 1.0000 (t=310000)
+train_return_mean: -253731.8894 (t=310000)
+episode_return: -214222.6649 (t=315000)
+train_mean_travel_time: 16.8932 (t=315000)
+train_mean_waiting_time: 21.0684 (t=315000)
+train_total_stops: 50950.0000 (t=315000)
+train_total_emissions: 395164.9172 (t=315000)
+train_arrival_rate: 0.6622 (t=315000)
+train_controlled_mean_travel_time: 16.8932 (t=315000)
+test_return: -310186.7159 (t=310100)
+test_mean_travel_time: 8.3489 (t=310100)
+test_mean_waiting_time: 30.2583 (t=310100)
+test_total_stops: 104904.0000 (t=310100)
+test_total_emissions: 534515.9320 (t=310100)
+test_arrival_rate: 0.7380 (t=310100)
+test_controlled_mean_travel_time: 8.3489 (t=310100)
+test_return_mean: -268564.5187 (t=310100)
+test_mean_travel_time_avg: 11.4581 (t=310100)
+test_mean_waiting_time_avg: 25.7990 (t=310100)
+test_total_stops_avg: 81183.2000 (t=310100)
+test_total_emissions_avg: 472356.0444 (t=310100)
+test_arrival_rate_avg: 0.7158 (t=310100)
+test_controlled_mean_travel_time_avg: 11.4581 (t=310100)
+loss: 209.0871 (t=315000)
+grad_norm: 1723.2024 (t=315000)
+q_taken_mean: -0.6579 (t=315000)
+q_taken_std: 0.2810 (t=315000)
+target_mean: -149.6437 (t=315000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.4015 (t=315000)
+buffer_fill: 1.0000 (t=315000)
+train_return_mean: -247564.5331 (t=315000)
+episode_return: -261924.2646 (t=320000)
+train_mean_travel_time: 11.2718 (t=320000)
+train_mean_waiting_time: 25.7642 (t=320000)
+train_total_stops: 76335.0000 (t=320000)
+train_total_emissions: 450514.5904 (t=320000)
+train_arrival_rate: 0.7207 (t=320000)
+train_controlled_mean_travel_time: 11.2718 (t=320000)
+loss: 181.8182 (t=320000)
+grad_norm: 421.5985 (t=320000)
+q_taken_mean: -0.6608 (t=320000)
+q_taken_std: 0.2798 (t=320000)
+target_mean: -146.1188 (t=320000)
+-------------------
+
+
+[Testing at t=320100]
+Test results: avg_return=-238351.06, std=12093.67
+  mean_travel_time=14.4s, arrival_rate=0.697
+
+--- Recent Stats ---
+epsilon: 0.3920 (t=320000)
+buffer_fill: 1.0000 (t=320000)
+train_return_mean: -240624.8022 (t=320000)
+episode_return: -296172.6052 (t=325000)
+train_mean_travel_time: 8.4318 (t=325000)
+train_mean_waiting_time: 27.3297 (t=325000)
+train_total_stops: 94921.0000 (t=325000)
+train_total_emissions: 511555.1514 (t=325000)
+train_arrival_rate: 0.7491 (t=325000)
+train_controlled_mean_travel_time: 8.4318 (t=325000)
+test_return: -249628.6467 (t=320100)
+test_mean_travel_time: 13.2283 (t=320100)
+test_mean_waiting_time: 31.7424 (t=320100)
+test_total_stops: 81173.0000 (t=320100)
+test_total_emissions: 430996.7201 (t=320100)
+test_arrival_rate: 0.7132 (t=320100)
+test_controlled_mean_travel_time: 13.2283 (t=320100)
+test_return_mean: -238351.0625 (t=320100)
+test_mean_travel_time_avg: 14.4074 (t=320100)
+test_mean_waiting_time_avg: 24.2917 (t=320100)
+test_total_stops_avg: 62892.4000 (t=320100)
+test_total_emissions_avg: 421834.9346 (t=320100)
+test_arrival_rate_avg: 0.6971 (t=320100)
+test_controlled_mean_travel_time_avg: 14.4074 (t=320100)
+loss: 243.1198 (t=325000)
+grad_norm: 880.7879 (t=325000)
+q_taken_mean: -0.6463 (t=325000)
+q_taken_std: 0.2891 (t=325000)
+target_mean: -165.2843 (t=325000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.3825 (t=325000)
+buffer_fill: 1.0000 (t=325000)
+train_return_mean: -257020.9866 (t=325000)
+episode_return: -213486.2698 (t=330000)
+train_mean_travel_time: 16.8142 (t=330000)
+train_mean_waiting_time: 21.8030 (t=330000)
+train_total_stops: 51185.0000 (t=330000)
+train_total_emissions: 393019.7782 (t=330000)
+train_arrival_rate: 0.6560 (t=330000)
+train_controlled_mean_travel_time: 16.8142 (t=330000)
+loss: 242.9403 (t=330000)
+grad_norm: 1875.2181 (t=330000)
+q_taken_mean: -0.6521 (t=330000)
+q_taken_std: 0.2855 (t=330000)
+target_mean: -159.8602 (t=330000)
+-------------------
+
+
+[Testing at t=330100]
+Test results: avg_return=-241449.26, std=32255.36
+  mean_travel_time=13.0s, arrival_rate=0.705
+
+--- Recent Stats ---
+epsilon: 0.3730 (t=330000)
+buffer_fill: 1.0000 (t=330000)
+train_return_mean: -259478.7891 (t=330000)
+episode_return: -235471.7112 (t=335000)
+train_mean_travel_time: 12.6009 (t=335000)
+train_mean_waiting_time: 21.7846 (t=335000)
+train_total_stops: 59394.0000 (t=335000)
+train_total_emissions: 415011.2471 (t=335000)
+train_arrival_rate: 0.7130 (t=335000)
+train_controlled_mean_travel_time: 12.6009 (t=335000)
+test_return: -301744.5126 (t=330100)
+test_mean_travel_time: 8.3899 (t=330100)
+test_mean_waiting_time: 30.3369 (t=330100)
+test_total_stops: 105330.0000 (t=330100)
+test_total_emissions: 514012.6497 (t=330100)
+test_arrival_rate: 0.7613 (t=330100)
+test_controlled_mean_travel_time: 8.3899 (t=330100)
+test_return_mean: -241449.2625 (t=330100)
+test_mean_travel_time_avg: 13.0218 (t=330100)
+test_mean_waiting_time_avg: 22.5471 (t=330100)
+test_total_stops_avg: 63917.4000 (t=330100)
+test_total_emissions_avg: 427594.6171 (t=330100)
+test_arrival_rate_avg: 0.7054 (t=330100)
+test_controlled_mean_travel_time_avg: 13.0218 (t=330100)
+loss: 207.6486 (t=335000)
+grad_norm: 1204.6078 (t=335000)
+q_taken_mean: -0.6487 (t=335000)
+q_taken_std: 0.2876 (t=335000)
+target_mean: -161.1024 (t=335000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.3635 (t=335000)
+buffer_fill: 1.0000 (t=335000)
+train_return_mean: -247374.1638 (t=335000)
+episode_return: -232547.9164 (t=340000)
+train_mean_travel_time: 13.2240 (t=340000)
+train_mean_waiting_time: 18.6950 (t=340000)
+train_total_stops: 50223.0000 (t=340000)
+train_total_emissions: 406766.3584 (t=340000)
+train_arrival_rate: 0.7132 (t=340000)
+train_controlled_mean_travel_time: 13.2240 (t=340000)
+loss: 210.5313 (t=340000)
+grad_norm: 253.8342 (t=340000)
+q_taken_mean: -0.6622 (t=340000)
+q_taken_std: 0.2780 (t=340000)
+target_mean: -155.7170 (t=340000)
+-------------------
+
+
+[Testing at t=340100]
+Test results: avg_return=-250991.79, std=33221.66
+  mean_travel_time=13.0s, arrival_rate=0.692
+
+--- Recent Stats ---
+epsilon: 0.3540 (t=340000)
+buffer_fill: 1.0000 (t=340000)
+train_return_mean: -245835.0919 (t=340000)
+episode_return: -221120.6188 (t=345000)
+train_mean_travel_time: 14.8540 (t=345000)
+train_mean_waiting_time: 19.4850 (t=345000)
+train_total_stops: 49474.0000 (t=345000)
+train_total_emissions: 402918.7970 (t=345000)
+train_arrival_rate: 0.6782 (t=345000)
+train_controlled_mean_travel_time: 14.8540 (t=345000)
+test_return: -220561.5005 (t=340100)
+test_mean_travel_time: 16.2790 (t=340100)
+test_mean_waiting_time: 19.5043 (t=340100)
+test_total_stops: 47656.0000 (t=340100)
+test_total_emissions: 402700.5020 (t=340100)
+test_arrival_rate: 0.6607 (t=340100)
+test_controlled_mean_travel_time: 16.2790 (t=340100)
+test_return_mean: -250991.7938 (t=340100)
+test_mean_travel_time_avg: 13.0215 (t=340100)
+test_mean_waiting_time_avg: 24.1113 (t=340100)
+test_total_stops_avg: 68780.2000 (t=340100)
+test_total_emissions_avg: 450182.1011 (t=340100)
+test_arrival_rate_avg: 0.6915 (t=340100)
+test_controlled_mean_travel_time_avg: 13.0215 (t=340100)
+loss: 212.2469 (t=345000)
+grad_norm: 660.7526 (t=345000)
+q_taken_mean: -0.6638 (t=345000)
+q_taken_std: 0.2776 (t=345000)
+target_mean: -159.1934 (t=345000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.3445 (t=345000)
+buffer_fill: 1.0000 (t=345000)
+train_return_mean: -250927.4500 (t=345000)
+episode_return: -230228.5259 (t=350000)
+train_mean_travel_time: 13.8517 (t=350000)
+train_mean_waiting_time: 21.7795 (t=350000)
+train_total_stops: 57460.0000 (t=350000)
+train_total_emissions: 411525.9331 (t=350000)
+train_arrival_rate: 0.6930 (t=350000)
+train_controlled_mean_travel_time: 13.8517 (t=350000)
+loss: 213.7549 (t=350000)
+grad_norm: 460.1223 (t=350000)
+q_taken_mean: -0.6547 (t=350000)
+q_taken_std: 0.2837 (t=350000)
+target_mean: -164.1209 (t=350000)
+-------------------
+
+Checkpoint saved at t=350000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_350000
+
+[Testing at t=350100]
+Test results: avg_return=-257257.13, std=33853.40
+  mean_travel_time=12.0s, arrival_rate=0.711
+
+[Validation at t=350100]
+Validation results: avg_return=-254023.48, std=42930.22
+  mean_travel_time=12.7s
+  Current best metric: -10.1214 at t=200100
+
+--- Recent Stats ---
+epsilon: 0.3350 (t=350000)
+buffer_fill: 1.0000 (t=350000)
+train_return_mean: -245886.1966 (t=350000)
+episode_return: -236702.6242 (t=355000)
+train_mean_travel_time: 13.7960 (t=355000)
+train_mean_waiting_time: 23.9383 (t=355000)
+train_total_stops: 62529.0000 (t=355000)
+train_total_emissions: 413174.1706 (t=355000)
+train_arrival_rate: 0.7126 (t=355000)
+train_controlled_mean_travel_time: 13.7960 (t=355000)
+test_return: -221046.4500 (t=350100)
+test_mean_travel_time: 14.8858 (t=350100)
+test_mean_waiting_time: 19.0754 (t=350100)
+test_total_stops: 49614.0000 (t=350100)
+test_total_emissions: 398750.0324 (t=350100)
+test_arrival_rate: 0.6871 (t=350100)
+test_controlled_mean_travel_time: 14.8858 (t=350100)
+test_return_mean: -257257.1281 (t=350100)
+test_mean_travel_time_avg: 11.9524 (t=350100)
+test_mean_waiting_time_avg: 24.3393 (t=350100)
+test_total_stops_avg: 72836.8000 (t=350100)
+test_total_emissions_avg: 453285.5500 (t=350100)
+test_arrival_rate_avg: 0.7113 (t=350100)
+test_controlled_mean_travel_time_avg: 11.9524 (t=350100)
+validation_return_mean: -254023.4766 (t=350100)
+validation_mean_travel_time: 12.7259 (t=350100)
+loss: 224.9558 (t=355000)
+grad_norm: 477.0260 (t=355000)
+q_taken_mean: -0.6600 (t=355000)
+q_taken_std: 0.2807 (t=355000)
+target_mean: -158.5462 (t=355000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.3255 (t=355000)
+buffer_fill: 1.0000 (t=355000)
+train_return_mean: -246895.9450 (t=355000)
+episode_return: -224015.1605 (t=360000)
+train_mean_travel_time: 14.5435 (t=360000)
+train_mean_waiting_time: 20.3648 (t=360000)
+train_total_stops: 52587.0000 (t=360000)
+train_total_emissions: 404810.4771 (t=360000)
+train_arrival_rate: 0.6818 (t=360000)
+train_controlled_mean_travel_time: 14.5435 (t=360000)
+loss: 234.9689 (t=360000)
+grad_norm: 1904.9655 (t=360000)
+q_taken_mean: -0.6601 (t=360000)
+q_taken_std: 0.2805 (t=360000)
+target_mean: -162.7142 (t=360000)
+-------------------
+
+
+[Testing at t=360100]
+Test results: avg_return=-229179.12, std=28731.36
+  mean_travel_time=15.3s, arrival_rate=0.679
+
+--- Recent Stats ---
+epsilon: 0.3160 (t=360000)
+buffer_fill: 1.0000 (t=360000)
+train_return_mean: -252542.6366 (t=360000)
+episode_return: -218260.0470 (t=365000)
+train_mean_travel_time: 16.4005 (t=365000)
+train_mean_waiting_time: 19.7274 (t=365000)
+train_total_stops: 49032.0000 (t=365000)
+train_total_emissions: 401447.0452 (t=365000)
+train_arrival_rate: 0.6695 (t=365000)
+train_controlled_mean_travel_time: 16.4005 (t=365000)
+test_return: -216567.7913 (t=360100)
+test_mean_travel_time: 15.6368 (t=360100)
+test_mean_waiting_time: 18.5058 (t=360100)
+test_total_stops: 45720.0000 (t=360100)
+test_total_emissions: 395791.2604 (t=360100)
+test_arrival_rate: 0.6713 (t=360100)
+test_controlled_mean_travel_time: 15.6368 (t=360100)
+test_return_mean: -229179.1156 (t=360100)
+test_mean_travel_time_avg: 15.3226 (t=360100)
+test_mean_waiting_time_avg: 22.3159 (t=360100)
+test_total_stops_avg: 58619.6000 (t=360100)
+test_total_emissions_avg: 415132.2496 (t=360100)
+test_arrival_rate_avg: 0.6792 (t=360100)
+test_controlled_mean_travel_time_avg: 15.3226 (t=360100)
+loss: 234.3587 (t=365000)
+grad_norm: 621.6670 (t=365000)
+q_taken_mean: -0.6645 (t=365000)
+q_taken_std: 0.2766 (t=365000)
+target_mean: -162.2968 (t=365000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.3065 (t=365000)
+buffer_fill: 1.0000 (t=365000)
+train_return_mean: -250196.1366 (t=365000)
+episode_return: -215663.5390 (t=370000)
+train_mean_travel_time: 14.9631 (t=370000)
+train_mean_waiting_time: 17.6469 (t=370000)
+train_total_stops: 44410.0000 (t=370000)
+train_total_emissions: 395038.9616 (t=370000)
+train_arrival_rate: 0.6776 (t=370000)
+train_controlled_mean_travel_time: 14.9631 (t=370000)
+loss: 228.9889 (t=370000)
+grad_norm: 337.2865 (t=370000)
+q_taken_mean: -0.6629 (t=370000)
+q_taken_std: 0.2779 (t=370000)
+target_mean: -165.5367 (t=370000)
+-------------------
+
+
+[Testing at t=370100]
+Test results: avg_return=-236887.64, std=30687.92
+  mean_travel_time=14.0s, arrival_rate=0.703
+
+--- Recent Stats ---
+epsilon: 0.2970 (t=370000)
+buffer_fill: 1.0000 (t=370000)
+train_return_mean: -245099.2609 (t=370000)
+episode_return: -231833.7836 (t=375000)
+train_mean_travel_time: 13.9724 (t=375000)
+train_mean_waiting_time: 19.7212 (t=375000)
+train_total_stops: 51612.0000 (t=375000)
+train_total_emissions: 411183.6078 (t=375000)
+train_arrival_rate: 0.6975 (t=375000)
+train_controlled_mean_travel_time: 13.9724 (t=375000)
+test_return: -227066.8981 (t=370100)
+test_mean_travel_time: 14.4561 (t=370100)
+test_mean_waiting_time: 20.8369 (t=370100)
+test_total_stops: 54256.0000 (t=370100)
+test_total_emissions: 402098.0938 (t=370100)
+test_arrival_rate: 0.7049 (t=370100)
+test_controlled_mean_travel_time: 14.4561 (t=370100)
+test_return_mean: -236887.6406 (t=370100)
+test_mean_travel_time_avg: 14.0098 (t=370100)
+test_mean_waiting_time_avg: 22.7206 (t=370100)
+test_total_stops_avg: 62080.2000 (t=370100)
+test_total_emissions_avg: 421229.1249 (t=370100)
+test_arrival_rate_avg: 0.7033 (t=370100)
+test_controlled_mean_travel_time_avg: 14.0098 (t=370100)
+loss: 272.7284 (t=375000)
+grad_norm: 2140.4727 (t=375000)
+q_taken_mean: -0.6455 (t=375000)
+q_taken_std: 0.2897 (t=375000)
+target_mean: -176.9614 (t=375000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.2875 (t=375000)
+buffer_fill: 1.0000 (t=375000)
+train_return_mean: -254735.8197 (t=375000)
+episode_return: -305542.8078 (t=380000)
+train_mean_travel_time: 8.6049 (t=380000)
+train_mean_waiting_time: 32.1086 (t=380000)
+train_total_stops: 109673.0000 (t=380000)
+train_total_emissions: 525157.8111 (t=380000)
+train_arrival_rate: 0.7452 (t=380000)
+train_controlled_mean_travel_time: 8.6049 (t=380000)
+loss: 264.0258 (t=380000)
+grad_norm: 684.0022 (t=380000)
+q_taken_mean: -0.6490 (t=380000)
+q_taken_std: 0.2863 (t=380000)
+target_mean: -178.5239 (t=380000)
+-------------------
+
+
+[Testing at t=380100]
+Test results: avg_return=-250810.93, std=21961.83
+  mean_travel_time=12.3s, arrival_rate=0.713
+
+--- Recent Stats ---
+epsilon: 0.2780 (t=380000)
+buffer_fill: 1.0000 (t=380000)
+train_return_mean: -250434.4544 (t=380000)
+episode_return: -308842.8227 (t=385000)
+train_mean_travel_time: 8.7660 (t=385000)
+train_mean_waiting_time: 35.2709 (t=385000)
+train_total_stops: 120686.0000 (t=385000)
+train_total_emissions: 526522.6606 (t=385000)
+train_arrival_rate: 0.7540 (t=385000)
+train_controlled_mean_travel_time: 8.7660 (t=385000)
+test_return: -223693.6109 (t=380100)
+test_mean_travel_time: 14.5666 (t=380100)
+test_mean_waiting_time: 19.1992 (t=380100)
+test_total_stops: 50240.0000 (t=380100)
+test_total_emissions: 405610.8580 (t=380100)
+test_arrival_rate: 0.6801 (t=380100)
+test_controlled_mean_travel_time: 14.5666 (t=380100)
+test_return_mean: -250810.9344 (t=380100)
+test_mean_travel_time_avg: 12.2551 (t=380100)
+test_mean_waiting_time_avg: 24.3372 (t=380100)
+test_total_stops_avg: 70943.2000 (t=380100)
+test_total_emissions_avg: 444170.2210 (t=380100)
+test_arrival_rate_avg: 0.7133 (t=380100)
+test_controlled_mean_travel_time_avg: 12.2551 (t=380100)
+loss: 293.1782 (t=385000)
+grad_norm: 1267.2214 (t=385000)
+q_taken_mean: -0.6477 (t=385000)
+q_taken_std: 0.2893 (t=385000)
+target_mean: -185.7534 (t=385000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.2685 (t=385000)
+buffer_fill: 1.0000 (t=385000)
+train_return_mean: -263794.8769 (t=385000)
+episode_return: -224998.8408 (t=390000)
+train_mean_travel_time: 14.3182 (t=390000)
+train_mean_waiting_time: 20.6750 (t=390000)
+train_total_stops: 53524.0000 (t=390000)
+train_total_emissions: 409640.7995 (t=390000)
+train_arrival_rate: 0.6878 (t=390000)
+train_controlled_mean_travel_time: 14.3182 (t=390000)
+loss: 278.4806 (t=390000)
+grad_norm: 648.8976 (t=390000)
+q_taken_mean: -0.6560 (t=390000)
+q_taken_std: 0.2820 (t=390000)
+target_mean: -176.9856 (t=390000)
+-------------------
+
+
+[Testing at t=390100]
+Test results: avg_return=-219887.55, std=11610.14
+  mean_travel_time=16.2s, arrival_rate=0.669
+
+--- Recent Stats ---
+epsilon: 0.2590 (t=390000)
+buffer_fill: 1.0000 (t=390000)
+train_return_mean: -253015.1028 (t=390000)
+episode_return: -333329.0927 (t=395000)
+train_mean_travel_time: 7.6979 (t=395000)
+train_mean_waiting_time: 38.3756 (t=395000)
+train_total_stops: 140402.0000 (t=395000)
+train_total_emissions: 557992.6735 (t=395000)
+train_arrival_rate: 0.7710 (t=395000)
+train_controlled_mean_travel_time: 7.6979 (t=395000)
+test_return: -215700.4126 (t=390100)
+test_mean_travel_time: 19.2137 (t=390100)
+test_mean_waiting_time: 21.5659 (t=390100)
+test_total_stops: 48111.0000 (t=390100)
+test_total_emissions: 399862.5548 (t=390100)
+test_arrival_rate: 0.6378 (t=390100)
+test_controlled_mean_travel_time: 19.2137 (t=390100)
+test_return_mean: -219887.5469 (t=390100)
+test_mean_travel_time_avg: 16.2061 (t=390100)
+test_mean_waiting_time_avg: 19.9546 (t=390100)
+test_total_stops_avg: 48926.2000 (t=390100)
+test_total_emissions_avg: 401238.3034 (t=390100)
+test_arrival_rate_avg: 0.6691 (t=390100)
+test_controlled_mean_travel_time_avg: 16.2061 (t=390100)
+loss: 265.4353 (t=395000)
+grad_norm: 397.0273 (t=395000)
+q_taken_mean: -0.6578 (t=395000)
+q_taken_std: 0.2818 (t=395000)
+target_mean: -179.0280 (t=395000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.2495 (t=395000)
+buffer_fill: 1.0000 (t=395000)
+train_return_mean: -242082.0941 (t=395000)
+episode_return: -236360.8817 (t=400000)
+train_mean_travel_time: 14.1827 (t=400000)
+train_mean_waiting_time: 25.2179 (t=400000)
+train_total_stops: 65533.0000 (t=400000)
+train_total_emissions: 424231.7397 (t=400000)
+train_arrival_rate: 0.6914 (t=400000)
+train_controlled_mean_travel_time: 14.1827 (t=400000)
+loss: 262.2395 (t=400000)
+grad_norm: 316.3065 (t=400000)
+q_taken_mean: -0.6473 (t=400000)
+q_taken_std: 0.2889 (t=400000)
+target_mean: -183.7907 (t=400000)
+-------------------
+
+Checkpoint saved at t=400000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_400000
+
+[Testing at t=400100]
+Test results: avg_return=-241738.81, std=41735.11
+  mean_travel_time=14.1s, arrival_rate=0.696
+
+[Validation at t=400100]
+Validation results: avg_return=-250294.42, std=40466.29
+  mean_travel_time=13.6s
+  Current best metric: -10.1214 at t=200100
+
+--- Recent Stats ---
+epsilon: 0.2400 (t=400000)
+buffer_fill: 1.0000 (t=400000)
+train_return_mean: -249008.7381 (t=400000)
+episode_return: -220325.1344 (t=405000)
+train_mean_travel_time: 14.7244 (t=405000)
+train_mean_waiting_time: 19.9715 (t=405000)
+train_total_stops: 50495.0000 (t=405000)
+train_total_emissions: 400384.3647 (t=405000)
+train_arrival_rate: 0.6804 (t=405000)
+train_controlled_mean_travel_time: 14.7244 (t=405000)
+test_return: -282276.4638 (t=400100)
+test_mean_travel_time: 9.9067 (t=400100)
+test_mean_waiting_time: 29.6524 (t=400100)
+test_total_stops: 95253.0000 (t=400100)
+test_total_emissions: 496813.7627 (t=400100)
+test_arrival_rate: 0.7325 (t=400100)
+test_controlled_mean_travel_time: 9.9067 (t=400100)
+test_return_mean: -241738.8094 (t=400100)
+test_mean_travel_time_avg: 14.0675 (t=400100)
+test_mean_waiting_time_avg: 24.0934 (t=400100)
+test_total_stops_avg: 67776.6000 (t=400100)
+test_total_emissions_avg: 428378.5709 (t=400100)
+test_arrival_rate_avg: 0.6959 (t=400100)
+test_controlled_mean_travel_time_avg: 14.0675 (t=400100)
+validation_return_mean: -250294.4172 (t=400100)
+validation_mean_travel_time: 13.6210 (t=400100)
+loss: 270.5240 (t=405000)
+grad_norm: 1069.1697 (t=405000)
+q_taken_mean: -0.6572 (t=405000)
+q_taken_std: 0.2806 (t=405000)
+target_mean: -182.5686 (t=405000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.2305 (t=405000)
+buffer_fill: 1.0000 (t=405000)
+train_return_mean: -255569.6078 (t=405000)
+episode_return: -212494.6363 (t=410000)
+train_mean_travel_time: 16.1146 (t=410000)
+train_mean_waiting_time: 19.5884 (t=410000)
+train_total_stops: 47240.0000 (t=410000)
+train_total_emissions: 385636.2987 (t=410000)
+train_arrival_rate: 0.6770 (t=410000)
+train_controlled_mean_travel_time: 16.1146 (t=410000)
+loss: 300.9569 (t=410000)
+grad_norm: 1612.3088 (t=410000)
+q_taken_mean: -0.6586 (t=410000)
+q_taken_std: 0.2819 (t=410000)
+target_mean: -184.2745 (t=410000)
+-------------------
+
+
+[Testing at t=410100]
+Test results: avg_return=-232489.05, std=28490.74
+  mean_travel_time=14.8s, arrival_rate=0.684
+
+--- Recent Stats ---
+epsilon: 0.2210 (t=410000)
+buffer_fill: 1.0000 (t=410000)
+train_return_mean: -255745.3712 (t=410000)
+episode_return: -338641.1383 (t=415000)
+train_mean_travel_time: 7.3258 (t=415000)
+train_mean_waiting_time: 36.6557 (t=415000)
+train_total_stops: 139654.0000 (t=415000)
+train_total_emissions: 573438.3041 (t=415000)
+train_arrival_rate: 0.7649 (t=415000)
+train_controlled_mean_travel_time: 7.3258 (t=415000)
+test_return: -205420.9355 (t=410100)
+test_mean_travel_time: 19.6532 (t=410100)
+test_mean_waiting_time: 19.7296 (t=410100)
+test_total_stops: 44165.0000 (t=410100)
+test_total_emissions: 377685.4703 (t=410100)
+test_arrival_rate: 0.6432 (t=410100)
+test_controlled_mean_travel_time: 19.6532 (t=410100)
+test_return_mean: -232489.0500 (t=410100)
+test_mean_travel_time_avg: 14.7858 (t=410100)
+test_mean_waiting_time_avg: 21.2737 (t=410100)
+test_total_stops_avg: 57166.0000 (t=410100)
+test_total_emissions_avg: 418946.0485 (t=410100)
+test_arrival_rate_avg: 0.6840 (t=410100)
+test_controlled_mean_travel_time_avg: 14.7858 (t=410100)
+loss: 288.4245 (t=415000)
+grad_norm: 1000.9104 (t=415000)
+q_taken_mean: -0.6498 (t=415000)
+q_taken_std: 0.2868 (t=415000)
+target_mean: -187.9111 (t=415000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.2115 (t=415000)
+buffer_fill: 1.0000 (t=415000)
+train_return_mean: -253594.6406 (t=415000)
+episode_return: -302893.9525 (t=420000)
+train_mean_travel_time: 9.0469 (t=420000)
+train_mean_waiting_time: 30.5914 (t=420000)
+train_total_stops: 103751.0000 (t=420000)
+train_total_emissions: 524402.5341 (t=420000)
+train_arrival_rate: 0.7413 (t=420000)
+train_controlled_mean_travel_time: 9.0469 (t=420000)
+loss: 306.3609 (t=420000)
+grad_norm: 1336.7584 (t=420000)
+q_taken_mean: -0.6525 (t=420000)
+q_taken_std: 0.2850 (t=420000)
+target_mean: -188.4671 (t=420000)
+-------------------
+
+
+[Testing at t=420100]
+Test results: avg_return=-236084.96, std=13576.72
+  mean_travel_time=14.9s, arrival_rate=0.692
+
+--- Recent Stats ---
+epsilon: 0.2020 (t=420000)
+buffer_fill: 1.0000 (t=420000)
+train_return_mean: -249358.5841 (t=420000)
+episode_return: -227622.0540 (t=425000)
+train_mean_travel_time: 14.4460 (t=425000)
+train_mean_waiting_time: 21.8083 (t=425000)
+train_total_stops: 55463.0000 (t=425000)
+train_total_emissions: 415903.9684 (t=425000)
+train_arrival_rate: 0.6731 (t=425000)
+train_controlled_mean_travel_time: 14.4460 (t=425000)
+test_return: -239449.3895 (t=420100)
+test_mean_travel_time: 13.3955 (t=420100)
+test_mean_waiting_time: 24.6097 (t=420100)
+test_total_stops: 65008.0000 (t=420100)
+test_total_emissions: 418989.4887 (t=420100)
+test_arrival_rate: 0.7128 (t=420100)
+test_controlled_mean_travel_time: 13.3955 (t=420100)
+test_return_mean: -236084.9625 (t=420100)
+test_mean_travel_time_avg: 14.8596 (t=420100)
+test_mean_waiting_time_avg: 24.4473 (t=420100)
+test_total_stops_avg: 62824.0000 (t=420100)
+test_total_emissions_avg: 421169.1324 (t=420100)
+test_arrival_rate_avg: 0.6924 (t=420100)
+test_controlled_mean_travel_time_avg: 14.8596 (t=420100)
+loss: 302.7289 (t=425000)
+grad_norm: 1171.5928 (t=425000)
+q_taken_mean: -0.6533 (t=425000)
+q_taken_std: 0.2849 (t=425000)
+target_mean: -191.8086 (t=425000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.1925 (t=425000)
+buffer_fill: 1.0000 (t=425000)
+train_return_mean: -234933.5172 (t=425000)
+episode_return: -304466.5454 (t=430000)
+train_mean_travel_time: 9.2062 (t=430000)
+train_mean_waiting_time: 30.8267 (t=430000)
+train_total_stops: 103771.0000 (t=430000)
+train_total_emissions: 524995.3594 (t=430000)
+train_arrival_rate: 0.7381 (t=430000)
+train_controlled_mean_travel_time: 9.2062 (t=430000)
+loss: 306.3377 (t=430000)
+grad_norm: 466.5546 (t=430000)
+q_taken_mean: -0.6520 (t=430000)
+q_taken_std: 0.2845 (t=430000)
+target_mean: -192.1874 (t=430000)
+-------------------
+
+
+[Testing at t=430100]
+Test results: avg_return=-263025.81, std=53087.55
+  mean_travel_time=11.7s, arrival_rate=0.722
+
+--- Recent Stats ---
+epsilon: 0.1830 (t=430000)
+buffer_fill: 1.0000 (t=430000)
+train_return_mean: -251574.8306 (t=430000)
+episode_return: -208194.9712 (t=435000)
+train_mean_travel_time: 17.1638 (t=435000)
+train_mean_waiting_time: 18.6089 (t=435000)
+train_total_stops: 44314.0000 (t=435000)
+train_total_emissions: 381271.2398 (t=435000)
+train_arrival_rate: 0.6692 (t=435000)
+train_controlled_mean_travel_time: 17.1638 (t=435000)
+test_return: -327463.6157 (t=430100)
+test_mean_travel_time: 7.5333 (t=430100)
+test_mean_waiting_time: 33.4719 (t=430100)
+test_total_stops: 124314.0000 (t=430100)
+test_total_emissions: 550915.6623 (t=430100)
+test_arrival_rate: 0.7637 (t=430100)
+test_controlled_mean_travel_time: 7.5333 (t=430100)
+test_return_mean: -263025.8094 (t=430100)
+test_mean_travel_time_avg: 11.7276 (t=430100)
+test_mean_waiting_time_avg: 24.7020 (t=430100)
+test_total_stops_avg: 78993.4000 (t=430100)
+test_total_emissions_avg: 457138.8145 (t=430100)
+test_arrival_rate_avg: 0.7219 (t=430100)
+test_controlled_mean_travel_time_avg: 11.7276 (t=430100)
+loss: 327.0302 (t=435000)
+grad_norm: 1072.0963 (t=435000)
+q_taken_mean: -0.6531 (t=435000)
+q_taken_std: 0.2844 (t=435000)
+target_mean: -196.0838 (t=435000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.1735 (t=435000)
+buffer_fill: 1.0000 (t=435000)
+train_return_mean: -242257.3894 (t=435000)
+episode_return: -218161.7915 (t=440000)
+train_mean_travel_time: 15.3942 (t=440000)
+train_mean_waiting_time: 17.9495 (t=440000)
+train_total_stops: 45982.0000 (t=440000)
+train_total_emissions: 391691.4732 (t=440000)
+train_arrival_rate: 0.6874 (t=440000)
+train_controlled_mean_travel_time: 15.3942 (t=440000)
+loss: 302.4010 (t=440000)
+grad_norm: 1082.5912 (t=440000)
+q_taken_mean: -0.6542 (t=440000)
+q_taken_std: 0.2842 (t=440000)
+target_mean: -191.7176 (t=440000)
+-------------------
+
+
+[Testing at t=440100]
+Test results: avg_return=-243478.25, std=41973.58
+  mean_travel_time=13.8s, arrival_rate=0.698
+
+--- Recent Stats ---
+epsilon: 0.1640 (t=440000)
+buffer_fill: 1.0000 (t=440000)
+train_return_mean: -249768.3300 (t=440000)
+episode_return: -227949.8823 (t=445000)
+train_mean_travel_time: 14.4364 (t=445000)
+train_mean_waiting_time: 19.8949 (t=445000)
+train_total_stops: 51011.0000 (t=445000)
+train_total_emissions: 403332.2596 (t=445000)
+train_arrival_rate: 0.6971 (t=445000)
+train_controlled_mean_travel_time: 14.4364 (t=445000)
+test_return: -208264.8099 (t=440100)
+test_mean_travel_time: 15.4563 (t=440100)
+test_mean_waiting_time: 17.5645 (t=440100)
+test_total_stops: 44774.0000 (t=440100)
+test_total_emissions: 380109.8861 (t=440100)
+test_arrival_rate: 0.6863 (t=440100)
+test_controlled_mean_travel_time: 15.4563 (t=440100)
+test_return_mean: -243478.2531 (t=440100)
+test_mean_travel_time_avg: 13.8205 (t=440100)
+test_mean_waiting_time_avg: 22.9736 (t=440100)
+test_total_stops_avg: 66121.6000 (t=440100)
+test_total_emissions_avg: 432970.6063 (t=440100)
+test_arrival_rate_avg: 0.6984 (t=440100)
+test_controlled_mean_travel_time_avg: 13.8205 (t=440100)
+loss: 316.3016 (t=445000)
+grad_norm: 2540.8176 (t=445000)
+q_taken_mean: -0.6497 (t=445000)
+q_taken_std: 0.2876 (t=445000)
+target_mean: -197.3360 (t=445000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.1545 (t=445000)
+buffer_fill: 1.0000 (t=445000)
+train_return_mean: -245114.3931 (t=445000)
+episode_return: -306984.9720 (t=450000)
+train_mean_travel_time: 8.5040 (t=450000)
+train_mean_waiting_time: 28.2777 (t=450000)
+train_total_stops: 99546.0000 (t=450000)
+train_total_emissions: 523672.0001 (t=450000)
+train_arrival_rate: 0.7514 (t=450000)
+train_controlled_mean_travel_time: 8.5040 (t=450000)
+loss: 330.5122 (t=450000)
+grad_norm: 717.3638 (t=450000)
+q_taken_mean: -0.6501 (t=450000)
+q_taken_std: 0.2866 (t=450000)
+target_mean: -204.7132 (t=450000)
+-------------------
+
+Checkpoint saved at t=450000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_450000
+
+[Testing at t=450100]
+Test results: avg_return=-243430.89, std=29989.85
+  mean_travel_time=13.7s, arrival_rate=0.697
+
+[Validation at t=450100]
+Validation results: avg_return=-261820.42, std=37498.60
+  mean_travel_time=11.8s
+  Current best metric: -10.1214 at t=200100
+
+--- Recent Stats ---
+epsilon: 0.1450 (t=450000)
+buffer_fill: 1.0000 (t=450000)
+train_return_mean: -252897.1691 (t=450000)
+episode_return: -209174.0276 (t=455000)
+train_mean_travel_time: 18.7239 (t=455000)
+train_mean_waiting_time: 19.6092 (t=455000)
+train_total_stops: 44507.0000 (t=455000)
+train_total_emissions: 387677.5618 (t=455000)
+train_arrival_rate: 0.6319 (t=455000)
+train_controlled_mean_travel_time: 18.7239 (t=455000)
+test_return: -228158.5166 (t=450100)
+test_mean_travel_time: 15.5202 (t=450100)
+test_mean_waiting_time: 21.5898 (t=450100)
+test_total_stops: 53454.0000 (t=450100)
+test_total_emissions: 411816.6097 (t=450100)
+test_arrival_rate: 0.6718 (t=450100)
+test_controlled_mean_travel_time: 15.5202 (t=450100)
+test_return_mean: -243430.8906 (t=450100)
+test_mean_travel_time_avg: 13.7369 (t=450100)
+test_mean_waiting_time_avg: 23.4103 (t=450100)
+test_total_stops_avg: 64300.0000 (t=450100)
+test_total_emissions_avg: 430490.6487 (t=450100)
+test_arrival_rate_avg: 0.6971 (t=450100)
+test_controlled_mean_travel_time_avg: 13.7369 (t=450100)
+validation_return_mean: -261820.4234 (t=450100)
+validation_mean_travel_time: 11.8443 (t=450100)
+loss: 311.4655 (t=455000)
+grad_norm: 1874.1410 (t=455000)
+q_taken_mean: -0.6607 (t=455000)
+q_taken_std: 0.2798 (t=455000)
+target_mean: -191.8943 (t=455000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.1355 (t=455000)
+buffer_fill: 1.0000 (t=455000)
+train_return_mean: -241291.3144 (t=455000)
+episode_return: -315570.6987 (t=460000)
+train_mean_travel_time: 8.2000 (t=460000)
+train_mean_waiting_time: 29.5807 (t=460000)
+train_total_stops: 108588.0000 (t=460000)
+train_total_emissions: 540298.6884 (t=460000)
+train_arrival_rate: 0.7529 (t=460000)
+train_controlled_mean_travel_time: 8.2000 (t=460000)
+loss: 316.9615 (t=460000)
+grad_norm: 820.8130 (t=460000)
+q_taken_mean: -0.6528 (t=460000)
+q_taken_std: 0.2842 (t=460000)
+target_mean: -201.5180 (t=460000)
+-------------------
+
+
+[Testing at t=460100]
+Test results: avg_return=-244741.79, std=33431.95
+  mean_travel_time=13.4s, arrival_rate=0.703
+
+--- Recent Stats ---
+epsilon: 0.1260 (t=460000)
+buffer_fill: 1.0000 (t=460000)
+train_return_mean: -247295.2694 (t=460000)
+episode_return: -230176.0832 (t=465000)
+train_mean_travel_time: 14.0991 (t=465000)
+train_mean_waiting_time: 21.7118 (t=465000)
+train_total_stops: 56466.0000 (t=465000)
+train_total_emissions: 406783.2368 (t=465000)
+train_arrival_rate: 0.7068 (t=465000)
+train_controlled_mean_travel_time: 14.0991 (t=465000)
+test_return: -306169.7768 (t=460100)
+test_mean_travel_time: 8.0008 (t=460100)
+test_mean_waiting_time: 28.9667 (t=460100)
+test_total_stops: 105217.0000 (t=460100)
+test_total_emissions: 522926.8307 (t=460100)
+test_arrival_rate: 0.7591 (t=460100)
+test_controlled_mean_travel_time: 8.0008 (t=460100)
+test_return_mean: -244741.7875 (t=460100)
+test_mean_travel_time_avg: 13.3907 (t=460100)
+test_mean_waiting_time_avg: 23.6064 (t=460100)
+test_total_stops_avg: 66938.2000 (t=460100)
+test_total_emissions_avg: 435074.0250 (t=460100)
+test_arrival_rate_avg: 0.7026 (t=460100)
+test_controlled_mean_travel_time_avg: 13.3907 (t=460100)
+loss: 323.0735 (t=465000)
+grad_norm: 2272.2368 (t=465000)
+q_taken_mean: -0.6551 (t=465000)
+q_taken_std: 0.2844 (t=465000)
+target_mean: -201.7551 (t=465000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.1165 (t=465000)
+buffer_fill: 1.0000 (t=465000)
+train_return_mean: -250389.8053 (t=465000)
+episode_return: -319481.1410 (t=470000)
+train_mean_travel_time: 7.3419 (t=470000)
+train_mean_waiting_time: 32.7398 (t=470000)
+train_total_stops: 120489.0000 (t=470000)
+train_total_emissions: 537691.0360 (t=470000)
+train_arrival_rate: 0.7662 (t=470000)
+train_controlled_mean_travel_time: 7.3419 (t=470000)
+loss: 369.1931 (t=470000)
+grad_norm: 1152.9185 (t=470000)
+q_taken_mean: -0.6459 (t=470000)
+q_taken_std: 0.2906 (t=470000)
+target_mean: -210.4607 (t=470000)
+-------------------
+
+
+[Testing at t=470100]
+Test results: avg_return=-270410.93, std=45891.77
+  mean_travel_time=11.7s, arrival_rate=0.713
+
+--- Recent Stats ---
+epsilon: 0.1070 (t=470000)
+buffer_fill: 1.0000 (t=470000)
+train_return_mean: -253030.9150 (t=470000)
+episode_return: -212286.7792 (t=475000)
+train_mean_travel_time: 18.7779 (t=475000)
+train_mean_waiting_time: 23.7647 (t=475000)
+train_total_stops: 52478.0000 (t=475000)
+train_total_emissions: 385879.1966 (t=475000)
+train_arrival_rate: 0.6685 (t=475000)
+train_controlled_mean_travel_time: 18.7779 (t=475000)
+test_return: -294556.9984 (t=470100)
+test_mean_travel_time: 9.5345 (t=470100)
+test_mean_waiting_time: 30.9567 (t=470100)
+test_total_stops: 97801.0000 (t=470100)
+test_total_emissions: 514948.3777 (t=470100)
+test_arrival_rate: 0.7237 (t=470100)
+test_controlled_mean_travel_time: 9.5345 (t=470100)
+test_return_mean: -270410.9313 (t=470100)
+test_mean_travel_time_avg: 11.7181 (t=470100)
+test_mean_waiting_time_avg: 27.1134 (t=470100)
+test_total_stops_avg: 84766.8000 (t=470100)
+test_total_emissions_avg: 474191.3298 (t=470100)
+test_arrival_rate_avg: 0.7132 (t=470100)
+test_controlled_mean_travel_time_avg: 11.7181 (t=470100)
+loss: 329.8660 (t=475000)
+grad_norm: 2812.2219 (t=475000)
+q_taken_mean: -0.6545 (t=475000)
+q_taken_std: 0.2847 (t=475000)
+target_mean: -202.4779 (t=475000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.0975 (t=475000)
+buffer_fill: 1.0000 (t=475000)
+train_return_mean: -252382.6909 (t=475000)
+episode_return: -230549.6920 (t=480000)
+train_mean_travel_time: 14.6383 (t=480000)
+train_mean_waiting_time: 21.1835 (t=480000)
+train_total_stops: 54820.0000 (t=480000)
+train_total_emissions: 412691.9545 (t=480000)
+train_arrival_rate: 0.6978 (t=480000)
+train_controlled_mean_travel_time: 14.6383 (t=480000)
+loss: 327.9809 (t=480000)
+grad_norm: 1839.9886 (t=480000)
+q_taken_mean: -0.6535 (t=480000)
+q_taken_std: 0.2849 (t=480000)
+target_mean: -204.0965 (t=480000)
+-------------------
+
+
+[Testing at t=480100]
+Test results: avg_return=-255834.97, std=36675.23
+  mean_travel_time=12.4s, arrival_rate=0.710
+
+--- Recent Stats ---
+epsilon: 0.0880 (t=480000)
+buffer_fill: 1.0000 (t=480000)
+train_return_mean: -248572.2563 (t=480000)
+episode_return: -316877.9349 (t=485000)
+train_mean_travel_time: 7.8592 (t=485000)
+train_mean_waiting_time: 30.1824 (t=485000)
+train_total_stops: 110964.0000 (t=485000)
+train_total_emissions: 538734.9001 (t=485000)
+train_arrival_rate: 0.7596 (t=485000)
+train_controlled_mean_travel_time: 7.8592 (t=485000)
+test_return: -279742.7586 (t=480100)
+test_mean_travel_time: 9.4737 (t=480100)
+test_mean_waiting_time: 28.8375 (t=480100)
+test_total_stops: 93476.0000 (t=480100)
+test_total_emissions: 494958.5717 (t=480100)
+test_arrival_rate: 0.7380 (t=480100)
+test_controlled_mean_travel_time: 9.4737 (t=480100)
+test_return_mean: -255834.9688 (t=480100)
+test_mean_travel_time_avg: 12.3923 (t=480100)
+test_mean_waiting_time_avg: 25.4016 (t=480100)
+test_total_stops_avg: 75468.0000 (t=480100)
+test_total_emissions_avg: 449971.4879 (t=480100)
+test_arrival_rate_avg: 0.7103 (t=480100)
+test_controlled_mean_travel_time_avg: 12.3923 (t=480100)
+loss: 330.1143 (t=485000)
+grad_norm: 1998.7885 (t=485000)
+q_taken_mean: -0.6564 (t=485000)
+q_taken_std: 0.2821 (t=485000)
+target_mean: -206.3326 (t=485000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.0785 (t=485000)
+buffer_fill: 1.0000 (t=485000)
+train_return_mean: -251655.2759 (t=485000)
+episode_return: -225465.2148 (t=490000)
+train_mean_travel_time: 13.8520 (t=490000)
+train_mean_waiting_time: 17.9686 (t=490000)
+train_total_stops: 47995.0000 (t=490000)
+train_total_emissions: 402464.8458 (t=490000)
+train_arrival_rate: 0.6980 (t=490000)
+train_controlled_mean_travel_time: 13.8520 (t=490000)
+loss: 355.9645 (t=490000)
+grad_norm: 1544.0128 (t=490000)
+q_taken_mean: -0.6513 (t=490000)
+q_taken_std: 0.2854 (t=490000)
+target_mean: -210.6699 (t=490000)
+-------------------
+
+
+[Testing at t=490100]
+Test results: avg_return=-252372.58, std=24801.40
+  mean_travel_time=12.3s, arrival_rate=0.714
+
+--- Recent Stats ---
+epsilon: 0.0690 (t=490000)
+buffer_fill: 1.0000 (t=490000)
+train_return_mean: -254398.2416 (t=490000)
+episode_return: -310603.9620 (t=495000)
+train_mean_travel_time: 8.3572 (t=495000)
+train_mean_waiting_time: 32.3417 (t=495000)
+train_total_stops: 115374.0000 (t=495000)
+train_total_emissions: 527262.0255 (t=495000)
+train_arrival_rate: 0.7597 (t=495000)
+train_controlled_mean_travel_time: 8.3572 (t=495000)
+test_return: -248912.3270 (t=490100)
+test_mean_travel_time: 13.2397 (t=490100)
+test_mean_waiting_time: 24.3535 (t=490100)
+test_total_stops: 64700.0000 (t=490100)
+test_total_emissions: 436327.0041 (t=490100)
+test_arrival_rate: 0.6980 (t=490100)
+test_controlled_mean_travel_time: 13.2397 (t=490100)
+test_return_mean: -252372.5781 (t=490100)
+test_mean_travel_time_avg: 12.3012 (t=490100)
+test_mean_waiting_time_avg: 23.6956 (t=490100)
+test_total_stops_avg: 68567.8000 (t=490100)
+test_total_emissions_avg: 441996.7403 (t=490100)
+test_arrival_rate_avg: 0.7139 (t=490100)
+test_controlled_mean_travel_time_avg: 12.3012 (t=490100)
+loss: 346.0958 (t=495000)
+grad_norm: 814.0828 (t=495000)
+q_taken_mean: -0.6521 (t=495000)
+q_taken_std: 0.2854 (t=495000)
+target_mean: -210.9741 (t=495000)
+-------------------
+
+
+--- Recent Stats ---
+epsilon: 0.0595 (t=495000)
+buffer_fill: 1.0000 (t=495000)
+train_return_mean: -247217.2816 (t=495000)
+episode_return: -291743.7000 (t=500000)
+train_mean_travel_time: 9.0108 (t=500000)
+train_mean_waiting_time: 26.1283 (t=500000)
+train_total_stops: 87537.0000 (t=500000)
+train_total_emissions: 510849.9795 (t=500000)
+train_arrival_rate: 0.7305 (t=500000)
+train_controlled_mean_travel_time: 9.0108 (t=500000)
+loss: 384.3206 (t=500000)
+grad_norm: 873.1437 (t=500000)
+q_taken_mean: -0.6466 (t=500000)
+q_taken_std: 0.2886 (t=500000)
+target_mean: -218.8804 (t=500000)
+-------------------
+
+Checkpoint saved at t=500000 -> /kaggle/working/Mono-QMIX/results/models/seed0/step_500000
+
+Final model saved to /kaggle/working/Mono-QMIX/results/models/seed0/final
+Best model: validation_return=-10.12 at t=200100
+Best model saved to /kaggle/working/Mono-QMIX/results/models/seed0/best
+
+Training complete! Total episodes: 5000, Total timesteps: 500000
+free(): invalid pointer
+INFO:envs.sumo_backend:SUMO backend set to 'libsumo'
+
+============================================================
+Evaluating QMIX model from: /kaggle/working/Mono-QMIX/results/models/seed0/best
+============================================================
+
+Environment Info:
+  n_agents: 32
+  n_actions: 2
+  obs_shape: 65
+  state_shape: 2080
+
+Loading model from /kaggle/working/Mono-QMIX/results/models/seed0/best...
+  [OK] Agent network loaded
+
+Running 5 evaluation episodes...
+------------------------------------------------------------
+  Episode 1/5: return=-212216.83, length=100, tt=16s, arr=0.67
+  Episode 2/5: return=-245989.42, length=100, tt=13s, arr=0.70
+  Episode 3/5: return=-232125.45, length=100, tt=14s, arr=0.69
+  Episode 4/5: return=-227917.83, length=100, tt=14s, arr=0.71
+  Episode 5/5: return=-318534.50, length=100, tt=8s, arr=0.76
+
+============================================================
+Evaluation Results
+============================================================
+Policy       : /kaggle/working/Mono-QMIX/results/models/seed0/best
+Episodes     : 5
+Mean Return  : -247356.81 ± 37182.85
+
+--- Traffic Metrics ---
+  Mean Travel Time (s)               : 13.170 ± 2.780
+  Mean Waiting Time (s)              : 23.852 ± 5.732
+  Total Stops                        : 69103.400 ± 29037.556
+  Total Emissions                    : 437040.473 ± 52753.745
+  Arrival Rate                       : 0.704 ± 0.031
+  Controlled Mean Travel Time (s)    : 13.170 ± 2.780
+
+Results saved to: results/eval/qmix_seed0.json
+
+Evaluation complete!
+free(): invalid pointer
+INFO:envs.sumo_backend:SUMO backend set to 'libsumo'
+
+============================================================
+Evaluating Baseline policy: noop
+============================================================
+
+Environment Info:
+  n_agents: 32
+  n_actions: 2
+  obs_shape: 65
+  state_shape: 2080
+BaselineMAC initialized with policy: noop
+
+Running 5 evaluation episodes...
+------------------------------------------------------------
+  Episode 1/5: return=-205293.66, length=100, tt=17s, arr=0.66
+  Episode 2/5: return=-231623.98, length=100, tt=15s, arr=0.69
+  Episode 3/5: return=-234545.59, length=100, tt=14s, arr=0.69
+  Episode 4/5: return=-215229.67, length=100, tt=15s, arr=0.69
+  Episode 5/5: return=-284471.00, length=100, tt=10s, arr=0.74
+
+============================================================
+Evaluation Results
+============================================================
+Policy       : noop
+Episodes     : 5
+Mean Return  : -234232.78 ± 27310.71
+
+--- Traffic Metrics ---
+  Mean Travel Time (s)               : 14.194 ± 2.533
+  Mean Waiting Time (s)              : 22.407 ± 3.260
+  Total Stops                        : 60510.000 ± 16072.290
+  Total Emissions                    : 419087.066 ± 39893.144
+  Arrival Rate                       : 0.696 ± 0.027
+  Controlled Mean Travel Time (s)    : 14.194 ± 2.533
+
+Results saved to: results/eval/noop_seed0.json
+
+Evaluation complete!
+free(): invalid pointer
+INFO:envs.sumo_backend:SUMO backend set to 'libsumo'
+
+============================================================
+Evaluating Baseline policy: greedy_shortest
+============================================================
+
+Environment Info:
+  n_agents: 32
+  n_actions: 2
+  obs_shape: 65
+  state_shape: 2080
+BaselineMAC initialized with policy: greedy_shortest
+
+Running 5 evaluation episodes...
+------------------------------------------------------------
+  Episode 1/5: return=-207913.75, length=100, tt=17s, arr=0.66
+  Episode 2/5: return=-232630.94, length=100, tt=15s, arr=0.69
+  Episode 3/5: return=-238354.11, length=100, tt=14s, arr=0.70
+  Episode 4/5: return=-215512.59, length=100, tt=15s, arr=0.69
+  Episode 5/5: return=-284198.16, length=100, tt=9s, arr=0.74
+
+============================================================
+Evaluation Results
+============================================================
+Policy       : greedy_shortest
+Episodes     : 5
+Mean Return  : -235721.91 ± 26638.84
+
+--- Traffic Metrics ---
+  Mean Travel Time (s)               : 14.107 ± 2.603
+  Mean Waiting Time (s)              : 22.099 ± 3.076
+  Total Stops                        : 60477.200 ± 16504.796
+  Total Emissions                    : 421249.044 ± 39232.826
+  Arrival Rate                       : 0.695 ± 0.027
+  Controlled Mean Travel Time (s)    : 14.107 ± 2.603
+
+Results saved to: results/eval/greedy_shortest_seed0.json
+
+Evaluation complete!
+free(): invalid pointer
+INFO:envs.sumo_backend:SUMO backend set to 'libsumo'
+
+============================================================
+Evaluating Baseline policy: random
+============================================================
+
+Environment Info:
+  n_agents: 32
+  n_actions: 2
+  obs_shape: 65
+  state_shape: 2080
+BaselineMAC initialized with policy: random
+
+Running 5 evaluation episodes...
+------------------------------------------------------------
+  Episode 1/5: return=-212216.88, length=100, tt=16s, arr=0.67
+  Episode 2/5: return=-234621.30, length=100, tt=14s, arr=0.71
+  Episode 3/5: return=-214377.83, length=100, tt=17s, arr=0.68
+  Episode 4/5: return=-229209.31, length=100, tt=15s, arr=0.70
+  Episode 5/5: return=-231286.50, length=100, tt=17s, arr=0.65
+
+============================================================
+Evaluation Results
+============================================================
+Policy       : random
+Episodes     : 5
+Mean Return  : -224342.36 ± 9207.43
+
+--- Traffic Metrics ---
+  Mean Travel Time (s)               : 15.681 ± 1.237
+  Mean Waiting Time (s)              : 21.549 ± 1.837
+  Total Stops                        : 53685.600 ± 4582.939
+  Total Emissions                    : 406086.164 ± 12478.577
+  Arrival Rate                       : 0.681 ± 0.023
+  Controlled Mean Travel Time (s)    : 15.681 ± 1.237
+
+Results saved to: results/eval/random_seed0.json
+
+Evaluation complete!
+
+Started : 2026-04-06 14:36:21
+
+Experiment plan:
+  Seeds         : [0]
+  t_max         : 500,000
+  Eval episodes : 5
+  Baselines     : ['noop', 'greedy_shortest', 'random']
+  Training      : YES
+
+============================================================
+  TRAINING  seed=0  t_max=500,000
+  cmd: /usr/bin/python3 /kaggle/working/Mono-QMIX/pymarl/src/main.py --seed 0 --t_max 500000 --checkpoint_path /kaggle/working/Mono-QMIX/results/models/seed0
+============================================================
+
+[WARNING] Training seed=0 exited with code -6
+
+============================================================
+  EVALUATING QMIX
+============================================================
+
+  Evaluating [qmix]  seed=0  episodes=5
+  [WARNING] Evaluation exited with code -6
+
+============================================================
+  EVALUATING BASELINES
+============================================================
+
+  Evaluating [noop]  seed=0  episodes=5
+  [WARNING] Evaluation exited with code -6
+
+  Evaluating [greedy_shortest]  seed=0  episodes=5
+  [WARNING] Evaluation exited with code -6
+
+  Evaluating [random]  seed=0  episodes=5
+  [WARNING] Evaluation exited with code -6
+
+==============================================================================
+FINAL COMPARISON (aggregated across seeds)
+==============================================================================
+Policy                       Return    Travel Time   Arrival Rate      N
+------------------------------------------------------------------------------
+greedy_shortest      -235721.91±26638.84       14.1±2.6    0.695±0.027      5
+noop                 -234232.78±27310.71       14.2±2.5    0.696±0.027      5
+qmix                 -247356.81±37182.85       13.2±2.8    0.704±0.031      5
+random               -224342.36±9207.43       15.7±1.2    0.681±0.023      5
+
+Aggregate summary saved to: /kaggle/working/Mono-QMIX/results/eval/summary_20260406_212420.json
+
+Finished: 2026-04-06 21:24:20
+Elapsed : 06:47:59
+
+All experiments complete!
+
+──────────────────────────────────────────────────────
+Smoke test complete. Results saved under results/eval/
+──────────────────────────────────────────────────────
+Exit code: 0
+free(): invalid pointer
