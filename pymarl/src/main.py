@@ -361,16 +361,19 @@ def main():
     # Get config paths
     script_dir = Path(__file__).parent
 
-    # Parse --alg_config early (before full argparse) so we can load the right config
+    # Parse --alg_config and --env_config early (before full argparse)
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--alg_config", type=str, default=None,
                         help="Algorithm config filename under config/algs/ (e.g. civiq_sumo.yaml)")
+    parser.add_argument("--env_config", type=str, default=None,
+                        help="Environment config filename under config/envs/ (e.g. sumo_bgc_core.yaml)")
     pre_args, _ = parser.parse_known_args()
 
     alg_config_name = pre_args.alg_config if pre_args.alg_config else "qmix_sumo.yaml"
+    env_config_name = pre_args.env_config if pre_args.env_config else "sumo_grid4x4.yaml"
     alg_config_path = script_dir / "config" / "algs" / alg_config_name
-    env_config_path = script_dir / "config" / "envs" / "sumo_grid4x4.yaml"
+    env_config_path = script_dir / "config" / "envs" / env_config_name
 
     # Load config
     if not alg_config_path.exists():
@@ -385,8 +388,9 @@ def main():
 
     # Override with command line args if needed
     parser = argparse.ArgumentParser()
-    parser.add_argument("--alg_config", type=str, default=None,
-                        help="Algorithm config filename under config/algs/")
+    # --alg_config and --env_config repeated here so the full parser doesn't reject them
+    parser.add_argument("--alg_config", type=str, default=None)
+    parser.add_argument("--env_config", type=str, default=None)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--use_cuda", action="store_true")
     parser.add_argument("--use_gui", action="store_true")

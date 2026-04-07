@@ -11,6 +11,7 @@ Run from repo root:
     python tests/test_phase5_gradient_flow.py
 """
 
+import math
 import os
 import sys
 import torch
@@ -152,12 +153,12 @@ def test_train_step(batch, learner, args):
     loss = stats["loss"]
     global_qtot_mean = stats["global_qtot_mean"]
 
-    assert not (loss != loss), f"loss is NaN: {loss}"           # NaN check
-    assert not (loss == float('inf')), f"loss is Inf: {loss}"
+    assert not math.isnan(loss), f"loss is NaN: {loss}"
+    assert not math.isinf(loss), f"loss is Inf: {loss}"
     assert loss > 0, f"loss is zero or negative: {loss}"
     assert loss < 1e8, f"loss is implausibly large: {loss}"
-    assert not (global_qtot_mean != global_qtot_mean), "global_qtot_mean is NaN"
-    assert not (global_qtot_mean == float('inf')), "global_qtot_mean is Inf"
+    assert not math.isnan(global_qtot_mean), "global_qtot_mean is NaN"
+    assert not math.isinf(global_qtot_mean), "global_qtot_mean is Inf"
 
     print(f"  Test 2 PASSED — train() completed:")
     print(f"    loss={loss:.6f}")

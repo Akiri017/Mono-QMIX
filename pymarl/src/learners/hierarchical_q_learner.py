@@ -170,19 +170,9 @@ class HierarchicalQLearner:
         global_states = batch["state"][:, :-1].to(self.device)                         # (B, T, G)
 
         # -- Online path --
-        # Build rsu_agent_qs by scattering chosen_action_qvals into RSU slots.
-        # Agents are ordered within each RSU by ascending agent index (matching
-        # the ordering used by _build_agents_per_rsu in the env).
-        # scatter_add_ is safe: non-RSU agents contribute src=0 (no effect).
-        rsu_agent_qs = torch.zeros(
-            batch_size, max_t, max_rsus, max_agents_per_rsu, device=self.device
+        rsu_agent_qs = self._build_rsu_agent_qs(
+            zone_assignments_t, chosen_action_qvals, batch_size, max_t, max_rsus, max_agents_per_rsu
         )
-        for r in range(max_rsus):
-            in_rsu = (zone_assignments_t == r)                                # (B, T, n_agents)
-            cumsum = in_rsu.long().cumsum(dim=-1)                              # (B, T, n_agents)
-            slot_idx = (cumsum - 1).clamp(0, max_agents_per_rsu - 1)          # (B, T, n_agents)
-            src = chosen_action_qvals * in_rsu.float()                         # (B, T, n_agents)
-            rsu_agent_qs[:, :, r, :].scatter_add_(dim=-1, index=slot_idx, src=src)
 
         # RSU-level mask: 1.0 if RSU has at least one real agent
         rsu_mask = (agent_masks.sum(-1) > 0).float()                          # (B, T, R)
@@ -211,15 +201,9 @@ class HierarchicalQLearner:
         target_local_states = batch["local_states"][:, 1:].to(self.device)                 # (B, T, R, A*obs)
         target_global_states = batch["state"][:, 1:].to(self.device)                       # (B, T, G)
 
-        target_rsu_agent_qs = torch.zeros(
-            batch_size, max_t, max_rsus, max_agents_per_rsu, device=self.device
+        target_rsu_agent_qs = self._build_rsu_agent_qs(
+            target_zone_assignments, target_max_qvals, batch_size, max_t, max_rsus, max_agents_per_rsu
         )
-        for r in range(max_rsus):
-            in_rsu = (target_zone_assignments == r)
-            cumsum = in_rsu.long().cumsum(dim=-1)
-            slot_idx = (cumsum - 1).clamp(0, max_agents_per_rsu - 1)
-            src = target_max_qvals * in_rsu.float()
-            target_rsu_agent_qs[:, :, r, :].scatter_add_(dim=-1, index=slot_idx, src=src)
 
         target_rsu_mask = (target_agent_masks.sum(-1) > 0).float()            # (B, T, R)
 
@@ -287,6 +271,32 @@ class HierarchicalQLearner:
             "local_mixer_grad_norm": local_mixer_grad_norm,
             "global_mixer_grad_norm": global_mixer_grad_norm,
         }
+
+    def _build_rsu_agent_qs(self, zone_assignments, qvals, batch_size, max_t, max_rsus, max_agents_per_rsu):
+        """Scatter per-agent Q-values into RSU-indexed padded slots.
+
+        Agents are ordered within each RSU by ascending agent index, matching
+        _build_agents_per_rsu in the env. scatter_add_ is safe: non-RSU agents
+        contribute src=0 so they have no effect on real slots.
+
+        Pre-computes cumsum for all RSUs at once (one kernel launch) then loops
+        only for the scatter step, halving intermediate tensor allocations vs.
+        computing cumsum per-RSU.
+        """
+        # (B, T, n_agents, R) — membership mask for every RSU simultaneously
+        in_rsu_all = (zone_assignments.unsqueeze(-1) ==
+                      torch.arange(max_rsus, device=self.device))              # (B, T, A, R)
+        # Slot index per agent per RSU: rank within that RSU (0-based)
+        slot_idx_all = (in_rsu_all.long().cumsum(dim=2) - 1).clamp(
+            0, max_agents_per_rsu - 1
+        )                                                                       # (B, T, A, R)
+
+        out = torch.zeros(batch_size, max_t, max_rsus, max_agents_per_rsu,
+                          device=self.device)
+        for r in range(max_rsus):
+            src = qvals * in_rsu_all[..., r].float()                           # (B, T, A)
+            out[:, :, r, :].scatter_add_(dim=-1, index=slot_idx_all[..., r], src=src)
+        return out
 
     def _update_targets(self):
         """Update target networks — mirrors QLearner pattern."""

@@ -1,0 +1,108 @@
+# SUMO BGC Core Rerouting Environment Configuration
+# Real-world map: Bonifacio Global City (BGC) core district, Manila
+# Network: bgc_core/final_map.net.xml — 184 edges, 129 junctions, 8 traffic-light intersections
+# Compatible with PyMARL Civiq (HierarchicalQLearner)
+
+env_args:
+  # Scenario paths (relative to repo root)
+  # los_level selects background traffic demand:
+  #   "low"  → trips_low.xml  (period=3.0, ~1200 veh/hr)
+  #   "med"  → trips_med.xml  (period=1.5, ~2400 veh/hr)
+  #   "high" → trips_high.xml (period=0.7, ~5143 veh/hr — LOS E, used for RSU validation)
+  los_level: "low"
+  sumo_cfg: null  # if null, derived from los_level via los_cfg map below
+  los_cfg:
+    low:  "bgc_core/train_low.sumocfg"
+    med:  "bgc_core/train_med.sumocfg"
+    high: "bgc_core/train_high.sumocfg"
+  network_file: "bgc_core/final_map.net.xml"
+  controlled_routes: "bgc_core/trips_low.xml"   # OD pairs for controlled agent spawning (generated from final_map.net.xml)
+
+  # Agent configuration
+  n_agents: 32    # controlled vehicle slots (replacement_enabled keeps slots filled)
+  n_actions: 4    # k-shortest candidate routes per agent (larger network warrants k=4)
+
+  # Decision period
+  decision_period: 10       # K: seconds between rerouting decisions
+  sumo_step_length: 1.0     # SUMO simulation step length in seconds
+
+  # Adaptive decision period (optional)
+  adaptive_decision_period: false
+  decision_period_warmup: 10
+  decision_period_steady: 5
+  warmup_duration: 300
+
+  # Episode configuration
+  max_episode_steps: 1000
+  episode_limit: 1000
+
+  # Replacement / lifelong agent configuration
+  replacement_enabled: true
+  replacement_delay: 3
+
+  # Observation space
+  obs_ego_dim: 5
+  obs_edge_encoding: "onehot"
+  obs_edge_dim: 184                   # edges in bgc_core/final_map.net.xml (no internal)
+  obs_local_traffic: true
+  obs_max_outgoing_edges: 4
+  obs_traffic_features: 3             # occupancy, mean speed, queue length per edge
+  # obs_dim = 5 + 184 + (4 * 3) = 201
+
+  # Global state
+  state_concat_obs: true
+  state_include_global_stats: false
+  state_global_stats_dim: 0
+  # state_dim = n_agents * obs_dim = 32 * 201 = 6432
+
+  # Action space
+  route_generation_method: "k_shortest"
+  route_cost_metric: "length"
+  route_refresh_each_step: true
+  action_mask_enabled: true
+  action_noop_as_keep_route: true
+
+  # Reward
+  reward_global: true
+  reward_time_weight: 1.0
+  reward_stops_weight: 0.05
+  reward_emissions_weight: 0.001
+  reward_stop_speed_threshold: 0.1
+  reward_reroute_penalty: 0.0
+
+  # Emissions
+  emissions_enabled: true
+  emissions_device: "CO2"
+
+  # Masking
+  use_active_mask: true
+  use_reset_mask: true
+
+  # SUMO settings
+  sumo_backend: "libsumo"
+  sumo_gui: false
+  sumo_seed: null
+  sumo_warnings: false
+
+  # RSU / Civiq keys (forwarded by episode_runner to env)
+  rsu_config: "config/envs/rsu/bgc_core.yaml"
+  max_rsus: 12                        # TEMPORARY — update to BGC Full node count when known
+  max_agents_per_rsu: 50              # validated: LOS E peak = 50 (RSU06), zero masked
+  obs_dim: 201                        # must match obs_ego_dim + obs_edge_dim + outgoing * traffic_features
+
+  # Debugging
+  verbose: false
+  render_mode: null
+
+# Top-level PyMARL fields
+episode_limit: 1000
+obs_shape: 201        # 5 + 184 + 12
+state_shape: 6432     # 32 * 201
+n_actions: 4
+n_agents: 32
+
+# Civiq overrides — these shadow civiq_sumo.yaml defaults which are 4x4-specific
+obs_dim: 201                        # overrides civiq_sumo.yaml obs_dim: 65
+global_state_dim: 6432              # overrides civiq_sumo.yaml global_state_dim: 2080  (32 * 201)
+max_agents_per_rsu: 50              # overrides civiq_sumo.yaml max_agents_per_rsu: 28
+rsu_config: "config/envs/rsu/bgc_core.yaml"   # overrides civiq_sumo.yaml rsu_config
