@@ -90,6 +90,13 @@ class HierarchicalQLearner:
         self.optimizer = optim.Adam(self.params, lr=args.get("lr", 0.0005),
                                     eps=args.get("optim_eps", 1e-5))
 
+        # Running reward normalisation — EMA over per-batch mean and variance.
+        # Keeps TD targets in a stable range regardless of how vehicle density
+        # grows as the policy improves, replacing any fixed reward_scale scalar.
+        self.ema_decay = args.get("reward_ema_decay", 0.99)
+        self.reward_running_mean = 0.0
+        self.reward_running_var = 1.0  # initialised to 1 to avoid div-by-zero on first batch
+
         # Training stats
         self.last_target_update_episode = 0
         self.log_stats_t = -1
@@ -122,6 +129,16 @@ class HierarchicalQLearner:
         terminated = terminated.to(self.device)
         mask = mask.to(self.device)
         avail_actions = avail_actions.to(self.device)
+
+        # Update running mean/var from valid timesteps only, then normalize.
+        # Using EMA so recent experience is weighted more heavily than early
+        # noisy episodes, and the scale adapts as vehicle density grows.
+        valid_rewards = rewards[mask.bool()]
+        batch_mean = valid_rewards.mean().item()
+        batch_var = valid_rewards.var().item() if valid_rewards.numel() > 1 else 1.0
+        self.reward_running_mean = self.ema_decay * self.reward_running_mean + (1 - self.ema_decay) * batch_mean
+        self.reward_running_var = self.ema_decay * self.reward_running_var + (1 - self.ema_decay) * batch_var
+        rewards = (rewards - self.reward_running_mean) / (self.reward_running_var ** 0.5 + 1e-8)
 
         # MAC forward pass — identical to QLearner
         mac_out = []
@@ -262,6 +279,8 @@ class HierarchicalQLearner:
             self.logger.log_stat("agent_grad_norm", agent_grad_norm, t_env)
             self.logger.log_stat("local_mixer_grad_norm", local_mixer_grad_norm, t_env)
             self.logger.log_stat("global_mixer_grad_norm", global_mixer_grad_norm, t_env)
+            self.logger.log_stat("reward_running_mean", self.reward_running_mean, t_env)
+            self.logger.log_stat("reward_running_std", self.reward_running_var ** 0.5, t_env)
             self.log_stats_t = t_env
 
         return {
@@ -339,6 +358,12 @@ class HierarchicalQLearner:
         torch.save(self.local_mixer.state_dict(), f"{path}/local_mixer.th")
         torch.save(self.global_mixer.state_dict(), f"{path}/global_mixer.th")
         torch.save(self.optimizer.state_dict(), f"{path}/optimizer.pth")
+        # Reward normalisation state — must be restored on resume so the scale
+        # doesn't reset mid-training and destabilise the TD targets
+        torch.save(
+            {"running_mean": self.reward_running_mean, "running_var": self.reward_running_var},
+            f"{path}/reward_stats.pth"
+        )
 
     def load_models(self, path):
         """Load model parameters and optimizer state."""
@@ -355,3 +380,8 @@ class HierarchicalQLearner:
             self.optimizer.load_state_dict(
                 torch.load(opt_path, map_location=self.device)
             )
+        stats_path = f"{path}/reward_stats.pth"
+        if os.path.exists(stats_path):
+            stats = torch.load(stats_path, map_location="cpu")
+            self.reward_running_mean = stats["running_mean"]
+            self.reward_running_var = stats["running_var"]

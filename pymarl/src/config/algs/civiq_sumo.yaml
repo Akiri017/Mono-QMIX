@@ -32,7 +32,7 @@ buffer_cpu_only: true
 # Learning
 lr: 0.0005
 optim_eps: 0.00001
-grad_norm_clip: 10000
+grad_norm_clip: 10
 weight_decay: 0
 
 # TD learning
@@ -55,7 +55,8 @@ log_interval: 5000
 episode_limit: 1000
 
 # Reward configuration
-reward_standardization: false
+reward_standardization: false  # PyMARL flag — not implemented; running normalisation handled directly in HierarchicalQLearner
+reward_ema_decay: 0.99         # EMA decay for running reward mean/var normalisation
 
 # Multi-agent specific
 mac: "basic_mac"
