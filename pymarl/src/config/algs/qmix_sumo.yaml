@@ -55,6 +55,7 @@ episode_limit: 1000  # Max steps per episode (matches env config)
 # Reward configuration
 reward_standardization: false  # PyMARL flag — not implemented; running normalisation is handled directly in QLearner
 reward_ema_decay: 0.99  # EMA decay for running reward mean/var normalisation — replaces fixed reward_scale
+popart_ema_decay: 0.99  # EMA decay for PopArt Q_tot target normalisation — bounds bootstrap amplification through the mixer
 
 # Multi-agent specific
 mac: "basic_mac"  # Multi-agent controller type

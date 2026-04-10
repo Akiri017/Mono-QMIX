@@ -51,6 +51,16 @@ class QLearner:
         self.reward_running_mean = 0.0
         self.reward_running_var = 1.0  # initialised to 1 to avoid div-by-zero on first batch
 
+        # PopArt stats for Q_tot-level target normalisation.
+        # Reward-level EMA normalisation cannot bound the bootstrap term
+        # (γ * Q_tot(s')), which grows unboundedly through the TD loop even
+        # when rewards are stable. PopArt tracks the scale of the full TD
+        # target (r_norm + γ * Q_tot') and normalises at that level, keeping
+        # the mixer output in a bounded range throughout training.
+        self.popart_mean = 0.0
+        self.popart_std = 1.0  # initialised to 1 to start as identity transform
+        self.popart_ema_decay = args.get("popart_ema_decay", 0.99)
+
         # Target network update
         self.target_update_interval = args.get("target_update_interval", 200)
         self.target_update_mode = args.get("target_update_mode", "hard")
@@ -79,6 +89,28 @@ class QLearner:
         self.last_target_update_episode = 0
 
         self.log_stats_t = -1
+
+    def _update_popart(self, targets_raw, mask):
+        """Update PopArt running mean/std from valid (unmasked) TD targets.
+
+        Args:
+            targets_raw: (batch, T, 1) — unnormalised TD targets
+            mask:        (batch, T, 1) — 1.0 for valid timesteps
+        """
+        valid_targets = targets_raw[mask.bool()]
+        if valid_targets.numel() < 2:
+            return
+        batch_mean = valid_targets.mean().item()
+        batch_std = valid_targets.std().item()
+        self.popart_mean = (
+            self.popart_ema_decay * self.popart_mean
+            + (1 - self.popart_ema_decay) * batch_mean
+        )
+        # Floor std at 1e-8 so the normalisation denominator never collapses
+        self.popart_std = (
+            self.popart_ema_decay * self.popart_std
+            + (1 - self.popart_ema_decay) * max(batch_std, 1e-8)
+        )
 
     def train(self, batch, t_env, episode_num):
         """
@@ -166,10 +198,21 @@ class QLearner:
         target_q_tot = self.target_mixer(target_max_qvals, target_states_reshaped)
         target_q_tot = target_q_tot.view(batch_size, max_t, 1)
 
-        # Calculate TD targets
-        targets = rewards + self.gamma * (1 - terminated) * target_q_tot
+        # De-normalise target Q_tot from PopArt space back to raw scale before
+        # constructing the TD target. Without this, the bootstrap term
+        # (γ * Q_tot') accumulates unboundedly — reward normalisation only
+        # bounds the r term and has no effect on the dominant bootstrap term.
+        target_q_tot_denorm = target_q_tot * self.popart_std + self.popart_mean
 
-        # TD error
+        # Raw TD target — rewards are already EMA-normalised; Q_tot is denormed
+        targets_raw = rewards + self.gamma * (1 - terminated) * target_q_tot_denorm
+
+        # Update PopArt stats from the raw target distribution, then normalise.
+        # mask is still (batch, T, 1) here — same shape as targets_raw.
+        self._update_popart(targets_raw, mask)
+        targets = (targets_raw - self.popart_mean) / (self.popart_std + 1e-8)
+
+        # TD error in PopArt normalised space
         td_error = q_tot - targets.detach()
 
         # Mask out invalid timesteps
@@ -203,9 +246,15 @@ class QLearner:
             valid_q = q_log[mask.expand_as(q_log).bool()]
             self.logger.log_stat("q_taken_mean", valid_q.mean().item(), t_env)
             self.logger.log_stat("q_taken_std", valid_q.std().item(), t_env)
+            # target_mean logged in normalised space — should stay near 0 if PopArt is working
             self.logger.log_stat("target_mean", (targets * mask).sum().item() / mask.sum().item(), t_env)
             self.logger.log_stat("reward_running_mean", self.reward_running_mean, t_env)
             self.logger.log_stat("reward_running_std", self.reward_running_var ** 0.5, t_env)
+            # PopArt stats — popart_std growing is expected and healthy;
+            # it means the mixer is operating at a larger scale but Q_tot
+            # stays bounded in normalised space
+            self.logger.log_stat("popart_mean", self.popart_mean, t_env)
+            self.logger.log_stat("popart_std", self.popart_std, t_env)
             self.log_stats_t = t_env
 
         return {
@@ -253,7 +302,12 @@ class QLearner:
         # Reward normalisation state — must be restored on resume so the scale
         # doesn't reset mid-training and destabilise the TD targets
         torch.save(
-            {"running_mean": self.reward_running_mean, "running_var": self.reward_running_var},
+            {
+                "running_mean": self.reward_running_mean,
+                "running_var": self.reward_running_var,
+                "popart_mean": self.popart_mean,
+                "popart_std": self.popart_std,
+            },
             f"{path}/reward_stats.pth"
         )
 
@@ -270,3 +324,6 @@ class QLearner:
             stats = torch.load(stats_path, map_location="cpu")
             self.reward_running_mean = stats["running_mean"]
             self.reward_running_var = stats["running_var"]
+            # .get with defaults so checkpoints saved before PopArt load cleanly
+            self.popart_mean = stats.get("popart_mean", 0.0)
+            self.popart_std = stats.get("popart_std", 1.0)
