@@ -85,6 +85,15 @@ class QMixer(nn.Module):
                 nn.Linear(self.hypernet_embed, 1)
             )
 
+        # PopArt output affine transform — scalar scale and shift applied on top
+        # of the hypernetwork output. These are rescaled by the learner whenever
+        # PopArt statistics update, preserving the network's outputs precisely
+        # across stat shifts and breaking the bootstrap amplification feedback loop.
+        # Initialised to identity (scale=1, shift=0) so behaviour is unchanged
+        # until the first PopArt stat update.
+        self.output_scale = nn.Parameter(torch.tensor(1.0))
+        self.output_shift = nn.Parameter(torch.tensor(0.0))
+
     def forward(self, agent_qs, states):
         """
         Mix agent Q-values into global Q_tot.
@@ -125,6 +134,12 @@ class QMixer(nn.Module):
         # Final mixing layer: hidden @ W_final + V(s)
         # (batch, 1, embed_dim) @ (batch, embed_dim, 1) = (batch, 1, 1)
         q_tot = torch.bmm(hidden, w_final) + v
+
+        # Apply PopArt affine transform before reshape.
+        # output_scale and output_shift are rescaled by the learner on every
+        # PopArt stat update so the network's outputs stay consistent when the
+        # normalisation distribution shifts.
+        q_tot = q_tot * self.output_scale + self.output_shift
 
         # Reshape to (batch, 1)
         q_tot = q_tot.view(batch_size, 1)
