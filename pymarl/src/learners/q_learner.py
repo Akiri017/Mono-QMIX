@@ -112,6 +112,33 @@ class QLearner:
             + (1 - self.popart_ema_decay) * max(batch_std, 1e-8)
         )
 
+    def _rescale_mixer_output(self, mu_old, sigma_old, mu_new, sigma_new):
+        """Rescale mixer output_scale and output_shift after PopArt stat update.
+
+        Applies the standard PopArt weight-preservation formula to both the
+        online and target mixers so their outputs stay consistent at the new
+        normalisation scale without a disruptive jump:
+
+            scale_new = scale_old * (sigma_old / sigma_new)
+            shift_new = (shift_old * sigma_old + mu_old - mu_new) / sigma_new
+
+        Args:
+            mu_old:    PopArt mean before the update (float)
+            sigma_old: PopArt std before the update (float)
+            mu_new:    PopArt mean after the update (float)
+            sigma_new: PopArt std after the update (float)
+        """
+        if sigma_new < 1e-8:
+            return
+        ratio = sigma_old / sigma_new
+        for mixer in (self.mixer, self.target_mixer):
+            old_scale = mixer.output_scale.data.item()
+            old_shift = mixer.output_shift.data.item()
+            mixer.output_scale.data.fill_(old_scale * ratio)
+            mixer.output_shift.data.fill_(
+                (old_shift * sigma_old + mu_old - mu_new) / sigma_new
+            )
+
     def train(self, batch, t_env, episode_num):
         """
         Train on a batch of episodes.
@@ -207,9 +234,24 @@ class QLearner:
         # Raw TD target — rewards are already EMA-normalised; Q_tot is denormed
         targets_raw = rewards + self.gamma * (1 - terminated) * target_q_tot_denorm
 
-        # Update PopArt stats from the raw target distribution, then normalise.
-        # mask is still (batch, T, 1) here — same shape as targets_raw.
+        # Snapshot stats before update so the rescaling delta is computed correctly
+        popart_mean_old = self.popart_mean
+        popart_std_old = self.popart_std
+
+        # Update PopArt stats from the raw target distribution
+        # mask is still (batch, T, 1) here — same shape as targets_raw
         self._update_popart(targets_raw, mask)
+
+        # Rescale mixer output_scale and output_shift to match the new stats.
+        # This is the "Preserving Outputs Precisely" step — without it the
+        # de-normalise cycle amplifies the bootstrap term exponentially.
+        self._rescale_mixer_output(
+            mu_old=popart_mean_old,
+            sigma_old=popart_std_old,
+            mu_new=self.popart_mean,
+            sigma_new=self.popart_std,
+        )
+
         targets = (targets_raw - self.popart_mean) / (self.popart_std + 1e-8)
 
         # TD error in PopArt normalised space
