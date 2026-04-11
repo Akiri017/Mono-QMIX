@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from controllers.basic_controller import BasicMAC
 from learners.q_learner import QLearner
+from learners.hierarchical_q_learner import HierarchicalQLearner
 from runners.episode_runner import EpisodeRunner
 from components.episode_buffer import ReplayBuffer
 from utils.logging import Logger
@@ -34,21 +35,57 @@ def load_config(alg_config_path, env_config_path):
     return config
 
 
-def get_scheme(env_info):
+def get_scheme(env_info, args=None):
     """
     Create data scheme for episode buffer.
 
-    Defines what data to store for each timestep.
+    Defines what data to store for each timestep. When args["mixer"] == "civiq",
+    adds Civiq hierarchical fields (zone_assignments, rsu_agent_qs,
+    agent_masks_per_rsu, local_states).
+
+    Note: global_states is NOT a separate field — batch["state"] serves as the
+    GlobalQMixer input (state_dim = n_agents * obs_dim = global_state_dim).
     """
-    return {
+    scheme = {
         "state": {"vshape": env_info["state_shape"]},
         "obs": {"vshape": env_info["obs_shape"], "group": "agents"},
         "actions": {"vshape": (1,), "group": "agents", "dtype": torch.long},
         "avail_actions": {"vshape": (env_info["n_actions"],), "group": "agents", "dtype": torch.int},
         "reward": {"vshape": (1,)},
         "terminated": {"vshape": (1,), "dtype": torch.uint8},
-        "filled": {"vshape": (1,), "dtype": torch.uint8}  # Mask for valid timesteps
+        "filled": {"vshape": (1,), "dtype": torch.uint8},  # Mask for valid timesteps
     }
+
+    if args is not None and args.get("mixer") == "civiq":
+        max_rsus = args["max_rsus"]
+        max_agents_per_rsu = args["max_agents_per_rsu"]
+        obs_dim = args["obs_dim"]
+        n_agents = env_info["n_agents"]
+        scheme.update({
+            # RSU id per agent slot; -1 = inactive/unassigned
+            "zone_assignments": {
+                "vshape": (n_agents,),
+                "dtype": torch.int32,
+            },
+            # Populated in HierarchicalQLearner.train() from chosen_action_qvals
+            # by slicing per zone_assignments — left as zeros in the runner
+            "rsu_agent_qs": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            # 1.0 = real agent slot, 0.0 = padding
+            "agent_masks_per_rsu": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            # Padded per-RSU concatenated agent observations
+            "local_states": {
+                "vshape": (max_rsus, max_agents_per_rsu * obs_dim),
+                "dtype": torch.float32,
+            },
+        })
+
+    return scheme
 
 
 def run_training(args):
@@ -78,7 +115,7 @@ def run_training(args):
     args.update(env_info)
 
     # Create data scheme
-    scheme = get_scheme(env_info)
+    scheme = get_scheme(env_info, args)
     groups = {"agents": args["n_agents"]}
     preprocess = {}
 
@@ -97,8 +134,12 @@ def run_training(args):
         device="cpu"  # Keep buffer on CPU to save GPU memory
     )
 
-    # Create learner
-    learner = QLearner(mac, scheme, logger, args)
+    # Create learner — select based on args["learner"] key
+    learner_key = args.get("learner", "q_learner")
+    if learner_key == "hierarchical_q_learner":
+        learner = HierarchicalQLearner(mac, scheme, logger, args)
+    else:
+        learner = QLearner(mac, scheme, logger, args)
 
     # Move to GPU if available
     if args.get("use_cuda", False) and torch.cuda.is_available():
@@ -340,13 +381,20 @@ def main():
     """Main entry point."""
     # Get config paths
     script_dir = Path(__file__).parent
-    alg_config_path = script_dir / "config" / "algs" / "qmix_sumo.yaml"
-    # Parse --env_config early so the path is known before load_config()
-    import argparse as _ap
-    _pre = _ap.ArgumentParser(add_help=False)
-    _pre.add_argument("--env_config", type=str, default="sumo_grid4x4")
-    _pre_args, _ = _pre.parse_known_args()
-    env_config_path = script_dir / "config" / "envs" / f"{_pre_args.env_config}.yaml"
+
+    # Parse --alg_config and --env_config early (before full argparse)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--alg_config", type=str, default=None,
+                        help="Algorithm config filename under config/algs/ (e.g. civiq_sumo.yaml)")
+    parser.add_argument("--env_config", type=str, default=None,
+                        help="Environment config filename under config/envs/ (e.g. sumo_bgc_core.yaml)")
+    pre_args, _ = parser.parse_known_args()
+
+    alg_config_name = pre_args.alg_config if pre_args.alg_config else "qmix_sumo.yaml"
+    env_config_name = pre_args.env_config if pre_args.env_config else "sumo_grid4x4.yaml"
+    alg_config_path = script_dir / "config" / "algs" / alg_config_name
+    env_config_path = script_dir / "config" / "envs" / env_config_name
 
     # Load config
     if not alg_config_path.exists():
@@ -360,10 +408,10 @@ def main():
     args = load_config(str(alg_config_path), str(env_config_path))
 
     # Override with command line args if needed
-    import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env_config", type=str, default="sumo_grid4x4",
-                        help="Env config name under config/envs/ (without .yaml)")
+    # repeated here so the full parser doesn't reject them
+    parser.add_argument("--alg_config", type=str, default=None)
+    parser.add_argument("--env_config", type=str, default=None)
     parser.add_argument("--los_level", type=str, default=None,
                         choices=["low", "med", "high"],
                         help="Override los_level in env_args (low/med/high)")

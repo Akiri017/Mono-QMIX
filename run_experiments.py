@@ -225,6 +225,8 @@ def main():
     if args.los_level is not None:
         train_extra += ["--los_level", args.los_level]
     eval_extra  = []
+    if args.alg_config:
+        train_extra += ["--alg_config", args.alg_config]
     if args.use_cuda:
         train_extra.append("--use_cuda")
     if args.use_gui:
@@ -238,6 +240,7 @@ def main():
     print(f"  t_max         : {args.t_max:,}")
     print(f"  Eval episodes : {args.eval_episodes}")
     print(f"  Baselines     : {args.baselines}")
+    print(f"  Alg config    : {args.alg_config or 'qmix_sumo.yaml (default)'}")
     print(f"  Training      : {'SKIPPED (eval_only)' if args.eval_only else 'YES'}")
 
     # ── Step 1: Train one QMIX model per seed ────────────────────────────────

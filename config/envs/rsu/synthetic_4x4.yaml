@@ -1,0 +1,49 @@
+# RSU Zone Configuration — Synthetic 4x4 Map
+# One RSU per intersection node extracted from 4by4_map/final_map.net.xml
+# Node count: 12 (3x4 layout; called "4x4" by convention in this project)
+# Coordinates extracted via scripts/extract_rsu_coords.py
+
+# Global RSU parameters
+radius: 300.0              # metres — capture radius (all vehicles assigned regardless)
+max_agents_per_rsu: 28     # peak 23 + 5 buffer — from LOS E train_high 3600-step run
+max_rsus: 12               # TEMPORARY — must be updated to BGC Full node count once known
+                           # All map YAMLs must share the same max_rsus for tensor shape consistency
+
+# One entry per intersection node (id from sumolib, x/y in SUMO net coordinates)
+rsu_positions:
+  - id: J0
+    x: 900.0
+    y: 500.0
+  - id: J1
+    x: 400.0
+    y: 500.0
+  - id: J2
+    x: -100.0
+    y: 500.0
+  - id: J3
+    x: -600.0
+    y: 500.0
+  - id: J4
+    x: 400.0
+    y: 0.0
+  - id: J5
+    x: 400.0
+    y: 1000.0
+  - id: J6
+    x: -100.0
+    y: 0.0
+  - id: J7
+    x: -100.0
+    y: 1000.0
+  - id: J8
+    x: 900.0
+    y: 0.0
+  - id: J9
+    x: 400.0
+    y: -500.0
+  - id: J10
+    x: -600.0
+    y: 0.0
+  - id: J11
+    x: -100.0
+    y: -500.0

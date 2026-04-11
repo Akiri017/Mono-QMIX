@@ -1,0 +1,13 @@
+# RSU Zone Configuration — Synthetic Single-RSU (equivalence check only)
+# One RSU at the centroid of the 12 intersections in synthetic_4x4.yaml.
+# Radius 2000m covers all intersections (max distance from centroid ≈ 791m).
+# Used for single-RSU vs 12-RSU equivalence check in Phase 5 Step 5.
+
+radius: 2000.0
+max_agents_per_rsu: 32     # single RSU covers all 32 controlled agents
+max_rsus: 1                # single RSU only
+
+rsu_positions:
+  - id: center
+    x: 150.0               # centroid of the 12 4x4 intersections
+    y: 250.0
