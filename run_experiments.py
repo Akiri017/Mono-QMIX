@@ -31,9 +31,9 @@ from datetime import datetime
 
 
 # ── Default configuration ─────────────────────────────────────────────────────
-DEFAULT_SEEDS      = [42, 123, 456]
-DEFAULT_T_MAX      = 2_000_000
-DEFAULT_EVAL_EPS   = 50          # episodes per seed / policy combo
+DEFAULT_SEEDS      = [5]
+DEFAULT_T_MAX      = 1_000_000
+DEFAULT_EVAL_EPS   = 30          # episodes per seed / policy combo
 
 BASELINES          = ["noop", "greedy_shortest", "random"]
 SRC_DIR            = Path(__file__).parent / "pymarl" / "src"
