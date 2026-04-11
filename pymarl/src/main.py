@@ -131,7 +131,7 @@ def run_training(args):
     last_validation_t = -validation_interval
 
     # Best model tracking (Step 6)
-    best_validation_return = float('-inf')  # Track best validation performance
+    best_val_metric = float('-inf')  # -mean_travel_time (negated so higher is better)
     best_model_t = 0
 
     # Resume from checkpoint if requested
@@ -145,12 +145,21 @@ def run_training(args):
                 state = json.load(f)
             runner.t_env = state.get("t_env", 0)
             episode_num = state.get("episode_num", 0)
+            # Restore best-model tracker so resumed runs don't falsely claim new bests
+            # Falls back to old key name for backwards compat with pre-fix checkpoints
+            best_val_metric = state.get("best_val_metric", state.get("best_val_metric", float('-inf')))
+            best_model_t = state.get("best_model_t", 0)
+            # Restore replay buffer so the warm experience from before the checkpoint
+            # is available immediately — avoids cold-buffer grad norm spikes on resume
+            buffer.load(resume_from, state)
+            buf_fill = buffer.episodes_in_buffer / buffer.buffer_size
             # Don't re-save immediately; align all intervals to resume point
             last_save_t = runner.t_env
             last_test_t = runner.t_env - test_interval  # allow test shortly after resume
             last_log_t = runner.t_env
             last_validation_t = runner.t_env - validation_interval
-            print(f"  Resumed at t_env={runner.t_env}, episode_num={episode_num}")
+            print(f"  Resumed at t_env={runner.t_env}, episode_num={episode_num}, "
+                  f"buffer_fill={buf_fill:.1%}")
         else:
             print("  [WARNING] training_state.json not found — step count starts at 0")
 
@@ -247,17 +256,17 @@ def run_training(args):
                     val_metric = avg_validation_return
 
                 # Save best model
-                if val_metric > best_validation_return:
-                    best_validation_return = val_metric
+                if val_metric > best_val_metric:
+                    best_val_metric = val_metric
                     best_model_t = runner.t_env
                     best_save_dir = os.path.join(save_path, "best")
                     os.makedirs(best_save_dir, exist_ok=True)
                     learner.save_models(best_save_dir)
                     label = f"travel_time={-val_metric:.1f}s" if validation_travel_times else f"return={avg_validation_return:.2f}"
                     print(f"  [NEW BEST] Model saved ({label})")
-                    logger.log_stat("best_validation_metric", best_validation_return, runner.t_env)
+                    logger.log_stat("best_validation_metric", best_val_metric, runner.t_env)
                 else:
-                    print(f"  Current best metric: {best_validation_return:.4f} at t={best_model_t}")
+                    print(f"  Current best metric: {best_val_metric:.4f} at t={best_model_t}")
 
                 last_validation_t = runner.t_env
 
@@ -288,8 +297,20 @@ def run_training(args):
                 os.makedirs(save_dir, exist_ok=True)
                 learner.save_models(save_dir)
                 # Save training state so the run can be resumed from this checkpoint
+                buf_state = buffer.save(save_dir)
                 with open(os.path.join(save_dir, "training_state.json"), "w") as f:
-                    json.dump({"t_env": runner.t_env, "episode_num": episode_num}, f)
+                    json.dump({
+                        "t_env": runner.t_env,
+                        "episode_num": episode_num,
+                        # val_metric = -mean_travel_time (negated so higher is better);
+                        # this is the value compared against to decide [NEW BEST]
+                        "best_val_metric": best_val_metric,
+                        "best_model_t": best_model_t,
+                        # human-readable: the actual travel time at the best checkpoint
+                        "best_travel_time": -best_val_metric if best_val_metric != float('-inf') else None,
+                        # replay buffer management state (tensor data in replay_buffer.pth)
+                        **buf_state,
+                    }, f)
                 print(f"Checkpoint saved at t={runner.t_env} -> {save_dir}")
                 last_save_t = runner.t_env
 
@@ -305,7 +326,7 @@ def run_training(args):
 
         # Print best model info (Step 6)
         if use_validation and best_model_t > 0:
-            print(f"Best model: validation_return={best_validation_return:.2f} at t={best_model_t}")
+            print(f"Best model: validation_return={best_val_metric:.2f} at t={best_model_t}")
             print(f"Best model saved to {os.path.join(save_path, 'best')}")
 
         # Close environment
