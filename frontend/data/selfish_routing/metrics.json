@@ -1,0 +1,84 @@
+{
+  "algorithm": "selfish_routing",
+  "map": "bgc_full",
+  "scenario": "Wardrop User Equilibrium / Selfish Nash Routing",
+  "simulation_duration_s": 3600,
+  "generated_at": "2026-04-08T21:17:26.364906",
+  "traffic_levels": {
+    "free_flow": {
+      "source_stats": "data_selfish_low_stats.xml",
+      "source_tripinfo": "data_selfish_low_tripinfo.xml",
+      "source_csv": "baseline_results_low.csv",
+      "vehicles": {
+        "loaded": 500,
+        "inserted": 500,
+        "completed": 500,
+        "running_at_end": 0
+      },
+      "kpis": {
+        "avg_travel_time_min": 4.059,
+        "avg_travel_time_s": 243.57,
+        "avg_waiting_time_s": 39.28,
+        "avg_speed_kmh": 38.12,
+        "avg_speed_ms": 10.59,
+        "throughput": 500,
+        "avg_route_length_m": 2565.28,
+        "time_loss_s": 97.02,
+        "real_time_factor": 88.0,
+        "avg_co2_g_per_km": 390.9,
+        "avg_fuel_l_per_100km": 16.85
+      },
+      "timeseries_file": "timeseries_free_flow.csv"
+    },
+    "stable_flow": {
+      "source_stats": "data_selfish_med_stats.xml",
+      "source_tripinfo": "data_selfish_med_tripinfo.xml",
+      "source_csv": "baseline_results_med.csv",
+      "vehicles": {
+        "loaded": 1000,
+        "inserted": 1000,
+        "completed": 873,
+        "running_at_end": 127
+      },
+      "kpis": {
+        "avg_travel_time_min": 4.148,
+        "avg_travel_time_s": 248.87,
+        "avg_waiting_time_s": 44.18,
+        "avg_speed_kmh": 35.86,
+        "avg_speed_ms": 9.96,
+        "throughput": 873,
+        "avg_route_length_m": 2455.58,
+        "time_loss_s": 108.84,
+        "real_time_factor": 3.54,
+        "avg_co2_g_per_km": 403.3,
+        "avg_fuel_l_per_100km": 17.38
+      },
+      "timeseries_file": "timeseries_stable_flow.csv"
+    },
+    "forced_flow": {
+      "source_stats": "data_selfish_high_stats.xml",
+      "source_tripinfo": "data_selfish_high_tripinfo.xml",
+      "source_csv": "baseline_results_highEnough.csv",
+      "vehicles": {
+        "loaded": 1334,
+        "inserted": 1334,
+        "completed": 1334,
+        "running_at_end": 0
+      },
+      "kpis": {
+        "avg_travel_time_min": 5.045,
+        "avg_travel_time_s": 302.72,
+        "avg_waiting_time_s": 70.68,
+        "avg_speed_kmh": 32.33,
+        "avg_speed_ms": 8.98,
+        "throughput": 1334,
+        "avg_route_length_m": 2567.94,
+        "time_loss_s": 153.62,
+        "real_time_factor": 45.53,
+        "avg_co2_g_per_km": 433.8,
+        "avg_fuel_l_per_100km": 18.7
+      },
+      "timeseries_file": "timeseries_forced_flow.csv"
+    }
+  }
+}

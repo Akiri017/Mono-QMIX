@@ -1,0 +1,101 @@
+/**
+ * GET /api/selfish?trafficLevel=free_flow|stable_flow|forced_flow
+ *
+ * Returns real KPIs and time-series data for the Selfish Routing algorithm
+ * compiled from SUMO simulation outputs in results/selfish_routing/.
+ */
+import { NextRequest, NextResponse } from 'next/server'
+import fs from 'fs'
+import path from 'path'
+
+// data/ lives inside the frontend directory — self-contained for migration
+const RESULTS_DIR = path.join(process.cwd(), 'data', 'selfish_routing')
+
+type TrafficLevel = 'free_flow' | 'stable_flow' | 'forced_flow'
+const VALID_LEVELS: TrafficLevel[] = ['free_flow', 'stable_flow', 'forced_flow']
+
+function parseCSV(content: string): { step: number; active_vehicles: number; total_system_wait: number }[] {
+  const lines = content.trim().split('\n')
+  return lines.slice(1).map(line => {
+    const [step, active_vehicles, total_system_wait] = line.split(',').map(Number)
+    return { step, active_vehicles, total_system_wait }
+  })
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const trafficLevel = (request.nextUrl.searchParams.get('trafficLevel') || 'forced_flow') as TrafficLevel
+
+    if (!VALID_LEVELS.includes(trafficLevel)) {
+      return NextResponse.json(
+        { success: false, error: `Invalid trafficLevel. Must be one of: ${VALID_LEVELS.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    // Load compiled metrics
+    const metricsPath = path.join(RESULTS_DIR, 'metrics.json')
+    if (!fs.existsSync(metricsPath)) {
+      return NextResponse.json(
+        { success: false, error: 'metrics.json not found. Run scripts/compile_selfish_results.py first.' },
+        { status: 404 }
+      )
+    }
+
+    const metrics = JSON.parse(fs.readFileSync(metricsPath, 'utf-8'))
+    const levelData = metrics.traffic_levels[trafficLevel]
+
+    if (!levelData) {
+      return NextResponse.json(
+        { success: false, error: `No data for traffic level: ${trafficLevel}` },
+        { status: 404 }
+      )
+    }
+
+    const kpis = levelData.kpis
+    const vehicles = levelData.vehicles
+
+    // Load timeseries CSV
+    const csvPath = path.join(RESULTS_DIR, levelData.timeseries_file)
+    let timeseries: ReturnType<typeof parseCSV> = []
+    if (fs.existsSync(csvPath)) {
+      timeseries = parseCSV(fs.readFileSync(csvPath, 'utf-8'))
+    }
+
+    return NextResponse.json({
+      success: true,
+      algorithm: 'selfish_routing',
+      trafficLevel,
+      vehicles,
+      kpis: {
+        // Primary display KPIs (matching AlgoData fields)
+        travelTime: parseFloat(kpis.avg_travel_time_min.toFixed(2)),   // min
+        waitTime: parseFloat(kpis.avg_waiting_time_s.toFixed(1)),       // sec
+        throughput: kpis.throughput,                                      // veh completed
+        speed: parseFloat(kpis.real_time_factor.toFixed(2)),             // real-time factor
+        co2: kpis.avg_co2_g_per_km,                                      // g/km
+        fuel: kpis.avg_fuel_l_per_100km,                                  // L/100km
+        avgSpeedKmh: kpis.avg_speed_kmh,
+        avgRouteLengthM: kpis.avg_route_length_m,
+        timeLossS: kpis.time_loss_s,
+      },
+      timeseries: {
+        steps: timeseries.map(r => r.step),
+        activeVehicles: timeseries.map(r => r.active_vehicles),
+        totalSystemWait: timeseries.map(r => r.total_system_wait),
+      },
+      meta: {
+        source_stats: levelData.source_stats,
+        source_tripinfo: levelData.source_tripinfo,
+        generated_at: metrics.generated_at,
+        map: metrics.map,
+      },
+    })
+  } catch (error) {
+    console.error('[/api/selfish] Error:', error)
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    )
+  }
+}

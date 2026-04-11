@@ -1,0 +1,21 @@
+# Next.js build output
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# TypeScript incremental cache
+tsconfig.tsbuildinfo
+
+# Vercel deployment config (project-specific, regenerated on link)
+.vercel/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local env files
+.env
+.env.local
+.env.*.local
