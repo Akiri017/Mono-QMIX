@@ -205,7 +205,7 @@ def run_training(args):
             print("  [WARNING] training_state.json not found — step count starts at 0")
 
     print("\n=== Starting Training ===")
-    print(f"Environment: SUMO Grid {args.get('grid_size', '4x4')}")
+    print(f"Environment: {args.get('env_config_name', args.get('grid_size', '4x4'))}")
     print(f"Agents: {args['n_agents']}")
     print(f"Actions per agent: {args['n_actions']}")
     print(f"State shape: {args['state_shape']}")
@@ -391,8 +391,13 @@ def main():
                         help="Environment config filename under config/envs/ (e.g. sumo_bgc_core.yaml)")
     pre_args, _ = parser.parse_known_args()
 
-    alg_config_name = pre_args.alg_config if pre_args.alg_config else "qmix_sumo.yaml"
-    env_config_name = pre_args.env_config if pre_args.env_config else "sumo_grid4x4.yaml"
+    def _ensure_yaml(name, default):
+        if not name:
+            return default
+        return name if name.endswith(".yaml") else name + ".yaml"
+
+    alg_config_name = _ensure_yaml(pre_args.alg_config, "qmix_sumo.yaml")
+    env_config_name = _ensure_yaml(pre_args.env_config, "sumo_grid4x4.yaml")
     alg_config_path = script_dir / "config" / "algs" / alg_config_name
     env_config_path = script_dir / "config" / "envs" / env_config_name
 
@@ -406,6 +411,7 @@ def main():
         return
 
     args = load_config(str(alg_config_path), str(env_config_path))
+    args["env_config_name"] = env_config_name.replace(".yaml", "")
 
     # Override with command line args if needed
     parser = argparse.ArgumentParser()

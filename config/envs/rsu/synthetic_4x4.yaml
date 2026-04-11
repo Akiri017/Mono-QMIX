@@ -6,8 +6,7 @@
 # Global RSU parameters
 radius: 300.0              # metres — capture radius (all vehicles assigned regardless)
 max_agents_per_rsu: 28     # peak 23 + 5 buffer — from LOS E train_high 3600-step run
-max_rsus: 12               # TEMPORARY — must be updated to BGC Full node count once known
-                           # All map YAMLs must share the same max_rsus for tensor shape consistency
+max_rsus: 17               # BGC Full: 17 RSUs — all map YAMLs must share this value
 
 # One entry per intersection node (id from sumolib, x/y in SUMO net coordinates)
 rsu_positions:

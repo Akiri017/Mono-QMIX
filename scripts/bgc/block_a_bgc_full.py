@@ -3,13 +3,12 @@
 Block A — BGC Full LOS E Data Collection
 
 Runs a headless 3600-step SUMO simulation on BGC Full at LOS E
-(wardrop_routes_highEnough.rou.xml) using libsumo. Logs all vehicle positions every
-timestep and outputs:
+(trips_highEnough.xml) using libsumo. Trips are first pre-routed via
+duarouter (cached in bgc_full_los_e_routed.rou.xml).
 
+Outputs:
   vehicle_positions_bgc_full_los_e.csv   — timestep, vehicle_id, x, y
   vehicle_density_bgc_full_los_e.png     — 2D spatial heatmap (all timesteps)
-
-Peak simultaneous vehicle count is printed to stdout.
 
 Usage (from repo root):
     python scripts/bgc/block_a_bgc_full.py
@@ -17,7 +16,6 @@ Usage (from repo root):
 Output files are written to the same directory as this script.
 """
 
-import os
 import sys
 import csv
 import subprocess
@@ -25,24 +23,24 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")           # headless — no display required
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
 SCRIPT_DIR  = Path(__file__).resolve().parent
-REPO_ROOT   = SCRIPT_DIR.parents[1]          # scripts/bgc/ -> scripts/ -> repo
+REPO_ROOT   = SCRIPT_DIR.parents[1]
 
 BGC_DIR     = REPO_ROOT / "bgc_full"
 NET_FILE    = BGC_DIR / "final_map.net.xml"
-TRIPS_FILE  = BGC_DIR / "trips_highEnough.xml"   # OD trip demands (LOS E)
+TRIPS_FILE  = BGC_DIR / "trips_highEnough.xml"
 VTYPES_FILE = BGC_DIR / "vtypes.add.xml"
 
-OUT_DIR      = SCRIPT_DIR                         # outputs land beside this script
-ROUTES_FILE  = OUT_DIR / "bgc_full_los_e_routed.rou.xml"   # duarouter output
-CSV_PATH     = OUT_DIR / "vehicle_positions_bgc_full_los_e.csv"
-PNG_PATH     = OUT_DIR / "vehicle_density_bgc_full_los_e.png"
+OUT_DIR     = SCRIPT_DIR
+ROUTES_FILE = OUT_DIR / "bgc_full_los_e_routed.rou.xml"
+CSV_PATH    = OUT_DIR / "vehicle_positions_bgc_full_los_e.csv"
+PNG_PATH    = OUT_DIR / "vehicle_density_bgc_full_los_e.png"
 
 EPISODE_STEPS = 3600
 
@@ -63,24 +61,23 @@ def main():
     print()
 
     # ------------------------------------------------------------------
-    # Step 0 — route trips against current network with duarouter
+    # Step 0 — pre-route trips with duarouter (cached)
     # ------------------------------------------------------------------
     if not ROUTES_FILE.exists():
-        print("Running duarouter to build valid routes from trips_highEnough.xml...")
-        duarouter_cmd = [
+        print("Running duarouter to build valid routes...")
+        r = subprocess.run([
             "duarouter",
-            "--net-file",      str(NET_FILE),
-            "--route-files",   str(TRIPS_FILE),
+            "--net-file",         str(NET_FILE),
+            "--route-files",      str(TRIPS_FILE),
             "--additional-files", str(VTYPES_FILE),
-            "--output-file",   str(ROUTES_FILE),
-            "--ignore-errors", "true",
-            "--no-warnings",   "true",
-            "--no-step-log",   "true",
-        ]
-        result = subprocess.run(duarouter_cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(result.stderr[-2000:])
-            sys.exit("[ERROR] duarouter failed — check that SUMO is on PATH.")
+            "--output-file",      str(ROUTES_FILE),
+            "--ignore-errors",    "true",
+            "--no-warnings",      "true",
+            "--no-step-log",      "true",
+        ], capture_output=True, text=True)
+        if r.returncode != 0:
+            print(r.stderr[-2000:])
+            sys.exit("[ERROR] duarouter failed.")
         print(f"Routes written to: {ROUTES_FILE}")
         print()
     else:
@@ -90,8 +87,7 @@ def main():
     try:
         import libsumo as traci
     except ImportError:
-        sys.exit("[ERROR] libsumo not found. Ensure SUMO is installed and "
-                 "SUMO_HOME/tools is on PYTHONPATH.")
+        sys.exit("[ERROR] libsumo not found.")
 
     sumo_cmd = [
         "sumo",
@@ -142,9 +138,6 @@ def main():
     print(f"Total CSV rows written:          {row_count:,}")
     print(f"CSV saved to: {CSV_PATH}")
 
-    # ------------------------------------------------------------------
-    # Heatmap
-    # ------------------------------------------------------------------
     print("\nGenerating density heatmap...")
     all_x = np.array(all_x, dtype=np.float32)
     all_y = np.array(all_y, dtype=np.float32)
@@ -152,7 +145,6 @@ def main():
     fig, ax = plt.subplots(figsize=(18, 14))
     h = ax.hist2d(all_x, all_y, bins=150, cmap="hot_r")
     plt.colorbar(h[3], ax=ax, label="Vehicle-timestep count")
-
     ax.set_xlabel("X (m)")
     ax.set_ylabel("Y (m)")
     ax.set_title(
@@ -164,7 +156,6 @@ def main():
     plt.savefig(PNG_PATH, dpi=150)
     plt.close()
     print(f"Heatmap saved to: {PNG_PATH}")
-
     print("\nDone.")
 
 

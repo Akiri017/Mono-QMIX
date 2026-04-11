@@ -86,7 +86,7 @@ env_args:
 
   # RSU / Civiq keys (forwarded by episode_runner to env)
   rsu_config: "config/envs/rsu/bgc_core.yaml"
-  max_rsus: 12                        # TEMPORARY — update to BGC Full node count when known
+  max_rsus: 17                        # BGC Full: 17 RSUs (Block B validated)
   max_agents_per_rsu: 50              # validated: LOS E peak = 50 (RSU06), zero masked
   obs_dim: 201                        # must match obs_ego_dim + obs_edge_dim + outgoing * traffic_features
 

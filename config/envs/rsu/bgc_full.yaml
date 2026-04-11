@@ -1,6 +1,6 @@
 radius: 300.0
-max_agents_per_rsu: 384   # Block B validated: peak=379 (RSU17), +5 buffer
-max_rsus: 20
+max_agents_per_rsu: 30    # Block B validated: peak=25 (RSU13), +5 buffer
+max_rsus: 17
 rsu_positions:
 - id: RSU00
   x: 40.3
@@ -9,11 +9,11 @@ rsu_positions:
   x: 698.7
   y: 123.0
 - id: RSU02
-  x: 1153.6
-  y: 173.1
-- id: RSU03
   x: 399.8
   y: 254.7
+- id: RSU03
+  x: 362.0
+  y: 452.0
 - id: RSU04
   x: 1015.8
   y: 483.1
@@ -24,41 +24,32 @@ rsu_positions:
   x: 608.5
   y: 554.6
 - id: RSU07
+  x: 263.2
+  y: 801.2
+- id: RSU08
   x: 878.0
   y: 726.4
-- id: RSU08
+- id: RSU09
   x: 1110.6
   y: 827.2
-- id: RSU09
+- id: RSU10
   x: 31.4
   y: 987.6
-- id: RSU10
+- id: RSU11
   x: 1003.2
   y: 1082.9
-- id: RSU11
+- id: RSU12
   x: 364.8
   y: 1084.3
-- id: RSU12
+- id: RSU13
   x: 713.7
   y: 1180.3
-- id: RSU13
-  x: 1400.1
-  y: 1249.3
 - id: RSU14
   x: 901.4
   y: 1421.3
 - id: RSU15
-  x: 489.2
-  y: 1454.8
-- id: RSU16
-  x: 128.7
-  y: 1622.4
-- id: RSU17
   x: 1124.3
   y: 1768.0
-- id: RSU18
-  x: 405.5
-  y: 1847.7
-- id: RSU19
+- id: RSU16
   x: 951.5
   y: 1965.8

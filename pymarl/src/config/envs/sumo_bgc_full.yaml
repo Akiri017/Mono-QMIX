@@ -1,7 +1,8 @@
 # SUMO BGC Full Map Rerouting Environment Configuration
-# Compatible with PyMARL QMIX
+# Compatible with PyMARL QMIX and Civiq (HierarchicalQLearner)
 #
-# Network: Bonifacio Global City (full extent) — 2723 non-internal edges
+# Network: Bonifacio Global City (full extent) — 734 non-internal edges
+# (residential areas and C5 road segments removed to reduce obs_edge_dim)
 # Scenario root: bgc_full/ (relative to repo root)
 
 env_args:
@@ -12,9 +13,9 @@ env_args:
   los_level: "high"
   sumo_cfg: null  # derived from los_level via los_cfg below
   los_cfg:
-    low:  "sumo/scenarios/bgc_full/train_low.sumocfg"
-    med:  "sumo/scenarios/bgc_full/train_med.sumocfg"
-    high: "sumo/scenarios/bgc_full/train_high.sumocfg"
+    low:  "bgc_full/train_low.sumocfg"
+    med:  "bgc_full/train_med.sumocfg"
+    high: "bgc_full/train_high.sumocfg"
   network_file: "bgc_full/final_map.net.xml"
   controlled_routes: "sumo/scenarios/bgc_full/controlled_init.rou.xml"  # generated fixed-N OD pairs (see README)
 
@@ -41,16 +42,14 @@ env_args:
   replacement_delay: 3
 
   # Observation space configuration
-  # bgc_full has 2723 non-internal edges (sumolib count).
-  # Full one-hot (obs_edge_dim=2723) requires ~130 GB replay buffer at default
-  # buffer_size=400 — not feasible on a single machine.
-  # obs_edge_dim is capped at 256: edges with sumolib index >= 256 appear as
-  # all-zeros in the edge slot. Lossy but necessary for tractable training.
+  # bgc_full has 734 non-internal edges after map cleanup (removed residential
+  # areas and C5 road segments). Full one-hot is tractable:
+  # local_state_dim = max_agents_per_rsu * obs_dim = 30 * 751 = 22,530
   # obs_dim = obs_ego_dim + obs_edge_dim + (obs_max_outgoing_edges * obs_traffic_features)
-  #         = 5 + 256 + (4 * 3) = 273
+  #         = 5 + 734 + (4 * 3) = 751
   obs_ego_dim: 5
   obs_edge_encoding: "onehot"
-  obs_edge_dim: 256         # truncated; full network has 2723 edges
+  obs_edge_dim: 734         # full one-hot — no cap needed after map cleanup
   obs_local_traffic: true
   obs_max_outgoing_edges: 4
   obs_traffic_features: 3
@@ -59,7 +58,7 @@ env_args:
   state_concat_obs: true
   state_include_global_stats: false
   state_global_stats_dim: 0
-  # state_dim = n_agents * obs_dim = 32 * 273 = 8,736
+  # state_dim = n_agents * obs_dim = 32 * 751 = 24,032
 
   # Action space configuration
   route_generation_method: "k_shortest"
@@ -94,14 +93,21 @@ env_args:
   verbose: false
   render_mode: null
 
-# Algorithm overrides for bgc_full memory constraints (16 GB RAM)
-# buffer_size=400 (default) × obs+state tensors ≈ 28 GB — exceeds available RAM.
-# Capped at 100: ~7 GB buffer, leaves headroom for SUMO + OS.
+# buffer_size kept at 100 for safety on 16 GB RAM machines.
+# At full one-hot (obs_dim=751): 100 * 1000 * 32 * 751 * 4B ≈ 9.6 GB — fits.
 buffer_size: 100
 
 # Top-level PyMARL environment info (must match env_args values above)
 episode_limit: 1000
-obs_shape: 273     # 5 + 256 + 12
-state_shape: 8736  # 32 * 273
+obs_shape: 751     # 5 + 734 + 12
+state_shape: 24032 # 32 * 751
 n_actions: 2
 n_agents: 32
+
+# Civiq overrides — shadow civiq_sumo.yaml defaults which are 4x4-specific
+obs_dim: 751                        # overrides civiq_sumo.yaml obs_dim: 65
+global_state_dim: 24032             # overrides civiq_sumo.yaml global_state_dim: 2080 (32 * 751)
+max_agents_per_rsu: 30              # overrides civiq_sumo.yaml max_agents_per_rsu: 28 (Block B: peak=25)
+max_rsus: 17                        # overrides civiq_sumo.yaml max_rsus: 17
+local_state_dim: 22530              # max_agents_per_rsu * obs_dim = 30 * 751
+rsu_config: "config/envs/rsu/bgc_full.yaml"   # overrides civiq_sumo.yaml rsu_config

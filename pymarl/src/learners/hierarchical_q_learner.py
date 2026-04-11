@@ -199,16 +199,16 @@ class HierarchicalQLearner:
 
         # Level 2: LocalQMixer — per-RSU agent Qs → local Q_tot
         local_qtots = self.local_mixer(
-            rsu_agent_qs.view(BT * R, max_agents_per_rsu),
-            local_states.view(BT * R, -1),
-            agent_masks.view(BT * R, max_agents_per_rsu)
+            rsu_agent_qs.reshape(BT * R, max_agents_per_rsu),
+            local_states.reshape(BT * R, -1),
+            agent_masks.reshape(BT * R, max_agents_per_rsu)
         ).view(BT, R)                                                          # (BT, R)
 
         # Level 3: GlobalQMixer — RSU Q_tots → global Q_tot
         global_qtot = self.global_mixer(
             local_qtots,
-            global_states.view(BT, -1),
-            rsu_mask.view(BT, R)
+            global_states.reshape(BT, -1),
+            rsu_mask.reshape(BT, R)
         ).view(batch_size, max_t, 1)                                           # (B, T, 1)
 
         # -- Target path --
@@ -225,15 +225,15 @@ class HierarchicalQLearner:
         target_rsu_mask = (target_agent_masks.sum(-1) > 0).float()            # (B, T, R)
 
         target_local_qtots = self.target_local_mixer(
-            target_rsu_agent_qs.view(BT * R, max_agents_per_rsu),
-            target_local_states.view(BT * R, -1),
-            target_agent_masks.view(BT * R, max_agents_per_rsu)
+            target_rsu_agent_qs.reshape(BT * R, max_agents_per_rsu),
+            target_local_states.reshape(BT * R, -1),
+            target_agent_masks.reshape(BT * R, max_agents_per_rsu)
         ).view(BT, R)
 
         target_global_qtot = self.target_global_mixer(
             target_local_qtots,
-            target_global_states.view(BT, -1),
-            target_rsu_mask.view(BT, R)
+            target_global_states.reshape(BT, -1),
+            target_rsu_mask.reshape(BT, R)
         ).view(batch_size, max_t, 1)                                           # (B, T, 1)
 
         # -----------------------------------------------------------------------

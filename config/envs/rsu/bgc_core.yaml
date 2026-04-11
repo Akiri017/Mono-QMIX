@@ -7,7 +7,7 @@
 # Global RSU parameters
 radius: 300.0              # metres — capture radius
 max_agents_per_rsu: 50     # validated: overall peak = 50 (RSU06), no vehicles masked
-max_rsus: 12               # TEMPORARY — must match synthetic_4x4.yaml; update once BGC Full node count known
+max_rsus: 17               # BGC Full: 17 RSUs (Block B validated)
 
 # One entry per traffic-light intersection (x/y in SUMO net coordinates)
 rsu_positions:
