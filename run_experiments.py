@@ -209,6 +209,11 @@ def main():
     parser.add_argument("--baselines", type=str, nargs="+", default=BASELINES,
                         choices=BASELINES,
                         help="Baseline policies to evaluate")
+    parser.add_argument("--env_config", type=str, default="sumo_grid4x4",
+                        help="Env config name under config/envs/ (without .yaml)")
+    parser.add_argument("--los_level", type=str, default=None,
+                        choices=["low", "med", "high"],
+                        help="Override los_level in env_args (low/med/high)")
     parser.add_argument("--use_cuda", action="store_true",
                         help="Enable CUDA for training")
     parser.add_argument("--use_gui", action="store_true",
@@ -216,7 +221,9 @@ def main():
     args = parser.parse_args()
 
     # Build extra args forwarded to sub-processes
-    train_extra = []
+    train_extra = ["--env_config", args.env_config]
+    if args.los_level is not None:
+        train_extra += ["--los_level", args.los_level]
     eval_extra  = []
     if args.use_cuda:
         train_extra.append("--use_cuda")

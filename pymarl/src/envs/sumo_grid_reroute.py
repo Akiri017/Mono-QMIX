@@ -62,12 +62,19 @@ class SUMOGridRerouteEnv:
 
         # File paths (resolve relative to repo root)
         # sumo_cfg may be null/None in the config, in which case it is derived
-        # from los_level so callers only need to set one value per run.
+        # from los_level.  The built-in fallback map points at 4x4_map; other
+        # scenarios supply their own mapping via env_args["los_cfg"].
         _LOS_CFG = {
             "low":  "sumo/scenarios/4by4_map/train_low.sumocfg",
             "med":  "sumo/scenarios/4by4_map/train_med.sumocfg",
             "high": "sumo/scenarios/4by4_map/train_high.sumocfg",
         }
+        # Per-scenario override: yaml can set los_cfg: {low: ..., med: ..., high: ...}
+        # to point los_level at a different set of sumocfg files without touching
+        # this env class.
+        _los_cfg_override = env_args.get("los_cfg", None)
+        if _los_cfg_override:
+            _LOS_CFG = _los_cfg_override
         self.los_level = env_args.get("los_level", "med")
         _raw_cfg = env_args.get("sumo_cfg") or None  # treat empty string as None
         if _raw_cfg is None:

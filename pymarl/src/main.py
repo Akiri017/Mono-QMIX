@@ -341,7 +341,12 @@ def main():
     # Get config paths
     script_dir = Path(__file__).parent
     alg_config_path = script_dir / "config" / "algs" / "qmix_sumo.yaml"
-    env_config_path = script_dir / "config" / "envs" / "sumo_grid4x4.yaml"
+    # Parse --env_config early so the path is known before load_config()
+    import argparse as _ap
+    _pre = _ap.ArgumentParser(add_help=False)
+    _pre.add_argument("--env_config", type=str, default="sumo_grid4x4")
+    _pre_args, _ = _pre.parse_known_args()
+    env_config_path = script_dir / "config" / "envs" / f"{_pre_args.env_config}.yaml"
 
     # Load config
     if not alg_config_path.exists():
@@ -357,6 +362,11 @@ def main():
     # Override with command line args if needed
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument("--env_config", type=str, default="sumo_grid4x4",
+                        help="Env config name under config/envs/ (without .yaml)")
+    parser.add_argument("--los_level", type=str, default=None,
+                        choices=["low", "med", "high"],
+                        help="Override los_level in env_args (low/med/high)")
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--use_cuda", action="store_true")
     parser.add_argument("--use_gui", action="store_true")
@@ -397,6 +407,8 @@ def main():
         args["resume_from"] = cmd_args.resume_from
     if cmd_args.log_dir is not None:
         args["log_dir"] = cmd_args.log_dir
+    if cmd_args.los_level is not None:
+        args["env_args"]["los_level"] = cmd_args.los_level
     if cmd_args.no_validation:
         args["use_validation"] = False
     if cmd_args.validation_interval is not None:

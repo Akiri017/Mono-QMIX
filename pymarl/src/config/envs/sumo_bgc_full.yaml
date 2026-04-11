@@ -1,0 +1,107 @@
+# SUMO BGC Full Map Rerouting Environment Configuration
+# Compatible with PyMARL QMIX
+#
+# Network: Bonifacio Global City (full extent) — 2723 non-internal edges
+# Scenario root: bgc_full/ (relative to repo root)
+
+env_args:
+  # Scenario paths (relative to repo root)
+  # los_level selects background traffic demand: "low", "med", or "high".
+  # los_cfg maps each level to the matching training sumocfg so the env
+  # resolves the right file automatically (same pattern as sumo_grid4x4).
+  los_level: "high"
+  sumo_cfg: null  # derived from los_level via los_cfg below
+  los_cfg:
+    low:  "sumo/scenarios/bgc_full/train_low.sumocfg"
+    med:  "sumo/scenarios/bgc_full/train_med.sumocfg"
+    high: "sumo/scenarios/bgc_full/train_high.sumocfg"
+  network_file: "bgc_full/final_map.net.xml"
+  controlled_routes: "sumo/scenarios/bgc_full/controlled_init.rou.xml"  # generated fixed-N OD pairs (see README)
+
+  # Agent configuration
+  n_agents: 32    # N_controlled: fixed number of agent slots
+  n_actions: 2    # M: number of candidate routes per agent
+
+  # Decision period
+  decision_period: 10      # K: seconds between rerouting decisions
+  sumo_step_length: 1.0    # SUMO simulation step length in seconds
+
+  # Adaptive decision period (optional)
+  adaptive_decision_period: false
+  decision_period_warmup: 10
+  decision_period_steady: 5
+  warmup_duration: 300
+
+  # Episode configuration
+  max_episode_steps: 1000  # T_max: maximum simulation time in seconds
+  episode_limit: 1000
+
+  # Replacement/lifelong agent configuration
+  replacement_enabled: true
+  replacement_delay: 3
+
+  # Observation space configuration
+  # bgc_full has 2723 non-internal edges (sumolib count).
+  # Full one-hot (obs_edge_dim=2723) requires ~130 GB replay buffer at default
+  # buffer_size=400 — not feasible on a single machine.
+  # obs_edge_dim is capped at 256: edges with sumolib index >= 256 appear as
+  # all-zeros in the edge slot. Lossy but necessary for tractable training.
+  # obs_dim = obs_ego_dim + obs_edge_dim + (obs_max_outgoing_edges * obs_traffic_features)
+  #         = 5 + 256 + (4 * 3) = 273
+  obs_ego_dim: 5
+  obs_edge_encoding: "onehot"
+  obs_edge_dim: 256         # truncated; full network has 2723 edges
+  obs_local_traffic: true
+  obs_max_outgoing_edges: 4
+  obs_traffic_features: 3
+
+  # Global state configuration
+  state_concat_obs: true
+  state_include_global_stats: false
+  state_global_stats_dim: 0
+  # state_dim = n_agents * obs_dim = 32 * 273 = 8,736
+
+  # Action space configuration
+  route_generation_method: "k_shortest"
+  route_cost_metric: "length"
+  route_refresh_each_step: true
+  action_mask_enabled: true
+  action_noop_as_keep_route: true
+
+  # Reward configuration
+  reward_global: true
+  reward_time_weight: 1.0
+  reward_stops_weight: 0.05
+  reward_emissions_weight: 0.001
+  reward_stop_speed_threshold: 0.1
+  reward_reroute_penalty: 0.0
+
+  # Emissions configuration
+  emissions_enabled: true
+  emissions_device: "CO2"
+
+  # Masking configuration
+  use_active_mask: true
+  use_reset_mask: true
+
+  # SUMO simulation settings
+  sumo_backend: "libsumo"
+  sumo_gui: false
+  sumo_seed: null
+  sumo_warnings: false
+
+  # Debugging
+  verbose: false
+  render_mode: null
+
+# Algorithm overrides for bgc_full memory constraints (16 GB RAM)
+# buffer_size=400 (default) × obs+state tensors ≈ 28 GB — exceeds available RAM.
+# Capped at 100: ~7 GB buffer, leaves headroom for SUMO + OS.
+buffer_size: 100
+
+# Top-level PyMARL environment info (must match env_args values above)
+episode_limit: 1000
+obs_shape: 273     # 5 + 256 + 12
+state_shape: 8736  # 32 * 273
+n_actions: 2
+n_agents: 32
