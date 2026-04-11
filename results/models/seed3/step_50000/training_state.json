@@ -1,1 +1,1 @@
-{"t_env": 50000, "episode_num": 500}
+{"t_env": 50000, "episode_num": 500, "best_val_metric": -13.9001, "best_model_t": 100, "best_travel_time": 13.9}
