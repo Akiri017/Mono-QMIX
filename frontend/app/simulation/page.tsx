@@ -378,29 +378,29 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     marl:       makeMarlMetrics(3.2, -50, 72, 2.5, -180, 980, 200, 28),
   },
   selfish: {
-    // ── Real SUMO data (forced_flow / Selfish Nash — bgc_full) ──
-    // Source: results/selfish_routing/metrics.json
+    // ── Real SUMO data (forced_flow / Selfish Nash — bgc_full, Wardrop routes) ──
+    // Source: bgc_full/data/stats_highEnough.xml (2026-03-08, wardrop_routes_highEnough.rou.xml)
     // Detail page fetches per-traffic-level values dynamically via /api/selfish
     id: 'selfish', label: 'Selfish Routing', sublabel: 'Nash Equilibrium', rank: 3,
     color: '#F87171', colorDim: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.3)',
-    travelTime: 5.05, waitTime: 70.7, throughput: 1334, speed: 45.53,
-    co2: 433.8, fuel: 18.7, computeTime: 0, convergence: null, reward: null, efficiency: 48,
+    travelTime: 4.61, waitTime: 76.8, throughput: 4255, speed: 36.41,
+    co2: 431.9, fuel: 18.61, computeTime: 0, convergence: null, reward: null, efficiency: 48,
     description: 'Selfish Routing models each vehicle independently optimizing its own route via shortest-path algorithms, representing the Nash Equilibrium state of the network. Without coordination, vehicles converge on popular routes causing Braess\'s Paradox — where adding road capacity can paradoxically worsen network-wide performance.',
     strengths: ['No training or setup required', 'Simple and fully interpretable', 'Establishes the Price of Anarchy baseline', 'Handles novel edge cases naturally'],
     scores: [0.58, 0.42, 0.40, 0.80, 0.42, 0.52, 0.70],
     // Sparklines: narrow variation around the real forced_flow measurement
     sparklines: {
-      travelTime:  [5.1, 5.3, 4.9, 5.2, 5.0, 5.4, 4.8, 5.2, 5.1, 5.05],
-      waitTime:    [72, 74, 69, 73, 71, 75, 68, 72, 71, 70.7],
-      throughput:  [1350, 1320, 1345, 1310, 1340, 1305, 1335, 1325, 1330, 1334],
-      speed:       [44, 47, 43, 46, 45, 48, 42, 46, 45, 45.53],
+      travelTime:  [4.8, 5.0, 4.6, 4.9, 4.7, 5.1, 4.5, 4.9, 4.7, 4.61],
+      waitTime:    [78, 80, 75, 79, 77, 81, 74, 78, 77, 76.8],
+      throughput:  [4320, 4180, 4290, 4150, 4265, 4100, 4230, 4200, 4240, 4255],
+      speed:       [35, 38, 34, 37, 36, 39, 33, 37, 36, 36.41],
     },
     changes: { travelTime: 1.2, waitTime: 3.1, throughput: -1.8, speed: 1.4 },
     episodes: {
-      travelTime:  makeSeries(5.05, 5.05, 0.5, 0.4,  200, 9),
-      waitTime:    makeSeries(70.7, 70.7, 4.0, 3.0,  200, 10),
-      throughput:  makeSeries(1334, 1334, 42,  30,   200, 11),
-      speed:       makeSeries(45.5, 45.5, 3.0, 2.2,  200, 12),
+      travelTime:  makeSeries(4.61, 4.61, 0.4, 0.3,  200, 9),
+      waitTime:    makeSeries(76.8, 76.8, 4.0, 3.0,  200, 10),
+      throughput:  makeSeries(4255, 4255, 120, 90,   200, 11),
+      speed:       makeSeries(36.4, 36.4, 2.0, 1.5,  200, 12),
     },
     system: {
       training: [],  // Selfish Routing has no training phase
@@ -2651,25 +2651,28 @@ interface SelfishTimeseries {
   totalSystemWait: number[]
 }
 
-function useSelfishRealData(enabled: boolean, trafficLevel: string) {
+function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: string) {
   const [kpis, setKpis] = useState<SelfishApiKpis | null>(null)
   const [timeseries, setTimeseries] = useState<SelfishTimeseries | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!enabled || !trafficLevel) return
+    if (!enabled || !trafficLevel || !mapSize) return
+    setKpis(null)
+    setTimeseries(null)
     setLoading(true)
-    fetch(`/api/selfish?trafficLevel=${trafficLevel}`)
+    fetch(`/api/selfish?trafficLevel=${trafficLevel}&map=${mapSize}`)
       .then(r => r.json())
       .then(data => {
         if (data.success) {
           setKpis(data.kpis)
           setTimeseries(data.timeseries)
         }
+        // On error (e.g. 4x4 map, missing forced_flow for bgc_core) silently fall back to static data
       })
       .catch(() => {/* silently fall back to static data */})
       .finally(() => setLoading(false))
-  }, [enabled, trafficLevel])
+  }, [enabled, trafficLevel, mapSize])
 
   return { kpis, timeseries, loading }
 }
@@ -2684,7 +2687,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 
   // For selfish routing, fetch real simulation data and overlay onto static algo object
   const isSelfish = algo.id === 'selfish'
-  const { kpis: realKpis, timeseries: realTimeseries, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale)
+  const { kpis: realKpis, timeseries: realTimeseries, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale, mapSize)
 
   const displayAlgo: AlgoData = isSelfish && realKpis ? {
     ...algo,
