@@ -95,7 +95,7 @@ env_args:
 
 # buffer_size kept at 100. With episode_limit=100:
 # 100 * 100 * 32 * 751 * 4B ≈ 960 MB — well within both CPU RAM and GPU VRAM.
-buffer_size: 100
+buffer_size: 400
 
 # Top-level PyMARL environment info (must match env_args values above)
 episode_limit: 100
