@@ -211,6 +211,8 @@ def main():
                         help="Baseline policies to evaluate")
     parser.add_argument("--env_config", type=str, default="sumo_grid4x4",
                         help="Env config name under config/envs/ (without .yaml)")
+    parser.add_argument("--alg_config", type=str, default=None,
+                        help="Alg config name under config/algs/ (without .yaml); defaults to qmix_sumo.yaml")
     parser.add_argument("--los_level", type=str, default=None,
                         choices=["low", "med", "high"],
                         help="Override los_level in env_args (low/med/high)")
@@ -224,9 +226,12 @@ def main():
     train_extra = ["--env_config", args.env_config]
     if args.los_level is not None:
         train_extra += ["--los_level", args.los_level]
-    eval_extra  = []
+    # eval_extra must carry the same env/alg config as training so evaluate.py
+    # doesn't fall back to its default sumo_grid4x4 env (obs_shape=65 vs 751)
+    eval_extra = ["--env_config", args.env_config]
     if args.alg_config:
         train_extra += ["--alg_config", args.alg_config]
+        eval_extra  += ["--alg_config", args.alg_config]
     if args.use_cuda:
         train_extra.append("--use_cuda")
     if args.use_gui:

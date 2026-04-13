@@ -79,7 +79,7 @@ def _write_controlled_routes(
             if to_edge == from_edge:
                 continue
 
-            path_edges, _cost = net.getShortestPath(from_edge, to_edge)
+            path_edges, _cost = net.getShortestPath(from_edge, to_edge, vClass="passenger")
             if path_edges is not None and len(path_edges) > 0:
                 break
             path_edges = None
