@@ -35,7 +35,7 @@ env_args:
 
   # Episode configuration
   max_episode_steps: 1000  # T_max: maximum simulation time in seconds
-  episode_limit: 1000
+  episode_limit: 100       # agent decision steps = max_episode_steps / decision_period = 1000 / 10
 
   # Replacement/lifelong agent configuration
   replacement_enabled: true
@@ -93,12 +93,12 @@ env_args:
   verbose: false
   render_mode: null
 
-# buffer_size kept at 100 for safety on 16 GB RAM machines.
-# At full one-hot (obs_dim=751): 100 * 1000 * 32 * 751 * 4B ≈ 9.6 GB — fits.
+# buffer_size kept at 100. With episode_limit=100:
+# 100 * 100 * 32 * 751 * 4B ≈ 960 MB — well within both CPU RAM and GPU VRAM.
 buffer_size: 100
 
 # Top-level PyMARL environment info (must match env_args values above)
-episode_limit: 1000
+episode_limit: 100
 obs_shape: 751     # 5 + 734 + 12
 state_shape: 24032 # 32 * 751
 n_actions: 2
