@@ -1,0 +1,19 @@
+<configuration>
+  <input>
+    <net-file value="../../../bgc_full/final_map.net.xml"/>
+    <!-- Low demand: wardrop_routes_low.rou.xml (~900 veh/hr, period=4.0s) -->
+    <route-files value="controlled_init.rou.xml,../../../bgc_full/wardrop_routes_low.rou.xml"/>
+    <additional-files value="../../../bgc_full/vtypes.add.xml"/>
+  </input>
+
+  <processing>
+    <time-to-teleport value="300"/>
+    <ignore-junction-blocker value="1"/>
+  </processing>
+
+  <time>
+    <begin value="0"/>
+    <end value="3600"/>
+    <step-length value="1.0"/>
+  </time>
+</configuration>

@@ -26,7 +26,9 @@ import logging
 # SUMO imports
 from envs.sumo_backend import backend as traci
 from envs.sumo_backend import set_backend as _set_sumo_backend, is_libsumo as _is_libsumo
+import yaml
 import sumolib
+from components.rsu_zone_manager import RSUZoneManager
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -63,11 +65,12 @@ class SUMOGridRerouteEnv:
         # File paths (resolve relative to repo root)
         # sumo_cfg may be null/None in the config, in which case it is derived
         # from los_level so callers only need to set one value per run.
-        _LOS_CFG = {
+        # los_cfg in env_args overrides the default 4x4 map sumocfg paths.
+        _LOS_CFG = env_args.get("los_cfg", {
             "low":  "sumo/scenarios/4by4_map/train_low.sumocfg",
             "med":  "sumo/scenarios/4by4_map/train_med.sumocfg",
             "high": "sumo/scenarios/4by4_map/train_high.sumocfg",
-        }
+        })
         self.los_level = env_args.get("los_level", "med")
         _raw_cfg = env_args.get("sumo_cfg") or None  # treat empty string as None
         if _raw_cfg is None:
@@ -213,6 +216,15 @@ class SUMOGridRerouteEnv:
         self.controlled_travel_times = []  # Travel times for controlled vehicles only
         self.background_travel_times = []  # Travel times for background vehicles only
         self.controlled_vehicle_ids = set()  # Set of controlled vehicle IDs
+
+        # RSU zone manager (Civiq only — instantiated if rsu_config present in env_args)
+        self.zone_manager = None
+        _rsu_cfg_path = env_args.get("rsu_config", None)
+        if _rsu_cfg_path is not None:
+            _rsu_cfg_path = self._resolve_path(_rsu_cfg_path)
+            with open(_rsu_cfg_path) as _f:
+                _rsu_cfg_dict = yaml.safe_load(_f)
+            self.zone_manager = RSUZoneManager(_rsu_cfg_dict)
 
         if self.verbose:
             logger.info(f"SUMOGridRerouteEnv initialized:")
@@ -435,7 +447,7 @@ class SUMOGridRerouteEnv:
             traci.vehicle.add(
                 vehID=vehicle_id,
                 routeID="",  # We'll set route manually
-                typeID="DEFAULT_VEHTYPE",
+                typeID="thesis_car",
                 depart=str(int(depart_time)),
                 departLane="best",
                 departSpeed="max"
@@ -469,8 +481,9 @@ class SUMOGridRerouteEnv:
             from_edge = self.net.getEdge(from_edge_id)
             to_edge = self.net.getEdge(to_edge_id)
 
-            # Use Dijkstra via sumolib
-            result = self.net.getShortestPath(from_edge, to_edge)
+            # Use Dijkstra via sumolib — restrict to passenger edges so the
+            # router never returns paths through pedestrian-only service roads.
+            result = self.net.getShortestPath(from_edge, to_edge, vClass="passenger")
 
             if result is None:
                 return []
@@ -564,6 +577,15 @@ class SUMOGridRerouteEnv:
                     self.agent_last_actions[agent_id] = action_idx
                 except Exception as e:
                     logger.warning(f"Failed to set route for {vehicle_id}: {e}")
+                    # Evict this OD pair from the route cache so the bad candidate
+                    # is not replayed every decision step until episode end.
+                    try:
+                        current_edge_id = traci.vehicle.getRoadID(vehicle_id)
+                        dest_edge = traci.vehicle.getRoute(vehicle_id)[-1]
+                        cache_key = (current_edge_id, dest_edge)
+                        self._yen_cache.pop(cache_key, None)
+                    except Exception:
+                        pass
 
     def _start_watchdog(self) -> None:
         """Start the background watchdog thread for a new episode.
@@ -1127,6 +1149,17 @@ class SUMOGridRerouteEnv:
             for next_edge in current.getOutgoing():
                 if next_edge in forbidden_edges:
                     continue
+                # Skip edges that passenger cars cannot use (e.g. pedestrian-only service roads).
+                if not next_edge.allows("passenger"):
+                    continue
+                # Skip edges where the junction turn itself forbids passengers.
+                # sumolib's getOutgoing() is topology-only; the <connection> element
+                # between two edges can have its own allow= list that SUMO enforces
+                # at runtime. Without this check, Yen's generates routes that
+                # traci.vehicle.setRoute() then rejects, spamming the logs.
+                connections = current.getConnections(next_edge)
+                if connections and not any(c.allows("passenger") for c in connections):
+                    continue
                 new_cost = cost + next_edge.getLength() / max(next_edge.getSpeed(), 0.1)
                 if new_cost < dist.get(next_edge, float('inf')):
                     dist[next_edge] = new_cost
@@ -1318,6 +1351,114 @@ class SUMOGridRerouteEnv:
             Array of shape (n_agents,)
         """
         return np.array(self.agent_reset_mask, dtype=np.float32)
+
+    # ------------------------------------------------------------------
+    # Civiq zone observation methods (zone_manager must be present)
+    # ------------------------------------------------------------------
+
+    def _build_agents_per_rsu(self, zone_assignments: Dict) -> Dict[int, List[int]]:
+        """Map rsu_id → list of agent_ids currently in that zone.
+
+        Uses agent_vehicle_ids to map from SUMO vehicle IDs (returned by
+        zone_manager) back to agent slot indices (0..n_agents-1).
+        Background vehicles not tracked in any agent slot are ignored.
+        """
+        veh_to_rsu: Dict[str, int] = {}
+        for rsu_id, veh_ids in zone_assignments.items():
+            for vid in veh_ids:
+                veh_to_rsu[vid] = rsu_id
+
+        agents_per_rsu: Dict[int, List[int]] = {i: [] for i in range(self.zone_manager.n_rsus)}
+        for agent_id in range(self.n_agents):
+            vid = self.agent_vehicle_ids[agent_id]
+            if vid is not None and vid in veh_to_rsu:
+                rsu_id = veh_to_rsu[vid]
+                agents_per_rsu[rsu_id].append(agent_id)
+        return agents_per_rsu
+
+    def get_zone_assignments(self) -> Dict:
+        """Get current zone assignments for all vehicles in the simulation.
+
+        Queries vehicle positions from TraCI (via the backend proxy) and
+        delegates assignment to zone_manager.
+
+        Returns:
+            dict {rsu_id (int): [vehicle_id (str), ...]} for all vehicles,
+            including background traffic.
+        """
+        veh_ids = traci.vehicle.getIDList()
+        positions = {v: traci.vehicle.getPosition(v) for v in veh_ids}
+        return self.zone_manager.assign_vehicles_to_zones(positions)
+
+    def get_local_obs_padded(self, zone_assignments: Dict) -> np.ndarray:
+        """Build padded local observation tensor for all RSU zones.
+
+        For each RSU, concatenates observations of its assigned controlled
+        agents (up to max_agents_per_rsu), pads remaining slots with zeros.
+        RSU slots beyond n_rsus are all zeros.
+
+        Args:
+            zone_assignments: dict from get_zone_assignments()
+
+        Returns:
+            np.ndarray shape (max_rsus, max_agents_per_rsu * obs_dim), float32
+        """
+        agents_per_rsu = self._build_agents_per_rsu(zone_assignments)
+        max_rsus = self.zone_manager.max_rsus
+        max_agents = self.zone_manager.max_agents_per_rsu
+        local_state_dim = max_agents * self.obs_dim
+
+        out = np.zeros((max_rsus, local_state_dim), dtype=np.float32)
+        for rsu_id, agent_ids in agents_per_rsu.items():
+            for slot_idx, agent_id in enumerate(agent_ids[:max_agents]):
+                obs = self._get_agent_obs(agent_id)
+                start = slot_idx * self.obs_dim
+                out[rsu_id, start:start + self.obs_dim] = obs
+        return out
+
+    def get_agent_masks_padded(self, zone_assignments: Dict) -> np.ndarray:
+        """Build padded agent mask tensor for all RSU zones.
+
+        1.0 for real agent slots, 0.0 for padding. RSU slots beyond n_rsus
+        remain all zeros.
+
+        Args:
+            zone_assignments: dict from get_zone_assignments()
+
+        Returns:
+            np.ndarray shape (max_rsus, max_agents_per_rsu), float32
+        """
+        agents_per_rsu = self._build_agents_per_rsu(zone_assignments)
+        max_rsus = self.zone_manager.max_rsus
+        max_agents = self.zone_manager.max_agents_per_rsu
+
+        out = np.zeros((max_rsus, max_agents), dtype=np.float32)
+        for rsu_id, agent_ids in agents_per_rsu.items():
+            count = min(len(agent_ids), max_agents)
+            out[rsu_id, :count] = 1.0
+        return out
+
+    def get_zone_assignments_flat(self, zone_assignments: Dict) -> np.ndarray:
+        """Get RSU id for each agent slot.
+
+        Args:
+            zone_assignments: dict from get_zone_assignments()
+
+        Returns:
+            np.ndarray shape (n_agents,), int32 — RSU id per agent slot,
+            -1 for inactive/unassigned agent slots.
+        """
+        veh_to_rsu: Dict[str, int] = {}
+        for rsu_id, veh_ids in zone_assignments.items():
+            for vid in veh_ids:
+                veh_to_rsu[vid] = rsu_id
+
+        result = np.full(self.n_agents, -1, dtype=np.int32)
+        for agent_id in range(self.n_agents):
+            vid = self.agent_vehicle_ids[agent_id]
+            if vid is not None and vid in veh_to_rsu:
+                result[agent_id] = veh_to_rsu[vid]
+        return result
 
     def get_obs_size(self) -> int:
         """Get observation dimension."""

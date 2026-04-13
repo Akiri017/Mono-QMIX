@@ -5,8 +5,12 @@ Evaluates trained QMIX models or baseline policies on the SUMO environment,
 collecting comprehensive metrics for comparison.
 
 Usage:
-    # Evaluate trained QMIX model
+    # Evaluate trained QMIX model (4x4 default)
     python evaluate.py --model results/models/final --episodes 100 --seed 42
+
+    # Evaluate on BGC Full with Civiq
+    python evaluate.py --alg_config civiq_sumo --env_config sumo_bgc_full \
+                       --model results/models/final --episodes 20 --seed 1
 
     # Evaluate baseline policies
     python evaluate.py --baseline noop --episodes 100 --seed 42
@@ -332,6 +336,12 @@ def main():
     parser.add_argument("--compare", nargs='+', default=None,
                        help="Compare multiple result JSON files")
 
+    # Config selection
+    parser.add_argument("--alg_config", type=str, default="qmix_sumo",
+                       help="Algorithm config name (without .yaml), e.g. civiq_sumo")
+    parser.add_argument("--env_config", type=str, default="sumo_grid4x4",
+                       help="Environment config name (without .yaml), e.g. sumo_bgc_full")
+
     # SUMO settings
     parser.add_argument("--use_gui", action="store_true",
                        help="Use SUMO GUI for visualization")
@@ -351,8 +361,8 @@ def main():
 
     # Load configs
     script_dir = Path(__file__).parent
-    alg_config_path = script_dir / "config" / "algs" / "qmix_sumo.yaml"
-    env_config_path = script_dir / "config" / "envs" / "sumo_grid4x4.yaml"
+    alg_config_path = script_dir / "config" / "algs" / f"{args_cmd.alg_config}.yaml"
+    env_config_path = script_dir / "config" / "envs" / f"{args_cmd.env_config}.yaml"
 
     if not alg_config_path.exists() or not env_config_path.exists():
         print(f"Error: Config files not found")

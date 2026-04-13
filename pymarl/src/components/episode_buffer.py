@@ -220,6 +220,46 @@ class ReplayBuffer:
         """Check if buffer has enough episodes to sample."""
         return self.episodes_in_buffer >= batch_size
 
+    def save(self, path):
+        """
+        Persist buffer contents to disk.
+
+        Tensor data is saved to <path>/replay_buffer.pth.
+        buffer_index and episodes_in_buffer are returned as a dict so the
+        caller can merge them into training_state.json.
+        """
+        import os
+        torch.save(
+            {
+                "transition_data": {k: v.cpu() for k, v in self.buffer.data.transition_data.items()},
+                "episode_data": {k: v.cpu() for k, v in self.buffer.data.episode_data.items()},
+            },
+            os.path.join(path, "replay_buffer.pth"),
+        )
+        return {"buffer_index": self.buffer_index, "episodes_in_buffer": self.episodes_in_buffer}
+
+    def load(self, path, state):
+        """
+        Restore buffer contents from disk.
+
+        Args:
+            path: Directory containing replay_buffer.pth
+            state: Dict with buffer_index and episodes_in_buffer (from training_state.json)
+        """
+        import os
+        buf_path = os.path.join(path, "replay_buffer.pth")
+        if not os.path.exists(buf_path):
+            return  # old checkpoint without a saved buffer — cold start as before
+        data = torch.load(buf_path, map_location=self.device)
+        for k, v in data["transition_data"].items():
+            if k in self.buffer.data.transition_data:
+                self.buffer.data.transition_data[k].copy_(v.to(self.device))
+        for k, v in data["episode_data"].items():
+            if k in self.buffer.data.episode_data:
+                self.buffer.data.episode_data[k].copy_(v.to(self.device))
+        self.buffer_index = state.get("buffer_index", 0)
+        self.episodes_in_buffer = state.get("episodes_in_buffer", 0)
+
     def __len__(self):
         """Return number of episodes in buffer."""
         return self.episodes_in_buffer

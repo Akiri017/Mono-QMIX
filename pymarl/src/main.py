@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from controllers.basic_controller import BasicMAC
 from learners.q_learner import QLearner
+from learners.hierarchical_q_learner import HierarchicalQLearner
 from runners.episode_runner import EpisodeRunner
 from components.episode_buffer import ReplayBuffer
 from utils.logging import Logger
@@ -34,21 +35,57 @@ def load_config(alg_config_path, env_config_path):
     return config
 
 
-def get_scheme(env_info):
+def get_scheme(env_info, args=None):
     """
     Create data scheme for episode buffer.
 
-    Defines what data to store for each timestep.
+    Defines what data to store for each timestep. When args["mixer"] == "civiq",
+    adds Civiq hierarchical fields (zone_assignments, rsu_agent_qs,
+    agent_masks_per_rsu, local_states).
+
+    Note: global_states is NOT a separate field — batch["state"] serves as the
+    GlobalQMixer input (state_dim = n_agents * obs_dim = global_state_dim).
     """
-    return {
+    scheme = {
         "state": {"vshape": env_info["state_shape"]},
         "obs": {"vshape": env_info["obs_shape"], "group": "agents"},
         "actions": {"vshape": (1,), "group": "agents", "dtype": torch.long},
         "avail_actions": {"vshape": (env_info["n_actions"],), "group": "agents", "dtype": torch.int},
         "reward": {"vshape": (1,)},
         "terminated": {"vshape": (1,), "dtype": torch.uint8},
-        "filled": {"vshape": (1,), "dtype": torch.uint8}  # Mask for valid timesteps
+        "filled": {"vshape": (1,), "dtype": torch.uint8},  # Mask for valid timesteps
     }
+
+    if args is not None and args.get("mixer") == "civiq":
+        max_rsus = args["max_rsus"]
+        max_agents_per_rsu = args["max_agents_per_rsu"]
+        obs_dim = args["obs_dim"]
+        n_agents = env_info["n_agents"]
+        scheme.update({
+            # RSU id per agent slot; -1 = inactive/unassigned
+            "zone_assignments": {
+                "vshape": (n_agents,),
+                "dtype": torch.int32,
+            },
+            # Populated in HierarchicalQLearner.train() from chosen_action_qvals
+            # by slicing per zone_assignments — left as zeros in the runner
+            "rsu_agent_qs": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            # 1.0 = real agent slot, 0.0 = padding
+            "agent_masks_per_rsu": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            # Padded per-RSU concatenated agent observations
+            "local_states": {
+                "vshape": (max_rsus, max_agents_per_rsu * obs_dim),
+                "dtype": torch.float32,
+            },
+        })
+
+    return scheme
 
 
 def run_training(args):
@@ -78,7 +115,7 @@ def run_training(args):
     args.update(env_info)
 
     # Create data scheme
-    scheme = get_scheme(env_info)
+    scheme = get_scheme(env_info, args)
     groups = {"agents": args["n_agents"]}
     preprocess = {}
 
@@ -97,8 +134,12 @@ def run_training(args):
         device="cpu"  # Keep buffer on CPU to save GPU memory
     )
 
-    # Create learner
-    learner = QLearner(mac, scheme, logger, args)
+    # Create learner — select based on args["learner"] key
+    learner_key = args.get("learner", "q_learner")
+    if learner_key == "hierarchical_q_learner":
+        learner = HierarchicalQLearner(mac, scheme, logger, args)
+    else:
+        learner = QLearner(mac, scheme, logger, args)
 
     # Move to GPU if available
     if args.get("use_cuda", False) and torch.cuda.is_available():
@@ -131,7 +172,7 @@ def run_training(args):
     last_validation_t = -validation_interval
 
     # Best model tracking (Step 6)
-    best_validation_return = float('-inf')  # Track best validation performance
+    best_val_metric = float('-inf')  # -mean_travel_time (negated so higher is better)
     best_model_t = 0
 
     # Resume from checkpoint if requested
@@ -145,17 +186,26 @@ def run_training(args):
                 state = json.load(f)
             runner.t_env = state.get("t_env", 0)
             episode_num = state.get("episode_num", 0)
+            # Restore best-model tracker so resumed runs don't falsely claim new bests
+            # Falls back to old key name for backwards compat with pre-fix checkpoints
+            best_val_metric = state.get("best_val_metric", state.get("best_val_metric", float('-inf')))
+            best_model_t = state.get("best_model_t", 0)
+            # Restore replay buffer so the warm experience from before the checkpoint
+            # is available immediately — avoids cold-buffer grad norm spikes on resume
+            buffer.load(resume_from, state)
+            buf_fill = buffer.episodes_in_buffer / buffer.buffer_size
             # Don't re-save immediately; align all intervals to resume point
             last_save_t = runner.t_env
             last_test_t = runner.t_env - test_interval  # allow test shortly after resume
             last_log_t = runner.t_env
             last_validation_t = runner.t_env - validation_interval
-            print(f"  Resumed at t_env={runner.t_env}, episode_num={episode_num}")
+            print(f"  Resumed at t_env={runner.t_env}, episode_num={episode_num}, "
+                  f"buffer_fill={buf_fill:.1%}")
         else:
             print("  [WARNING] training_state.json not found — step count starts at 0")
 
     print("\n=== Starting Training ===")
-    print(f"Environment: SUMO Grid {args.get('grid_size', '4x4')}")
+    print(f"Environment: {args.get('env_config_name', args.get('grid_size', '4x4'))}")
     print(f"Agents: {args['n_agents']}")
     print(f"Actions per agent: {args['n_actions']}")
     print(f"State shape: {args['state_shape']}")
@@ -247,17 +297,17 @@ def run_training(args):
                     val_metric = avg_validation_return
 
                 # Save best model
-                if val_metric > best_validation_return:
-                    best_validation_return = val_metric
+                if val_metric > best_val_metric:
+                    best_val_metric = val_metric
                     best_model_t = runner.t_env
                     best_save_dir = os.path.join(save_path, "best")
                     os.makedirs(best_save_dir, exist_ok=True)
                     learner.save_models(best_save_dir)
                     label = f"travel_time={-val_metric:.1f}s" if validation_travel_times else f"return={avg_validation_return:.2f}"
                     print(f"  [NEW BEST] Model saved ({label})")
-                    logger.log_stat("best_validation_metric", best_validation_return, runner.t_env)
+                    logger.log_stat("best_validation_metric", best_val_metric, runner.t_env)
                 else:
-                    print(f"  Current best metric: {best_validation_return:.4f} at t={best_model_t}")
+                    print(f"  Current best metric: {best_val_metric:.4f} at t={best_model_t}")
 
                 last_validation_t = runner.t_env
 
@@ -288,8 +338,20 @@ def run_training(args):
                 os.makedirs(save_dir, exist_ok=True)
                 learner.save_models(save_dir)
                 # Save training state so the run can be resumed from this checkpoint
+                buf_state = buffer.save(save_dir)
                 with open(os.path.join(save_dir, "training_state.json"), "w") as f:
-                    json.dump({"t_env": runner.t_env, "episode_num": episode_num}, f)
+                    json.dump({
+                        "t_env": runner.t_env,
+                        "episode_num": episode_num,
+                        # val_metric = -mean_travel_time (negated so higher is better);
+                        # this is the value compared against to decide [NEW BEST]
+                        "best_val_metric": best_val_metric,
+                        "best_model_t": best_model_t,
+                        # human-readable: the actual travel time at the best checkpoint
+                        "best_travel_time": -best_val_metric if best_val_metric != float('-inf') else None,
+                        # replay buffer management state (tensor data in replay_buffer.pth)
+                        **buf_state,
+                    }, f)
                 print(f"Checkpoint saved at t={runner.t_env} -> {save_dir}")
                 last_save_t = runner.t_env
 
@@ -305,7 +367,7 @@ def run_training(args):
 
         # Print best model info (Step 6)
         if use_validation and best_model_t > 0:
-            print(f"Best model: validation_return={best_validation_return:.2f} at t={best_model_t}")
+            print(f"Best model: validation_return={best_val_metric:.2f} at t={best_model_t}")
             print(f"Best model saved to {os.path.join(save_path, 'best')}")
 
         # Close environment
@@ -319,8 +381,25 @@ def main():
     """Main entry point."""
     # Get config paths
     script_dir = Path(__file__).parent
-    alg_config_path = script_dir / "config" / "algs" / "qmix_sumo.yaml"
-    env_config_path = script_dir / "config" / "envs" / "sumo_grid4x4.yaml"
+
+    # Parse --alg_config and --env_config early (before full argparse)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--alg_config", type=str, default=None,
+                        help="Algorithm config filename under config/algs/ (e.g. civiq_sumo.yaml)")
+    parser.add_argument("--env_config", type=str, default=None,
+                        help="Environment config filename under config/envs/ (e.g. sumo_bgc_core.yaml)")
+    pre_args, _ = parser.parse_known_args()
+
+    def _ensure_yaml(name, default):
+        if not name:
+            return default
+        return name if name.endswith(".yaml") else name + ".yaml"
+
+    alg_config_name = _ensure_yaml(pre_args.alg_config, "qmix_sumo.yaml")
+    env_config_name = _ensure_yaml(pre_args.env_config, "sumo_grid4x4.yaml")
+    alg_config_path = script_dir / "config" / "algs" / alg_config_name
+    env_config_path = script_dir / "config" / "envs" / env_config_name
 
     # Load config
     if not alg_config_path.exists():
@@ -332,10 +411,16 @@ def main():
         return
 
     args = load_config(str(alg_config_path), str(env_config_path))
+    args["env_config_name"] = env_config_name.replace(".yaml", "")
 
     # Override with command line args if needed
-    import argparse
     parser = argparse.ArgumentParser()
+    # repeated here so the full parser doesn't reject them
+    parser.add_argument("--alg_config", type=str, default=None)
+    parser.add_argument("--env_config", type=str, default=None)
+    parser.add_argument("--los_level", type=str, default=None,
+                        choices=["low", "med", "high"],
+                        help="Override los_level in env_args (low/med/high)")
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--use_cuda", action="store_true")
     parser.add_argument("--use_gui", action="store_true")
@@ -376,6 +461,8 @@ def main():
         args["resume_from"] = cmd_args.resume_from
     if cmd_args.log_dir is not None:
         args["log_dir"] = cmd_args.log_dir
+    if cmd_args.los_level is not None:
+        args["env_args"]["los_level"] = cmd_args.los_level
     if cmd_args.no_validation:
         args["use_validation"] = False
     if cmd_args.validation_interval is not None:

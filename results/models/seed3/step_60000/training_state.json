@@ -1,0 +1,1 @@
+{"t_env": 60000, "episode_num": 600, "best_val_metric": -12.712594698962405, "best_model_t": 50100, "best_travel_time": 12.712594698962405, "buffer_index": 100, "episodes_in_buffer": 100}

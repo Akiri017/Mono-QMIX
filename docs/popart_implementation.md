@@ -1,8 +1,11 @@
 # Feature: Simplified PopArt Q_tot Target Normalisation (Mono QMIX)
 
-**Date:** 2026-04-09
-**Status:** Complete — implemented, not yet validated by a smoke test run
+**Date:** 2026-04-09  
+**Superseded:** 2026-04-11  
+**Status:** SUPERSEDED by Path B — do not use; kept for reference only  
 **Affected areas:** `pymarl/src/learners/q_learner.py`, `pymarl/src/config/algs/qmix_sumo.yaml`
+
+> **Path A failed its 50k smoke test.** `popart_std` exploded to 173,810 and `popart_mean` to -1,294,570 by t=50k due to a positive feedback loop from the missing weight-rescaling step. The implementation in the codebase has been replaced by Path B (full PopArt with weight rescaling), which was validated via a 500k smoke test (seed=5) on 2026-04-11. See `docs/popart_pathb_implementation.md` for the current implementation.
 
 ## Context
 
