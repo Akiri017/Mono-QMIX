@@ -481,8 +481,9 @@ class SUMOGridRerouteEnv:
             from_edge = self.net.getEdge(from_edge_id)
             to_edge = self.net.getEdge(to_edge_id)
 
-            # Use Dijkstra via sumolib
-            result = self.net.getShortestPath(from_edge, to_edge)
+            # Use Dijkstra via sumolib — restrict to passenger edges so the
+            # router never returns paths through pedestrian-only service roads.
+            result = self.net.getShortestPath(from_edge, to_edge, vClass="passenger")
 
             if result is None:
                 return []
@@ -576,6 +577,15 @@ class SUMOGridRerouteEnv:
                     self.agent_last_actions[agent_id] = action_idx
                 except Exception as e:
                     logger.warning(f"Failed to set route for {vehicle_id}: {e}")
+                    # Evict this OD pair from the route cache so the bad candidate
+                    # is not replayed every decision step until episode end.
+                    try:
+                        current_edge_id = traci.vehicle.getRoadID(vehicle_id)
+                        dest_edge = traci.vehicle.getRoute(vehicle_id)[-1]
+                        cache_key = (current_edge_id, dest_edge)
+                        self._yen_cache.pop(cache_key, None)
+                    except Exception:
+                        pass
 
     def _start_watchdog(self) -> None:
         """Start the background watchdog thread for a new episode.
@@ -1138,6 +1148,17 @@ class SUMOGridRerouteEnv:
 
             for next_edge in current.getOutgoing():
                 if next_edge in forbidden_edges:
+                    continue
+                # Skip edges that passenger cars cannot use (e.g. pedestrian-only service roads).
+                if not next_edge.allows("passenger"):
+                    continue
+                # Skip edges where the junction turn itself forbids passengers.
+                # sumolib's getOutgoing() is topology-only; the <connection> element
+                # between two edges can have its own allow= list that SUMO enforces
+                # at runtime. Without this check, Yen's generates routes that
+                # traci.vehicle.setRoute() then rejects, spamming the logs.
+                connections = current.getConnections(next_edge)
+                if connections and not any(c.allows("passenger") for c in connections):
                     continue
                 new_cost = cost + next_edge.getLength() / max(next_edge.getSpeed(), 0.1)
                 if new_cost < dist.get(next_edge, float('inf')):

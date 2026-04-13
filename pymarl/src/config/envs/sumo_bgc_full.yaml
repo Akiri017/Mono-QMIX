@@ -13,9 +13,9 @@ env_args:
   los_level: "high"
   sumo_cfg: null  # derived from los_level via los_cfg below
   los_cfg:
-    low:  "bgc_full/train_low.sumocfg"
-    med:  "bgc_full/train_med.sumocfg"
-    high: "bgc_full/train_high.sumocfg"
+    low:  "sumo/scenarios/bgc_full/train_low.sumocfg"
+    med:  "sumo/scenarios/bgc_full/train_med.sumocfg"
+    high: "sumo/scenarios/bgc_full/train_high.sumocfg"
   network_file: "bgc_full/final_map.net.xml"
   controlled_routes: "sumo/scenarios/bgc_full/controlled_init.rou.xml"  # generated fixed-N OD pairs (see README)
 
