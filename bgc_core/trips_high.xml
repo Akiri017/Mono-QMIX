@@ -12,7 +12,7 @@
 -->
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
-    <trip type="thesis_moto" id="0" depart="0.00" from="744645397#1" to="-1279681436#0" departLane='best'/>
+    <trip type="thesis_truck" id="0" depart="0.00" from="744645397#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="1" depart="0.70" from="1279681436#0" to="174398008#1" departLane='best'/>
     <trip type="thesis_car" id="2" depart="1.40" from="746423901#2" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="3" depart="2.10" from="749508470" to="-174398024#1" departLane='best'/>
@@ -45,7 +45,7 @@
     <trip type="thesis_car" id="30" depart="21.00" from="1212501346" to="747939432" departLane='best'/>
     <trip type="thesis_car" id="31" depart="21.70" from="747951014#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="32" depart="22.40" from="744926195#0" to="32488019#2" departLane='best'/>
-    <trip type="thesis_moto" id="33" depart="23.10" from="750570767" to="32836569#1" departLane='best'/>
+    <trip type="thesis_truck" id="33" depart="23.10" from="750570767" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="34" depart="23.80" from="1279681436#0" to="174398024#1" departLane='best'/>
     <trip type="thesis_car" id="35" depart="24.50" from="569215926" to="184852733#1" departLane='best'/>
     <trip type="thesis_car" id="36" depart="25.20" from="744632165#1" to="747447020#1" departLane='best'/>
@@ -58,7 +58,7 @@
     <trip type="thesis_car" id="43" depart="30.10" from="-174398011#1" to="744926195#2" departLane='best'/>
     <trip type="thesis_car" id="44" depart="30.80" from="1279681436#0" to="744645399#0" departLane='best'/>
     <trip type="thesis_car" id="45" depart="31.50" from="-747447020#1" to="32836569#1" departLane='best'/>
-    <trip type="thesis_truck" id="46" depart="32.20" from="747951014#0" to="184852741#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="46" depart="32.20" from="747951014#0" to="184852741#1" departLane='best'/>
     <trip type="thesis_car" id="47" depart="32.90" from="750570767" to="747228981#1" departLane='best'/>
     <trip type="thesis_car" id="48" depart="33.60" from="174398023#2" to="744645397#1" departLane='best'/>
     <trip type="thesis_moto" id="49" depart="34.30" from="744632165#1" to="-746423905#1" departLane='best'/>
@@ -67,7 +67,7 @@
     <trip type="thesis_car" id="52" depart="36.40" from="747951014#0" to="745365881" departLane='best'/>
     <trip type="thesis_moto" id="53" depart="37.10" from="174398024#2" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="54" depart="37.80" from="747951014#0" to="747939433#1" departLane='best'/>
-    <trip type="thesis_moto" id="55" depart="38.50" from="-745062638#1" to="35826312#0" departLane='best'/>
+    <trip type="thesis_truck" id="55" depart="38.50" from="-745062638#1" to="35826312#0" departLane='best'/>
     <trip type="thesis_car" id="56" depart="39.20" from="-744949908" to="744999974#1" departLane='best'/>
     <trip type="thesis_car" id="57" depart="39.90" from="747228982#0" to="-744949908" departLane='best'/>
     <trip type="thesis_truck" id="58" depart="40.60" from="1279681436#0" to="747447020#0" departLane='best'/>
@@ -76,19 +76,19 @@
     <trip type="thesis_truck" id="61" depart="42.70" from="96487804#2" to="744645402#1" departLane='best'/>
     <trip type="thesis_moto" id="62" depart="43.40" from="-747447020#1" to="174398008#1" departLane='best'/>
     <trip type="thesis_moto" id="63" depart="44.10" from="23370756" to="744634701#1" departLane='best'/>
-    <trip type="thesis_car" id="64" depart="44.80" from="1279681436#0" to="1280054791" departLane='best'/>
+    <trip type="thesis_moto" id="64" depart="44.80" from="1279681436#0" to="1280054791" departLane='best'/>
     <trip type="thesis_car" id="65" depart="45.50" from="-744954674" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="66" depart="46.20" from="1279681436#0" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="67" depart="46.90" from="747951014#0" to="-174398011#3" departLane='best'/>
-    <trip type="thesis_truck" id="68" depart="47.60" from="1279681436#0" to="744645402#1" departLane='best'/>
-    <trip type="thesis_truck" id="69" depart="48.30" from="1212501347#0" to="-744999975#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="68" depart="47.60" from="1279681436#0" to="744645402#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="69" depart="48.30" from="1212501347#0" to="-744999975#1" departLane='best'/>
     <trip type="thesis_moto" id="70" depart="49.00" from="747228982#0" to="-96487801#2" departLane='best'/>
     <trip type="thesis_car" id="71" depart="49.70" from="-746649485#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="72" depart="50.40" from="745542369#1" to="744645402#1" departLane='best'/>
-    <trip type="thesis_truck" id="73" depart="51.10" from="96487801#3" to="-184852733#0" departLane='best'/>
+    <trip type="thesis_bicycle" id="73" depart="51.10" from="96487801#3" to="-184852733#0" departLane='best'/>
     <trip type="thesis_car" id="74" depart="51.80" from="27788646#3" to="32487759#2" departLane='best'/>
-    <trip type="thesis_truck" id="75" depart="52.50" from="747951014#0" to="174398024#2" departLane='best'/>
-    <trip type="thesis_car" id="76" depart="53.20" from="-96487801#2" to="32836569#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="75" depart="52.50" from="747951014#0" to="174398024#2" departLane='best'/>
+    <trip type="thesis_moto" id="76" depart="53.20" from="-96487801#2" to="32836569#1" departLane='best'/>
     <trip type="thesis_moto" id="77" depart="53.90" from="1279681436#0" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="78" depart="54.60" from="96489258#1" to="745365881" departLane='best'/>
     <trip type="thesis_truck" id="79" depart="55.30" from="747951014#0" to="-747447020#0" departLane='best'/>
@@ -99,9 +99,9 @@
     <trip type="thesis_car" id="84" depart="58.80" from="51355540#1" to="744926195#1" departLane='best'/>
     <trip type="thesis_car" id="85" depart="59.50" from="-747447020#1" to="32487759#1" departLane='best'/>
     <trip type="thesis_car" id="86" depart="60.20" from="81548613#0" to="744634701#1" departLane='best'/>
-    <trip type="thesis_moto" id="87" depart="60.90" from="-744944962#1" to="744634701#1" departLane='best'/>
+    <trip type="thesis_truck" id="87" depart="60.90" from="-744944962#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="88" depart="61.60" from="-747447020#1" to="750563083#0" departLane='best'/>
-    <trip type="thesis_car" id="89" depart="62.30" from="-745055614#2" to="-96487801#0" departLane='best'/>
+    <trip type="thesis_moto" id="89" depart="62.30" from="-745055614#2" to="-96487801#0" departLane='best'/>
     <trip type="thesis_car" id="90" depart="63.00" from="744632165#1" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="91" depart="63.70" from="1279681436#0" to="-744949906#0" departLane='best'/>
     <trip type="thesis_car" id="92" depart="64.40" from="747951014#0" to="174398024#1" departLane='best'/>
@@ -125,12 +125,12 @@
     <trip type="thesis_car" id="110" depart="77.00" from="-747447020#1" to="-744944962#1" departLane='best'/>
     <trip type="thesis_moto" id="111" depart="77.70" from="1279681436#0" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="112" depart="78.40" from="745062638#1" to="-96487804#0" departLane='best'/>
-    <trip type="thesis_moto" id="113" depart="79.10" from="744632165#1" to="184852741#1" departLane='best'/>
+    <trip type="thesis_truck" id="113" depart="79.10" from="744632165#1" to="184852741#1" departLane='best'/>
     <trip type="thesis_car" id="114" depart="79.80" from="747951014#0" to="-174398024#3" departLane='best'/>
     <trip type="thesis_car" id="115" depart="80.50" from="-174398008#1" to="745055614#2" departLane='best'/>
     <trip type="thesis_moto" id="116" depart="81.20" from="744632165#1" to="184852733#1" departLane='best'/>
     <trip type="thesis_truck" id="117" depart="81.90" from="-744999975#1" to="747447020#1" departLane='best'/>
-    <trip type="thesis_moto" id="118" depart="82.60" from="747951014#0" to="744634701#1" departLane='best'/>
+    <trip type="thesis_truck" id="118" depart="82.60" from="747951014#0" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="119" depart="83.30" from="-747447020#1" to="-744949908" departLane='best'/>
     <trip type="thesis_moto" id="120" depart="84.00" from="174398024#2" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="121" depart="84.70" from="747228982#0" to="747217017#0" departLane='best'/>
@@ -140,12 +140,12 @@
     <trip type="thesis_car" id="125" depart="87.50" from="307308395#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="126" depart="88.20" from="-747447020#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="127" depart="88.90" from="747951014#0" to="96487801#0" departLane='best'/>
-    <trip type="thesis_truck" id="128" depart="89.60" from="747228982#0" to="747447020#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="128" depart="89.60" from="747228982#0" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="129" depart="90.30" from="-174398023#3" to="744944963#1" departLane='best'/>
     <trip type="thesis_moto" id="130" depart="91.00" from="23370756" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="131" depart="91.70" from="747228982#0" to="747228971#1" departLane='best'/>
     <trip type="thesis_car" id="132" depart="92.40" from="747228982#0" to="184852743#0" departLane='best'/>
-    <trip type="thesis_car" id="133" depart="93.10" from="747228982#0" to="-184852743#1" departLane='best'/>
+    <trip type="thesis_moto" id="133" depart="93.10" from="747228982#0" to="-184852743#1" departLane='best'/>
     <trip type="thesis_car" id="134" depart="93.80" from="747951014#0" to="747175713#1" departLane='best'/>
     <trip type="thesis_car" id="135" depart="94.50" from="1279681436#0" to="745365881" departLane='best'/>
     <trip type="thesis_moto" id="136" depart="95.20" from="747228982#0" to="174398008#2" departLane='best'/>
@@ -159,7 +159,7 @@
     <trip type="thesis_car" id="144" depart="100.80" from="745542369#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="145" depart="101.50" from="744632165#1" to="744632144#0" departLane='best'/>
     <trip type="thesis_moto" id="146" depart="102.20" from="1279681436#0" to="744649710" departLane='best'/>
-    <trip type="thesis_moto" id="147" depart="102.90" from="-1212504575" to="747447020#1" departLane='best'/>
+    <trip type="thesis_truck" id="147" depart="102.90" from="-1212504575" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="148" depart="103.60" from="32906172#1" to="744926195#2" departLane='best'/>
     <trip type="thesis_car" id="149" depart="104.30" from="23370756" to="-174398011#1" departLane='best'/>
     <trip type="thesis_moto" id="150" depart="105.00" from="744944958#1" to="32487759#2" departLane='best'/>
@@ -171,17 +171,17 @@
     <trip type="thesis_car" id="156" depart="109.20" from="750563083#0" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="157" depart="109.90" from="-1212504575" to="307308395#1" departLane='best'/>
     <trip type="thesis_car" id="158" depart="110.60" from="319060501#1" to="744634701#1" departLane='best'/>
-    <trip type="thesis_car" id="159" depart="111.30" from="744926194#1" to="32836569#1" departLane='best'/>
+    <trip type="thesis_moto" id="159" depart="111.30" from="744926194#1" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="160" depart="112.00" from="747228982#0" to="-747853027#0" departLane='best'/>
     <trip type="thesis_car" id="161" depart="112.70" from="-745062638#1" to="744632160#0" departLane='best'/>
     <trip type="thesis_car" id="162" depart="113.40" from="744632165#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="163" depart="114.10" from="747853028#1" to="744949907" departLane='best'/>
     <trip type="thesis_car" id="164" depart="114.80" from="744944962#0" to="174398008#1" departLane='best'/>
-    <trip type="thesis_moto" id="165" depart="115.50" from="-96487803#1" to="-1279681436#0" departLane='best'/>
+    <trip type="thesis_truck" id="165" depart="115.50" from="-96487803#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="166" depart="116.20" from="1279681436#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="167" depart="116.90" from="747951014#0" to="-174398011#3" departLane='best'/>
     <trip type="thesis_car" id="168" depart="117.60" from="319060501#1" to="744634701#1" departLane='best'/>
-    <trip type="thesis_moto" id="169" depart="118.30" from="-96487801#3" to="744645402#1" departLane='best'/>
+    <trip type="thesis_truck" id="169" depart="118.30" from="-96487801#3" to="744645402#1" departLane='best'/>
     <trip type="thesis_moto" id="170" depart="119.00" from="744926195#0" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_moto" id="171" depart="119.70" from="747228980" to="745055614#2" departLane='best'/>
     <trip type="thesis_car" id="172" depart="120.40" from="-747447020#0" to="32836569#1" departLane='best'/>
@@ -190,7 +190,7 @@
     <trip type="thesis_car" id="175" depart="122.50" from="319060501#1" to="745365881" departLane='best'/>
     <trip type="thesis_truck" id="176" depart="123.20" from="744944960#0" to="96487803#0" departLane='best'/>
     <trip type="thesis_moto" id="177" depart="123.90" from="744632165#1" to="747939435" departLane='best'/>
-    <trip type="thesis_car" id="178" depart="124.60" from="747951014#0" to="744634701#1" departLane='best'/>
+    <trip type="thesis_moto" id="178" depart="124.60" from="747951014#0" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="179" depart="125.30" from="745062638#1" to="572782867#1" departLane='best'/>
     <trip type="thesis_car" id="180" depart="126.00" from="749858672#1" to="744944972#1" departLane='best'/>
     <trip type="thesis_car" id="181" depart="126.70" from="1279681436#0" to="744645397#1" departLane='best'/>
@@ -199,14 +199,14 @@
     <trip type="thesis_moto" id="184" depart="128.80" from="32906172#1" to="-745055614#2" departLane='best'/>
     <trip type="thesis_car" id="185" depart="129.50" from="1279681436#0" to="744645402#1" departLane='best'/>
     <trip type="thesis_truck" id="186" depart="130.20" from="744999975#1" to="-174398008#1" departLane='best'/>
-    <trip type="thesis_car" id="187" depart="130.90" from="744632165#1" to="744645402#1" departLane='best'/>
+    <trip type="thesis_moto" id="187" depart="130.90" from="744632165#1" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="188" depart="131.60" from="747951014#0" to="744999975#1" departLane='best'/>
     <trip type="thesis_car" id="189" depart="132.30" from="23370756" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="190" depart="133.00" from="23370756" to="744949908" departLane='best'/>
     <trip type="thesis_moto" id="191" depart="133.70" from="747951014#0" to="749858672#1" departLane='best'/>
     <trip type="thesis_car" id="192" depart="134.40" from="35826312#0" to="744634701#1" departLane='best'/>
     <trip type="thesis_truck" id="193" depart="135.10" from="1279681436#0" to="1280054791" departLane='best'/>
-    <trip type="thesis_car" id="194" depart="135.80" from="23370756" to="744645402#1" departLane='best'/>
+    <trip type="thesis_moto" id="194" depart="135.80" from="23370756" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="195" depart="136.50" from="323726178#1" to="-744949908" departLane='best'/>
     <trip type="thesis_car" id="196" depart="137.20" from="744632165#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="197" depart="137.90" from="-174398024#1" to="744645399#0" departLane='best'/>
@@ -220,21 +220,21 @@
     <trip type="thesis_moto" id="205" depart="143.50" from="744649710" to="745365881" departLane='best'/>
     <trip type="thesis_moto" id="206" depart="144.20" from="744649710" to="744949908" departLane='best'/>
     <trip type="thesis_car" id="207" depart="144.90" from="750570767" to="-96487803#1" departLane='best'/>
-    <trip type="thesis_car" id="208" depart="145.60" from="-174398023#1" to="-746423905#1" departLane='best'/>
+    <trip type="thesis_moto" id="208" depart="145.60" from="-174398023#1" to="-746423905#1" departLane='best'/>
     <trip type="thesis_car" id="209" depart="146.30" from="-747447020#1" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="210" depart="147.00" from="572782867#1" to="1212504575" departLane='best'/>
     <trip type="thesis_car" id="211" depart="147.70" from="744999974#0" to="745055614#1" departLane='best'/>
     <trip type="thesis_car" id="212" depart="148.40" from="-747853026#0" to="744634701#1" departLane='best'/>
-    <trip type="thesis_truck" id="213" depart="149.10" from="747228971#1" to="-744944962#1" departLane='best'/>
-    <trip type="thesis_car" id="214" depart="149.80" from="747853030" to="750570769#0" departLane='best'/>
+    <trip type="thesis_bicycle" id="213" depart="149.10" from="747228971#1" to="-744944962#1" departLane='best'/>
+    <trip type="thesis_moto" id="214" depart="149.80" from="747853030" to="750570769#0" departLane='best'/>
     <trip type="thesis_moto" id="215" depart="150.50" from="-747447020#0" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="216" depart="151.20" from="174398024#3" to="744645402#1" departLane='best'/>
     <trip type="thesis_moto" id="217" depart="151.90" from="750570767" to="32488019#2" departLane='best'/>
-    <trip type="thesis_moto" id="218" depart="152.60" from="745055614#3" to="-174398011#4" departLane='best'/>
+    <trip type="thesis_truck" id="218" depart="152.60" from="745055614#3" to="-174398011#4" departLane='best'/>
     <trip type="thesis_car" id="219" depart="153.30" from="744949907" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="220" depart="154.00" from="-746653786#0" to="745055614#3" departLane='best'/>
     <trip type="thesis_moto" id="221" depart="154.70" from="747951014#0" to="744634701#1" departLane='best'/>
-    <trip type="thesis_moto" id="222" depart="155.40" from="-747447020#1" to="96487801#3" departLane='best'/>
+    <trip type="thesis_truck" id="222" depart="155.40" from="-747447020#1" to="96487801#3" departLane='best'/>
     <trip type="thesis_moto" id="223" depart="156.10" from="747228982#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_moto" id="224" depart="156.80" from="747951014#0" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="225" depart="157.50" from="-747447020#0" to="750563083#0" departLane='best'/>
@@ -242,7 +242,7 @@
     <trip type="thesis_moto" id="227" depart="158.90" from="744999975#1" to="32836569#1" departLane='best'/>
     <trip type="thesis_moto" id="228" depart="159.60" from="746423901#1" to="750570769#1" departLane='best'/>
     <trip type="thesis_moto" id="229" depart="160.30" from="1279681436#0" to="745365881" departLane='best'/>
-    <trip type="thesis_truck" id="230" depart="161.00" from="32906172#1" to="35826311#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="230" depart="161.00" from="32906172#1" to="35826311#1" departLane='best'/>
     <trip type="thesis_car" id="231" depart="161.70" from="1279681436#0" to="746423901#2" departLane='best'/>
     <trip type="thesis_car" id="232" depart="162.40" from="747939435" to="-174398024#1" departLane='best'/>
     <trip type="thesis_car" id="233" depart="163.10" from="747951014#0" to="174398023#3" departLane='best'/>
@@ -259,7 +259,7 @@
     <trip type="thesis_car" id="244" depart="170.80" from="744949907" to="32487759#2" departLane='best'/>
     <trip type="thesis_moto" id="245" depart="171.50" from="744632165#1" to="32836569#1" departLane='best'/>
     <trip type="thesis_moto" id="246" depart="172.20" from="747228971#1" to="32487759#2" departLane='best'/>
-    <trip type="thesis_moto" id="247" depart="172.90" from="744999974#1" to="184852743#1" departLane='best'/>
+    <trip type="thesis_truck" id="247" depart="172.90" from="744999974#1" to="184852743#1" departLane='best'/>
     <trip type="thesis_car" id="248" depart="173.60" from="1279681436#0" to="-744949906#0" departLane='best'/>
     <trip type="thesis_car" id="249" depart="174.30" from="-96487801#2" to="-744944967#1" departLane='best'/>
     <trip type="thesis_car" id="250" depart="175.00" from="-96487801#0" to="1212504575" departLane='best'/>
@@ -283,7 +283,7 @@
     <trip type="thesis_car" id="268" depart="187.60" from="744926195#1" to="-746649485#0" departLane='best'/>
     <trip type="thesis_truck" id="269" depart="188.30" from="-747853030" to="-174398011#4" departLane='best'/>
     <trip type="thesis_car" id="270" depart="189.00" from="-1212504575" to="32836569#1" departLane='best'/>
-    <trip type="thesis_moto" id="271" depart="189.70" from="744632165#1" to="323726178#1" departLane='best'/>
+    <trip type="thesis_truck" id="271" depart="189.70" from="744632165#1" to="323726178#1" departLane='best'/>
     <trip type="thesis_car" id="272" depart="190.40" from="1279681436#0" to="744645404#1" departLane='best'/>
     <trip type="thesis_moto" id="273" depart="191.10" from="744999974#1" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="274" depart="191.80" from="744949906#1" to="747447020#1" departLane='best'/>
@@ -300,9 +300,9 @@
     <trip type="thesis_moto" id="285" depart="199.50" from="-746423901#2" to="750563083#0" departLane='best'/>
     <trip type="thesis_moto" id="286" depart="200.20" from="750570767" to="96489258#1" departLane='best'/>
     <trip type="thesis_car" id="287" depart="200.90" from="744944961" to="184852743#1" departLane='best'/>
-    <trip type="thesis_car" id="288" depart="201.60" from="-184852733#0" to="744999973#1" departLane='best'/>
+    <trip type="thesis_moto" id="288" depart="201.60" from="-184852733#0" to="744999973#1" departLane='best'/>
     <trip type="thesis_car" id="289" depart="202.30" from="750570767" to="-749508471#0" departLane='best'/>
-    <trip type="thesis_car" id="290" depart="203.00" from="744632165#1" to="744634701#1" departLane='best'/>
+    <trip type="thesis_moto" id="290" depart="203.00" from="744632165#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="291" depart="203.70" from="23370756" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="292" depart="204.40" from="744944961" to="747175713#1" departLane='best'/>
     <trip type="thesis_moto" id="293" depart="205.10" from="184852743#1" to="744645402#1" departLane='best'/>
@@ -312,7 +312,7 @@
     <trip type="thesis_moto" id="297" depart="207.90" from="35826311#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="298" depart="208.60" from="-96487801#1" to="32488019#1" departLane='best'/>
     <trip type="thesis_car" id="299" depart="209.30" from="747228982#0" to="744634701#1" departLane='best'/>
-    <trip type="thesis_car" id="300" depart="210.00" from="747228982#0" to="-96487804#0" departLane='best'/>
+    <trip type="thesis_moto" id="300" depart="210.00" from="747228982#0" to="-96487804#0" departLane='best'/>
     <trip type="thesis_car" id="301" depart="210.70" from="-747447020#1" to="81548613#1" departLane='best'/>
     <trip type="thesis_truck" id="302" depart="211.40" from="744632165#1" to="174398023#1" departLane='best'/>
     <trip type="thesis_car" id="303" depart="212.10" from="96487804#0" to="747447020#1" departLane='best'/>
@@ -324,7 +324,7 @@
     <trip type="thesis_moto" id="309" depart="216.30" from="750570767" to="572782867#2" departLane='best'/>
     <trip type="thesis_car" id="310" depart="217.00" from="747951014#0" to="747228971#1" departLane='best'/>
     <trip type="thesis_moto" id="311" depart="217.70" from="1279681436#0" to="745365881" departLane='best'/>
-    <trip type="thesis_car" id="312" depart="218.40" from="174398008#1" to="32487759#2" departLane='best'/>
+    <trip type="thesis_moto" id="312" depart="218.40" from="174398008#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="313" depart="219.10" from="744632165#1" to="96489258#1" departLane='best'/>
     <trip type="thesis_moto" id="314" depart="219.80" from="32906172#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="315" depart="220.50" from="-96487801#1" to="744645402#1" departLane='best'/>
@@ -338,8 +338,8 @@
     <trip type="thesis_moto" id="323" depart="226.10" from="747951014#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="324" depart="226.80" from="744926194#1" to="-746423905#1" departLane='best'/>
     <trip type="thesis_car" id="325" depart="227.50" from="23370756" to="744645402#1" departLane='best'/>
-    <trip type="thesis_moto" id="326" depart="228.20" from="744649710" to="746423901#2" departLane='best'/>
-    <trip type="thesis_truck" id="327" depart="228.90" from="747951014#0" to="747175713#1" departLane='best'/>
+    <trip type="thesis_truck" id="326" depart="228.20" from="744649710" to="746423901#2" departLane='best'/>
+    <trip type="thesis_bicycle" id="327" depart="228.90" from="747951014#0" to="747175713#1" departLane='best'/>
     <trip type="thesis_car" id="328" depart="229.60" from="23370756" to="32487759#2" departLane='best'/>
     <trip type="thesis_truck" id="329" depart="230.30" from="745062638#1" to="744999974#0" departLane='best'/>
     <trip type="thesis_car" id="330" depart="231.00" from="747951014#0" to="-1279681436#0" departLane='best'/>
@@ -356,11 +356,11 @@
     <trip type="thesis_car" id="341" depart="238.70" from="747951014#0" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="342" depart="239.40" from="1279681436#0" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="343" depart="240.10" from="-747447020#1" to="32836569#1" departLane='best'/>
-    <trip type="thesis_moto" id="344" depart="240.80" from="1279681436#0" to="182331870#0" departLane='best'/>
+    <trip type="thesis_truck" id="344" depart="240.80" from="1279681436#0" to="182331870#0" departLane='best'/>
     <trip type="thesis_car" id="345" depart="241.50" from="-174398011#1" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="346" depart="242.20" from="750563083#0" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="347" depart="242.90" from="-747447020#1" to="32836569#1" departLane='best'/>
-    <trip type="thesis_truck" id="348" depart="243.60" from="23370756" to="744634701#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="348" depart="243.60" from="23370756" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="349" depart="244.30" from="744645397#1" to="32836569#1" departLane='best'/>
     <trip type="thesis_moto" id="350" depart="245.00" from="1279681436#0" to="745542369#1" departLane='best'/>
     <trip type="thesis_car" id="351" depart="245.70" from="-96487803#1" to="32488019#2" departLane='best'/>
@@ -371,7 +371,7 @@
     <trip type="thesis_car" id="356" depart="249.20" from="174398008#2" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="357" depart="249.90" from="744632165#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_moto" id="358" depart="250.60" from="744632165#1" to="744634701#1" departLane='best'/>
-    <trip type="thesis_car" id="359" depart="251.30" from="744944963#1" to="744926195#2" departLane='best'/>
+    <trip type="thesis_moto" id="359" depart="251.30" from="744944963#1" to="744926195#2" departLane='best'/>
     <trip type="thesis_car" id="360" depart="252.00" from="744926195#1" to="745365881" departLane='best'/>
     <trip type="thesis_moto" id="361" depart="252.70" from="744632165#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_moto" id="362" depart="253.40" from="744645404#1" to="32487759#2" departLane='best'/>
@@ -408,7 +408,7 @@
     <trip type="thesis_car" id="393" depart="275.10" from="-746649485#0" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="394" depart="275.80" from="23370756" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="395" depart="276.50" from="-96487801#1" to="-744949906#0" departLane='best'/>
-    <trip type="thesis_truck" id="396" depart="277.20" from="747951014#0" to="32836569#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="396" depart="277.20" from="747951014#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="397" depart="277.90" from="744926195#2" to="744645399#0" departLane='best'/>
     <trip type="thesis_car" id="398" depart="278.60" from="744632165#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="399" depart="279.30" from="747228982#0" to="174398023#3" departLane='best'/>
@@ -426,8 +426,8 @@
     <trip type="thesis_car" id="411" depart="287.70" from="747228982#0" to="744632144#1" departLane='best'/>
     <trip type="thesis_car" id="412" depart="288.40" from="-747447020#1" to="572782867#1" departLane='best'/>
     <trip type="thesis_car" id="413" depart="289.10" from="750570767" to="-1279681436#0" departLane='best'/>
-    <trip type="thesis_car" id="414" depart="289.80" from="747228982#0" to="747228980" departLane='best'/>
-    <trip type="thesis_moto" id="415" depart="290.50" from="750570769#0" to="-1279681436#0" departLane='best'/>
+    <trip type="thesis_moto" id="414" depart="289.80" from="747228982#0" to="747228980" departLane='best'/>
+    <trip type="thesis_truck" id="415" depart="290.50" from="750570769#0" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="416" depart="291.20" from="32488019#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_moto" id="417" depart="291.90" from="744944972#1" to="35826312#2" departLane='best'/>
     <trip type="thesis_car" id="418" depart="292.60" from="750570767" to="-174398011#4" departLane='best'/>
@@ -437,7 +437,7 @@
     <trip type="thesis_car" id="422" depart="295.40" from="744632165#1" to="-184852733#0" departLane='best'/>
     <trip type="thesis_moto" id="423" depart="296.10" from="744999974#1" to="746423901#2" departLane='best'/>
     <trip type="thesis_moto" id="424" depart="296.80" from="744649710" to="745055614#1" departLane='best'/>
-    <trip type="thesis_car" id="425" depart="297.50" from="23370756" to="32836569#1" departLane='best'/>
+    <trip type="thesis_moto" id="425" depart="297.50" from="23370756" to="32836569#1" departLane='best'/>
     <trip type="thesis_moto" id="426" depart="298.20" from="23370756" to="-746423905#1" departLane='best'/>
     <trip type="thesis_car" id="427" depart="298.90" from="750570767" to="-174398008#2" departLane='best'/>
     <trip type="thesis_moto" id="428" depart="299.60" from="747939435" to="-174398024#3" departLane='best'/>
@@ -454,7 +454,7 @@
     <trip type="thesis_car" id="439" depart="307.30" from="747853028#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="440" depart="308.00" from="744645399#0" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_moto" id="441" depart="308.70" from="750570767" to="745365881" departLane='best'/>
-    <trip type="thesis_truck" id="442" depart="309.40" from="1279681436#0" to="-747939433#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="442" depart="309.40" from="1279681436#0" to="-747939433#1" departLane='best'/>
     <trip type="thesis_car" id="443" depart="310.10" from="744999974#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_truck" id="444" depart="310.80" from="23370756" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="445" depart="311.50" from="27788646#3" to="-745055614#3" departLane='best'/>
@@ -467,7 +467,7 @@
     <trip type="thesis_moto" id="452" depart="316.40" from="747228982#0" to="-744944960#0" departLane='best'/>
     <trip type="thesis_car" id="453" depart="317.10" from="744944964" to="35826312#0" departLane='best'/>
     <trip type="thesis_car" id="454" depart="317.80" from="744944960#0" to="-1279681436#0" departLane='best'/>
-    <trip type="thesis_truck" id="455" depart="318.50" from="27788646#1" to="744634701#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="455" depart="318.50" from="27788646#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="456" depart="319.20" from="-174398008#2" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="457" depart="319.90" from="1212501346" to="-745055614#1" departLane='best'/>
     <trip type="thesis_car" id="458" depart="320.60" from="1279681436#0" to="32487759#2" departLane='best'/>
@@ -480,9 +480,9 @@
     <trip type="thesis_car" id="465" depart="325.50" from="750570767" to="747217017#0" departLane='best'/>
     <trip type="thesis_moto" id="466" depart="326.20" from="745055614#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="467" depart="326.90" from="-747447020#1" to="-1279681436#0" departLane='best'/>
-    <trip type="thesis_truck" id="468" depart="327.60" from="184852743#0" to="745365881" departLane='best'/>
+    <trip type="thesis_bicycle" id="468" depart="327.60" from="184852743#0" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="469" depart="328.30" from="744632165#1" to="745365881" departLane='best'/>
-    <trip type="thesis_car" id="470" depart="329.00" from="750570767" to="-174398024#2" departLane='best'/>
+    <trip type="thesis_moto" id="470" depart="329.00" from="750570767" to="-174398024#2" departLane='best'/>
     <trip type="thesis_car" id="471" depart="329.70" from="747951014#0" to="174398023#3" departLane='best'/>
     <trip type="thesis_moto" id="472" depart="330.40" from="27788646#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_moto" id="473" depart="331.10" from="23370756" to="32487759#2" departLane='best'/>
@@ -490,10 +490,10 @@
     <trip type="thesis_car" id="475" depart="332.50" from="-747447020#1" to="744632144#0" departLane='best'/>
     <trip type="thesis_car" id="476" depart="333.20" from="750570767" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="477" depart="333.90" from="745542368#0" to="745365881" departLane='best'/>
-    <trip type="thesis_truck" id="478" depart="334.60" from="747447020#0" to="174398011#4" departLane='best'/>
+    <trip type="thesis_bicycle" id="478" depart="334.60" from="747447020#0" to="174398011#4" departLane='best'/>
     <trip type="thesis_car" id="479" depart="335.30" from="-747447020#1" to="-96487803#0" departLane='best'/>
     <trip type="thesis_car" id="480" depart="336.00" from="744632165#1" to="744999974#0" departLane='best'/>
-    <trip type="thesis_car" id="481" depart="336.70" from="744926195#0" to="-747936760#1" departLane='best'/>
+    <trip type="thesis_moto" id="481" depart="336.70" from="744926195#0" to="-747936760#1" departLane='best'/>
     <trip type="thesis_car" id="482" depart="337.40" from="747228982#0" to="35826312#3" departLane='best'/>
     <trip type="thesis_car" id="483" depart="338.10" from="747228982#0" to="744999974#0" departLane='best'/>
     <trip type="thesis_car" id="484" depart="338.80" from="572782867#2" to="744634701#1" departLane='best'/>
@@ -571,15 +571,15 @@
     <trip type="thesis_car" id="556" depart="389.20" from="319060501#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="557" depart="389.90" from="1279681436#0" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="558" depart="390.60" from="744944958#1" to="-174398024#1" departLane='best'/>
-    <trip type="thesis_moto" id="559" depart="391.30" from="96487801#0" to="-174398011#1" departLane='best'/>
+    <trip type="thesis_truck" id="559" depart="391.30" from="96487801#0" to="-174398011#1" departLane='best'/>
     <trip type="thesis_car" id="560" depart="392.00" from="744632165#1" to="96487801#2" departLane='best'/>
     <trip type="thesis_car" id="561" depart="392.70" from="1279681436#0" to="-1279681436#0" departLane='best'/>
-    <trip type="thesis_truck" id="562" depart="393.40" from="747228982#0" to="32487759#2" departLane='best'/>
+    <trip type="thesis_bicycle" id="562" depart="393.40" from="747228982#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_truck" id="563" depart="394.10" from="746423901#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="564" depart="394.80" from="747228982#0" to="744944963#1" departLane='best'/>
     <trip type="thesis_car" id="565" depart="395.50" from="23370756" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_truck" id="566" depart="396.20" from="35826312#0" to="745365881" departLane='best'/>
-    <trip type="thesis_truck" id="567" depart="396.90" from="-747853030" to="745356310#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="567" depart="396.90" from="-747853030" to="745356310#1" departLane='best'/>
     <trip type="thesis_car" id="568" depart="397.60" from="744632165#1" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="569" depart="398.30" from="-744949906#0" to="745062638#1" departLane='best'/>
     <trip type="thesis_car" id="570" depart="399.00" from="-184852733#1" to="-96487803#1" departLane='best'/>
@@ -590,13 +590,13 @@
     <trip type="thesis_moto" id="575" depart="402.50" from="-747447020#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_moto" id="576" depart="403.20" from="747951014#0" to="744944972#1" departLane='best'/>
     <trip type="thesis_truck" id="577" depart="403.90" from="749508470" to="32488019#2" departLane='best'/>
-    <trip type="thesis_car" id="578" depart="404.60" from="96487801#0" to="51355539#0" departLane='best'/>
+    <trip type="thesis_moto" id="578" depart="404.60" from="96487801#0" to="51355539#0" departLane='best'/>
     <trip type="thesis_car" id="579" depart="405.30" from="745542368#0" to="-174398023#1" departLane='best'/>
-    <trip type="thesis_car" id="580" depart="406.00" from="744632165#1" to="745365881" departLane='best'/>
+    <trip type="thesis_moto" id="580" depart="406.00" from="744632165#1" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="581" depart="406.70" from="-745055614#2" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="582" depart="407.40" from="174398024#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="583" depart="408.10" from="23370756" to="-1279681436#0" departLane='best'/>
-    <trip type="thesis_truck" id="584" depart="408.80" from="747951014#0" to="32487759#2" departLane='best'/>
+    <trip type="thesis_bicycle" id="584" depart="408.80" from="747951014#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_moto" id="585" depart="409.50" from="96487801#2" to="747939435" departLane='best'/>
     <trip type="thesis_truck" id="586" depart="410.20" from="-744999975#1" to="744645397#1" departLane='best'/>
     <trip type="thesis_car" id="587" depart="410.90" from="23370756" to="745365881" departLane='best'/>
@@ -642,18 +642,18 @@
     <trip type="thesis_truck" id="627" depart="438.90" from="744632165#1" to="745542368#0" departLane='best'/>
     <trip type="thesis_car" id="628" depart="439.60" from="572782867#1" to="745365881" departLane='best'/>
     <trip type="thesis_truck" id="629" depart="440.30" from="-174398024#1" to="-1279681436#0" departLane='best'/>
-    <trip type="thesis_truck" id="630" depart="441.00" from="744649710" to="745055614#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="630" depart="441.00" from="744649710" to="745055614#1" departLane='best'/>
     <trip type="thesis_car" id="631" depart="441.70" from="174398011#3" to="750563077" departLane='best'/>
     <trip type="thesis_car" id="632" depart="442.40" from="744944972#1" to="32487759#1" departLane='best'/>
     <trip type="thesis_car" id="633" depart="443.10" from="-744954674" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="634" depart="443.80" from="-96487804#0" to="744634701#1" departLane='best'/>
-    <trip type="thesis_car" id="635" depart="444.50" from="174398024#3" to="744926195#1" departLane='best'/>
+    <trip type="thesis_moto" id="635" depart="444.50" from="174398024#3" to="744926195#1" departLane='best'/>
     <trip type="thesis_moto" id="636" depart="445.20" from="746423901#2" to="747217017#0" departLane='best'/>
-    <trip type="thesis_moto" id="637" depart="445.90" from="96487801#0" to="-744954674" departLane='best'/>
+    <trip type="thesis_truck" id="637" depart="445.90" from="96487801#0" to="-744954674" departLane='best'/>
     <trip type="thesis_moto" id="638" depart="446.60" from="184852733#1" to="32836569#1" departLane='best'/>
     <trip type="thesis_truck" id="639" depart="447.30" from="1279681436#0" to="174398024#1" departLane='best'/>
     <trip type="thesis_moto" id="640" depart="448.00" from="-746649485#0" to="323726178#1" departLane='best'/>
-    <trip type="thesis_car" id="641" depart="448.70" from="23370756" to="744634701#1" departLane='best'/>
+    <trip type="thesis_moto" id="641" depart="448.70" from="23370756" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="642" depart="449.40" from="1279681436#0" to="747228971#1" departLane='best'/>
     <trip type="thesis_car" id="643" depart="450.10" from="-747447020#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="644" depart="450.80" from="747228982#0" to="51355540#1" departLane='best'/>
@@ -699,15 +699,15 @@
     <trip type="thesis_car" id="684" depart="478.80" from="744645401#1" to="744645402#1" departLane='best'/>
     <trip type="thesis_moto" id="685" depart="479.50" from="744632165#1" to="-96487801#2" departLane='best'/>
     <trip type="thesis_car" id="686" depart="480.20" from="1279681436#0" to="81548613#1" departLane='best'/>
-    <trip type="thesis_truck" id="687" depart="480.90" from="174398023#1" to="307308395#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="687" depart="480.90" from="174398023#1" to="307308395#1" departLane='best'/>
     <trip type="thesis_moto" id="688" depart="481.60" from="-96487804#2" to="744645404#1" departLane='best'/>
-    <trip type="thesis_truck" id="689" depart="482.30" from="184852733#0" to="32487759#2" departLane='best'/>
+    <trip type="thesis_bicycle" id="689" depart="482.30" from="184852733#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="690" depart="483.00" from="750570767" to="745365881" departLane='best'/>
     <trip type="thesis_moto" id="691" depart="483.70" from="1279681436#0" to="-744949906#0" departLane='best'/>
     <trip type="thesis_car" id="692" depart="484.40" from="744944963#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_truck" id="693" depart="485.10" from="96487801#2" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="694" depart="485.80" from="750570767" to="745365881" departLane='best'/>
-    <trip type="thesis_car" id="695" depart="486.50" from="174398011#3" to="307308395#1" departLane='best'/>
+    <trip type="thesis_moto" id="695" depart="486.50" from="174398011#3" to="307308395#1" departLane='best'/>
     <trip type="thesis_truck" id="696" depart="487.20" from="745055614#3" to="32487759#2" departLane='best'/>
     <trip type="thesis_moto" id="697" depart="487.90" from="32906172#1" to="747853028#1" departLane='best'/>
     <trip type="thesis_car" id="698" depart="488.60" from="744999973#1" to="-745055614#1" departLane='best'/>
@@ -722,7 +722,7 @@
     <trip type="thesis_moto" id="707" depart="494.90" from="750570767" to="-174398024#2" departLane='best'/>
     <trip type="thesis_car" id="708" depart="495.60" from="750570767" to="-747853030" departLane='best'/>
     <trip type="thesis_car" id="709" depart="496.30" from="747951014#0" to="-747936760#1" departLane='best'/>
-    <trip type="thesis_moto" id="710" depart="497.00" from="750570767" to="96489258#1" departLane='best'/>
+    <trip type="thesis_truck" id="710" depart="497.00" from="750570767" to="96489258#1" departLane='best'/>
     <trip type="thesis_car" id="711" depart="497.70" from="27788646#1" to="51355539#0" departLane='best'/>
     <trip type="thesis_car" id="712" depart="498.40" from="750570767" to="750570769#0" departLane='best'/>
     <trip type="thesis_truck" id="713" depart="499.10" from="750570767" to="747447020#1" departLane='best'/>
@@ -738,9 +738,9 @@
     <trip type="thesis_car" id="723" depart="506.10" from="-745062638#1" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="724" depart="506.80" from="-96487801#0" to="-745055614#3" departLane='best'/>
     <trip type="thesis_moto" id="725" depart="507.50" from="184852741#1" to="174398024#1" departLane='best'/>
-    <trip type="thesis_truck" id="726" depart="508.20" from="1279681436#0" to="174398011#4" departLane='best'/>
+    <trip type="thesis_bicycle" id="726" depart="508.20" from="1279681436#0" to="174398011#4" departLane='best'/>
     <trip type="thesis_moto" id="727" depart="508.90" from="747228981#1" to="749858672#1" departLane='best'/>
-    <trip type="thesis_car" id="728" depart="509.60" from="174398023#3" to="744944958#1" departLane='best'/>
+    <trip type="thesis_moto" id="728" depart="509.60" from="174398023#3" to="744944958#1" departLane='best'/>
     <trip type="thesis_truck" id="729" depart="510.30" from="-174398011#1" to="744645402#1" departLane='best'/>
     <trip type="thesis_moto" id="730" depart="511.00" from="744949907" to="-174398008#1" departLane='best'/>
     <trip type="thesis_car" id="731" depart="511.70" from="-747447020#1" to="32487759#2" departLane='best'/>
@@ -754,12 +754,12 @@
     <trip type="thesis_car" id="739" depart="517.30" from="1279681436#0" to="744999973#1" departLane='best'/>
     <trip type="thesis_car" id="740" depart="518.00" from="747951014#0" to="-174398023#2" departLane='best'/>
     <trip type="thesis_car" id="741" depart="518.70" from="32836570#1" to="744632163#1" departLane='best'/>
-    <trip type="thesis_car" id="742" depart="519.40" from="-747447020#1" to="32487759#2" departLane='best'/>
+    <trip type="thesis_moto" id="742" depart="519.40" from="-747447020#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="743" depart="520.10" from="-96487804#2" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="744" depart="520.80" from="-746423901#2" to="744632144#0" departLane='best'/>
     <trip type="thesis_moto" id="745" depart="521.50" from="747228982#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="746" depart="522.20" from="-744944962#1" to="32836569#1" departLane='best'/>
-    <trip type="thesis_car" id="747" depart="522.90" from="747228982#0" to="744944958#1" departLane='best'/>
+    <trip type="thesis_moto" id="747" depart="522.90" from="747228982#0" to="744944958#1" departLane='best'/>
     <trip type="thesis_car" id="748" depart="523.60" from="27788646#1" to="745365881" departLane='best'/>
     <trip type="thesis_moto" id="749" depart="524.30" from="-184852743#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="750" depart="525.00" from="-744949906#0" to="96487804#0" departLane='best'/>
@@ -800,7 +800,7 @@
     <trip type="thesis_truck" id="785" depart="549.50" from="747228982#0" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="786" depart="550.20" from="572782867#1" to="750570769#1" departLane='best'/>
     <trip type="thesis_car" id="787" depart="550.90" from="51355540#1" to="-744999975#1" departLane='best'/>
-    <trip type="thesis_car" id="788" depart="551.60" from="1279681436#0" to="-96487804#0" departLane='best'/>
+    <trip type="thesis_moto" id="788" depart="551.60" from="1279681436#0" to="-96487804#0" departLane='best'/>
     <trip type="thesis_car" id="789" depart="552.30" from="744645404#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="790" depart="553.00" from="747951014#0" to="-174398024#3" departLane='best'/>
     <trip type="thesis_car" id="791" depart="553.70" from="1279681436#0" to="744645402#1" departLane='best'/>
@@ -811,7 +811,7 @@
     <trip type="thesis_moto" id="796" depart="557.20" from="750570769#0" to="-744944967#1" departLane='best'/>
     <trip type="thesis_moto" id="797" depart="557.90" from="96489258#1" to="32836569#1" departLane='best'/>
     <trip type="thesis_truck" id="798" depart="558.60" from="1279681436#0" to="744634701#1" departLane='best'/>
-    <trip type="thesis_truck" id="799" depart="559.30" from="-96487804#0" to="747447020#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="799" depart="559.30" from="-96487804#0" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="800" depart="560.00" from="23370756" to="184852733#1" departLane='best'/>
     <trip type="thesis_car" id="801" depart="560.70" from="-746649485#0" to="96487801#2" departLane='best'/>
     <trip type="thesis_car" id="802" depart="561.40" from="750570767" to="32488019#2" departLane='best'/>
@@ -842,7 +842,7 @@
     <trip type="thesis_moto" id="827" depart="578.90" from="96487803#1" to="174398008#2" departLane='best'/>
     <trip type="thesis_car" id="828" depart="579.60" from="744944967#1" to="745542369#1" departLane='best'/>
     <trip type="thesis_moto" id="829" depart="580.30" from="744926194#1" to="747175713#1" departLane='best'/>
-    <trip type="thesis_moto" id="830" depart="581.00" from="747228982#0" to="-174398024#3" departLane='best'/>
+    <trip type="thesis_truck" id="830" depart="581.00" from="747228982#0" to="-174398024#3" departLane='best'/>
     <trip type="thesis_car" id="831" depart="581.70" from="-744944962#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="832" depart="582.40" from="-747853027#0" to="51355540#1" departLane='best'/>
     <trip type="thesis_car" id="833" depart="583.10" from="319060501#1" to="745365881" departLane='best'/>
@@ -854,7 +854,7 @@
     <trip type="thesis_car" id="839" depart="587.30" from="182331870#0" to="750563083#0" departLane='best'/>
     <trip type="thesis_car" id="840" depart="588.00" from="744632165#1" to="744949908" departLane='best'/>
     <trip type="thesis_car" id="841" depart="588.70" from="745055614#2" to="32488019#2" departLane='best'/>
-    <trip type="thesis_moto" id="842" depart="589.40" from="-745055614#1" to="-747217017#0" departLane='best'/>
+    <trip type="thesis_truck" id="842" depart="589.40" from="-745055614#1" to="-747217017#0" departLane='best'/>
     <trip type="thesis_car" id="843" depart="590.10" from="1279681436#0" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="844" depart="590.80" from="23370756" to="744999973#1" departLane='best'/>
     <trip type="thesis_car" id="845" depart="591.50" from="-747447020#1" to="96487803#1" departLane='best'/>
@@ -866,7 +866,7 @@
     <trip type="thesis_truck" id="851" depart="595.70" from="1279681436#0" to="96487804#0" departLane='best'/>
     <trip type="thesis_car" id="852" depart="596.40" from="750570767" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="853" depart="597.10" from="744944964" to="744645402#1" departLane='best'/>
-    <trip type="thesis_truck" id="854" depart="597.80" from="-745062638#1" to="744634701#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="854" depart="597.80" from="-745062638#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="855" depart="598.50" from="747228982#0" to="744926194#1" departLane='best'/>
     <trip type="thesis_moto" id="856" depart="599.20" from="-745055614#3" to="-746423905#1" departLane='best'/>
     <trip type="thesis_car" id="857" depart="599.90" from="745055614#2" to="744634701#1" departLane='best'/>
@@ -903,7 +903,7 @@
     <trip type="thesis_car" id="888" depart="621.60" from="747853028#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="889" depart="622.30" from="750570767" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="890" depart="623.00" from="745055614#1" to="32836569#1" departLane='best'/>
-    <trip type="thesis_truck" id="891" depart="623.70" from="174398011#3" to="744645402#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="891" depart="623.70" from="174398011#3" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="892" depart="624.40" from="747853030" to="745365881" departLane='best'/>
     <trip type="thesis_moto" id="893" depart="625.10" from="744632165#1" to="174398023#2" departLane='best'/>
     <trip type="thesis_car" id="894" depart="625.80" from="744926195#1" to="744926195#0" departLane='best'/>
@@ -929,7 +929,7 @@
     <trip type="thesis_car" id="914" depart="639.80" from="747951014#0" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="915" depart="640.50" from="744944963#1" to="-747447020#0" departLane='best'/>
     <trip type="thesis_car" id="916" depart="641.20" from="96487801#3" to="174398023#3" departLane='best'/>
-    <trip type="thesis_car" id="917" depart="641.90" from="-747853030" to="-746653786#0" departLane='best'/>
+    <trip type="thesis_moto" id="917" depart="641.90" from="-747853030" to="-746653786#0" departLane='best'/>
     <trip type="thesis_car" id="918" depart="642.60" from="569215926" to="750563077" departLane='best'/>
     <trip type="thesis_car" id="919" depart="643.30" from="1279681436#0" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="920" depart="644.00" from="-96487801#0" to="744645399#0" departLane='best'/>
@@ -947,7 +947,7 @@
     <trip type="thesis_car" id="932" depart="652.40" from="747447020#0" to="744645404#1" departLane='best'/>
     <trip type="thesis_car" id="933" depart="653.10" from="174398023#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="934" depart="653.80" from="-745055614#3" to="-744999975#1" departLane='best'/>
-    <trip type="thesis_car" id="935" depart="654.50" from="-747447020#1" to="32487759#2" departLane='best'/>
+    <trip type="thesis_moto" id="935" depart="654.50" from="-747447020#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="936" depart="655.20" from="-749508471#0" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="937" depart="655.90" from="-747447020#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="938" depart="656.60" from="-96487801#0" to="744634701#1" departLane='best'/>
@@ -962,7 +962,7 @@
     <trip type="thesis_car" id="947" depart="662.90" from="747228982#0" to="323726178#1" departLane='best'/>
     <trip type="thesis_car" id="948" depart="663.60" from="-747853026#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="949" depart="664.30" from="-747447020#1" to="745062638#1" departLane='best'/>
-    <trip type="thesis_truck" id="950" depart="665.00" from="747936760#1" to="32488019#2" departLane='best'/>
+    <trip type="thesis_bicycle" id="950" depart="665.00" from="747936760#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_moto" id="951" depart="665.70" from="747936760#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="952" depart="666.40" from="96487803#1" to="-184852743#0" departLane='best'/>
     <trip type="thesis_moto" id="953" depart="667.10" from="747939433#1" to="744949907" departLane='best'/>
@@ -995,9 +995,9 @@
     <trip type="thesis_car" id="980" depart="686.00" from="746423901#1" to="744944961" departLane='best'/>
     <trip type="thesis_car" id="981" depart="686.70" from="23370756" to="-174398008#1" departLane='best'/>
     <trip type="thesis_moto" id="982" depart="687.40" from="1279681436#0" to="745365881" departLane='best'/>
-    <trip type="thesis_moto" id="983" depart="688.10" from="572782867#2" to="35826311#1" departLane='best'/>
+    <trip type="thesis_truck" id="983" depart="688.10" from="572782867#2" to="35826311#1" departLane='best'/>
     <trip type="thesis_moto" id="984" depart="688.80" from="23370756" to="744645402#1" departLane='best'/>
-    <trip type="thesis_car" id="985" depart="689.50" from="-184852743#1" to="-184852733#1" departLane='best'/>
+    <trip type="thesis_moto" id="985" depart="689.50" from="-184852743#1" to="-184852733#1" departLane='best'/>
     <trip type="thesis_car" id="986" depart="690.20" from="747228982#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="987" depart="690.90" from="-747447020#1" to="747175713#1" departLane='best'/>
     <trip type="thesis_car" id="988" depart="691.60" from="750570767" to="-96487804#0" departLane='best'/>
@@ -1016,7 +1016,7 @@
     <trip type="thesis_car" id="1001" depart="700.70" from="745542369#1" to="-184852743#0" departLane='best'/>
     <trip type="thesis_moto" id="1002" depart="701.40" from="182331870#0" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1003" depart="702.10" from="-747447020#1" to="745055614#3" departLane='best'/>
-    <trip type="thesis_moto" id="1004" depart="702.80" from="747228981#1" to="-744999975#1" departLane='best'/>
+    <trip type="thesis_truck" id="1004" depart="702.80" from="747228981#1" to="-744999975#1" departLane='best'/>
     <trip type="thesis_car" id="1005" depart="703.50" from="96487804#0" to="-745055614#3" departLane='best'/>
     <trip type="thesis_car" id="1006" depart="704.20" from="744649710" to="32836569#1" departLane='best'/>
     <trip type="thesis_moto" id="1007" depart="704.90" from="745377174" to="744634701#1" departLane='best'/>
@@ -1071,14 +1071,14 @@
     <trip type="thesis_car" id="1056" depart="739.20" from="747228982#0" to="96487801#2" departLane='best'/>
     <trip type="thesis_car" id="1057" depart="739.90" from="750570767" to="-174398011#1" departLane='best'/>
     <trip type="thesis_car" id="1058" depart="740.60" from="323726178#1" to="27788646#2" departLane='best'/>
-    <trip type="thesis_truck" id="1059" depart="741.30" from="747951014#0" to="32487759#2" departLane='best'/>
+    <trip type="thesis_bicycle" id="1059" depart="741.30" from="747951014#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="1060" depart="742.00" from="51355539#0" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="1061" depart="742.70" from="174398023#3" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="1062" depart="743.40" from="319060501#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="1063" depart="744.10" from="-96487801#3" to="747447020#1" departLane='best'/>
     <trip type="thesis_truck" id="1064" depart="744.80" from="747228982#0" to="174398023#3" departLane='best'/>
     <trip type="thesis_moto" id="1065" depart="745.50" from="-174398008#2" to="32488019#2" departLane='best'/>
-    <trip type="thesis_car" id="1066" depart="746.20" from="1279681436#0" to="32487759#2" departLane='best'/>
+    <trip type="thesis_moto" id="1066" depart="746.20" from="1279681436#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="1067" depart="746.90" from="747951014#0" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1068" depart="747.60" from="750570767" to="-1212504575" departLane='best'/>
     <trip type="thesis_moto" id="1069" depart="748.30" from="744926195#0" to="746423901#1" departLane='best'/>
@@ -1093,7 +1093,7 @@
     <trip type="thesis_car" id="1078" depart="754.60" from="750570769#0" to="174398011#4" departLane='best'/>
     <trip type="thesis_car" id="1079" depart="755.30" from="1279681436#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="1080" depart="756.00" from="747228982#0" to="744645402#1" departLane='best'/>
-    <trip type="thesis_truck" id="1081" depart="756.70" from="746423901#2" to="32487759#2" departLane='best'/>
+    <trip type="thesis_bicycle" id="1081" depart="756.70" from="746423901#2" to="32487759#2" departLane='best'/>
     <trip type="thesis_moto" id="1082" depart="757.40" from="1279681436#0" to="-174398011#4" departLane='best'/>
     <trip type="thesis_car" id="1083" depart="758.10" from="-96487804#0" to="745356310#1" departLane='best'/>
     <trip type="thesis_car" id="1084" depart="758.80" from="744632165#1" to="-746649485#0" departLane='best'/>
@@ -1120,7 +1120,7 @@
     <trip type="thesis_truck" id="1105" depart="773.50" from="750563083#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_moto" id="1106" depart="774.20" from="-747447020#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_truck" id="1107" depart="774.90" from="747939433#1" to="32487759#2" departLane='best'/>
-    <trip type="thesis_moto" id="1108" depart="775.60" from="-184852733#1" to="32836569#1" departLane='best'/>
+    <trip type="thesis_truck" id="1108" depart="775.60" from="-184852733#1" to="32836569#1" departLane='best'/>
     <trip type="thesis_moto" id="1109" depart="776.30" from="747936760#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="1110" depart="777.00" from="-174398024#2" to="744645402#1" departLane='best'/>
     <trip type="thesis_moto" id="1111" depart="777.70" from="-96487801#1" to="27788646#1" departLane='best'/>
@@ -1135,8 +1135,8 @@
     <trip type="thesis_car" id="1120" depart="784.00" from="1212504575" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1121" depart="784.70" from="747228982#0" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="1122" depart="785.40" from="747228982#0" to="96489258#1" departLane='best'/>
-    <trip type="thesis_car" id="1123" depart="786.10" from="96487801#0" to="-184852733#1" departLane='best'/>
-    <trip type="thesis_truck" id="1124" depart="786.80" from="744926195#0" to="184852743#0" departLane='best'/>
+    <trip type="thesis_moto" id="1123" depart="786.10" from="96487801#0" to="-184852733#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="1124" depart="786.80" from="744926195#0" to="184852743#0" departLane='best'/>
     <trip type="thesis_moto" id="1125" depart="787.50" from="747853028#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1126" depart="788.20" from="-744944962#1" to="96487804#2" departLane='best'/>
     <trip type="thesis_car" id="1127" depart="788.90" from="1279681436#0" to="745542369#1" departLane='best'/>
@@ -1152,7 +1152,7 @@
     <trip type="thesis_truck" id="1137" depart="795.90" from="-746423901#1" to="174398011#3" departLane='best'/>
     <trip type="thesis_car" id="1138" depart="796.60" from="-1212504575" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1139" depart="797.30" from="-96487803#1" to="-744954674" departLane='best'/>
-    <trip type="thesis_moto" id="1140" depart="798.00" from="745062638#1" to="747447020#1" departLane='best'/>
+    <trip type="thesis_truck" id="1140" depart="798.00" from="745062638#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1141" depart="798.70" from="747951014#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_truck" id="1142" depart="799.40" from="-174398023#2" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="1143" depart="800.10" from="750570767" to="745055614#3" departLane='best'/>
@@ -1160,7 +1160,7 @@
     <trip type="thesis_car" id="1145" depart="801.50" from="750570767" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="1146" depart="802.20" from="750570767" to="32488019#2" departLane='best'/>
     <trip type="thesis_moto" id="1147" depart="802.90" from="-746653786#0" to="32487759#2" departLane='best'/>
-    <trip type="thesis_moto" id="1148" depart="803.60" from="-747447020#1" to="-746649485#0" departLane='best'/>
+    <trip type="thesis_truck" id="1148" depart="803.60" from="-747447020#1" to="-746649485#0" departLane='best'/>
     <trip type="thesis_car" id="1149" depart="804.30" from="750570767" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="1150" depart="805.00" from="750570767" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="1151" depart="805.70" from="-747853030" to="81548613#0" departLane='best'/>
@@ -1175,13 +1175,13 @@
     <trip type="thesis_car" id="1160" depart="812.00" from="750570769#1" to="1280054791" departLane='best'/>
     <trip type="thesis_car" id="1161" depart="812.70" from="572782867#2" to="747853030" departLane='best'/>
     <trip type="thesis_car" id="1162" depart="813.40" from="-747447020#1" to="744944972#1" departLane='best'/>
-    <trip type="thesis_car" id="1163" depart="814.10" from="1279681436#0" to="96487801#2" departLane='best'/>
+    <trip type="thesis_moto" id="1163" depart="814.10" from="1279681436#0" to="96487801#2" departLane='best'/>
     <trip type="thesis_car" id="1164" depart="814.80" from="-747853026#0" to="747447020#1" departLane='best'/>
-    <trip type="thesis_truck" id="1165" depart="815.50" from="-746423901#1" to="744649710" departLane='best'/>
-    <trip type="thesis_moto" id="1166" depart="816.20" from="744645397#1" to="747447020#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="1165" depart="815.50" from="-746423901#1" to="744649710" departLane='best'/>
+    <trip type="thesis_truck" id="1166" depart="816.20" from="744645397#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_moto" id="1167" depart="816.90" from="1279681436#0" to="-174398011#1" departLane='best'/>
     <trip type="thesis_car" id="1168" depart="817.60" from="1279681436#0" to="-184852743#1" departLane='best'/>
-    <trip type="thesis_truck" id="1169" depart="818.30" from="-1212504575" to="32488019#2" departLane='best'/>
+    <trip type="thesis_bicycle" id="1169" depart="818.30" from="-1212504575" to="32488019#2" departLane='best'/>
     <trip type="thesis_truck" id="1170" depart="819.00" from="746423901#1" to="81548613#0" departLane='best'/>
     <trip type="thesis_car" id="1171" depart="819.70" from="747951014#0" to="35826312#3" departLane='best'/>
     <trip type="thesis_car" id="1172" depart="820.40" from="-746653786#0" to="32836569#1" departLane='best'/>
@@ -1194,7 +1194,7 @@
     <trip type="thesis_car" id="1179" depart="825.30" from="750563077" to="-174398024#3" departLane='best'/>
     <trip type="thesis_moto" id="1180" depart="826.00" from="744632165#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="1181" depart="826.70" from="750570767" to="-747447020#0" departLane='best'/>
-    <trip type="thesis_truck" id="1182" depart="827.40" from="747951014#0" to="-746649485#0" departLane='best'/>
+    <trip type="thesis_bicycle" id="1182" depart="827.40" from="747951014#0" to="-746649485#0" departLane='best'/>
     <trip type="thesis_moto" id="1183" depart="828.10" from="-746653786#0" to="-96487804#2" departLane='best'/>
     <trip type="thesis_car" id="1184" depart="828.80" from="-96487801#1" to="744645402#1" departLane='best'/>
     <trip type="thesis_moto" id="1185" depart="829.50" from="1279681436#0" to="27788646#2" departLane='best'/>
@@ -1230,7 +1230,7 @@
     <trip type="thesis_moto" id="1215" depart="850.50" from="744632165#1" to="744999974#0" departLane='best'/>
     <trip type="thesis_car" id="1216" depart="851.20" from="750570767" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1217" depart="851.90" from="572782867#1" to="-184852733#1" departLane='best'/>
-    <trip type="thesis_truck" id="1218" depart="852.60" from="23370756" to="32488019#2" departLane='best'/>
+    <trip type="thesis_bicycle" id="1218" depart="852.60" from="23370756" to="32488019#2" departLane='best'/>
     <trip type="thesis_moto" id="1219" depart="853.30" from="23370756" to="35826312#0" departLane='best'/>
     <trip type="thesis_car" id="1220" depart="854.00" from="744632165#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_moto" id="1221" depart="854.70" from="1279681436#0" to="-745062638#1" departLane='best'/>
@@ -1243,7 +1243,7 @@
     <trip type="thesis_car" id="1228" depart="859.60" from="1280054791" to="35826312#3" departLane='best'/>
     <trip type="thesis_moto" id="1229" depart="860.30" from="744999973#1" to="-184852733#0" departLane='best'/>
     <trip type="thesis_car" id="1230" depart="861.00" from="747951014#0" to="-744999975#1" departLane='best'/>
-    <trip type="thesis_car" id="1231" depart="861.70" from="96487801#0" to="32836569#1" departLane='best'/>
+    <trip type="thesis_moto" id="1231" depart="861.70" from="96487801#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="1232" depart="862.40" from="747939432" to="184852743#1" departLane='best'/>
     <trip type="thesis_car" id="1233" depart="863.10" from="-96487801#1" to="1212501346" departLane='best'/>
     <trip type="thesis_car" id="1234" depart="863.80" from="747936760#1" to="744944967#1" departLane='best'/>
@@ -1256,22 +1256,22 @@
     <trip type="thesis_truck" id="1241" depart="868.70" from="1279681436#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="1242" depart="869.40" from="750570767" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="1243" depart="870.10" from="1279681436#0" to="745365881" departLane='best'/>
-    <trip type="thesis_car" id="1244" depart="870.80" from="-747447020#1" to="-1279681436#0" departLane='best'/>
+    <trip type="thesis_moto" id="1244" depart="870.80" from="-747447020#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="1245" depart="871.50" from="23370756" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="1246" depart="872.20" from="-747936760#1" to="747228981#1" departLane='best'/>
     <trip type="thesis_car" id="1247" depart="872.90" from="744632165#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_moto" id="1248" depart="873.60" from="-747447020#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1249" depart="874.30" from="747228980" to="744645402#1" departLane='best'/>
     <trip type="thesis_moto" id="1250" depart="875.00" from="174398008#2" to="32488019#2" departLane='best'/>
-    <trip type="thesis_moto" id="1251" depart="875.70" from="750570769#1" to="747175713#1" departLane='best'/>
+    <trip type="thesis_truck" id="1251" depart="875.70" from="750570769#1" to="747175713#1" departLane='best'/>
     <trip type="thesis_car" id="1252" depart="876.40" from="744645404#1" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="1253" depart="877.10" from="1279681436#0" to="32488019#2" departLane='best'/>
-    <trip type="thesis_car" id="1254" depart="877.80" from="-174398023#1" to="745356310#1" departLane='best'/>
+    <trip type="thesis_moto" id="1254" depart="877.80" from="-174398023#1" to="745356310#1" departLane='best'/>
     <trip type="thesis_car" id="1255" depart="878.50" from="747228982#0" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="1256" depart="879.20" from="750570767" to="744645402#1" departLane='best'/>
     <trip type="thesis_moto" id="1257" depart="879.90" from="744632165#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="1258" depart="880.60" from="1279681436#0" to="745365881" departLane='best'/>
-    <trip type="thesis_car" id="1259" depart="881.30" from="174398024#1" to="750570769#1" departLane='best'/>
+    <trip type="thesis_moto" id="1259" depart="881.30" from="174398024#1" to="750570769#1" departLane='best'/>
     <trip type="thesis_car" id="1260" depart="882.00" from="744645399#0" to="32836569#1" departLane='best'/>
     <trip type="thesis_moto" id="1261" depart="882.70" from="23370756" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="1262" depart="883.40" from="1279681436#0" to="32836569#1" departLane='best'/>
@@ -1280,7 +1280,7 @@
     <trip type="thesis_car" id="1265" depart="885.50" from="747951014#0" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="1266" depart="886.20" from="744645404#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="1267" depart="886.90" from="174398023#2" to="-184852743#1" departLane='best'/>
-    <trip type="thesis_car" id="1268" depart="887.60" from="-744949906#0" to="96487803#1" departLane='best'/>
+    <trip type="thesis_moto" id="1268" depart="887.60" from="-744949906#0" to="96487803#1" departLane='best'/>
     <trip type="thesis_car" id="1269" depart="888.30" from="744645399#0" to="747217017#0" departLane='best'/>
     <trip type="thesis_car" id="1270" depart="889.00" from="1279681436#0" to="744926194#1" departLane='best'/>
     <trip type="thesis_moto" id="1271" depart="889.70" from="749508470" to="32487759#2" departLane='best'/>
@@ -1298,7 +1298,7 @@
     <trip type="thesis_car" id="1283" depart="898.10" from="747228982#0" to="744999974#1" departLane='best'/>
     <trip type="thesis_car" id="1284" depart="898.80" from="-749508471#0" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="1285" depart="899.50" from="23370756" to="-174398024#2" departLane='best'/>
-    <trip type="thesis_moto" id="1286" depart="900.20" from="23370756" to="744944972#1" departLane='best'/>
+    <trip type="thesis_truck" id="1286" depart="900.20" from="23370756" to="744944972#1" departLane='best'/>
     <trip type="thesis_car" id="1287" depart="900.90" from="174398024#2" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="1288" depart="901.60" from="23370756" to="184852733#1" departLane='best'/>
     <trip type="thesis_car" id="1289" depart="902.30" from="174398011#4" to="746423901#2" departLane='best'/>
@@ -1307,11 +1307,11 @@
     <trip type="thesis_car" id="1292" depart="904.40" from="23370756" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="1293" depart="905.10" from="-744944960#0" to="746423905#1" departLane='best'/>
     <trip type="thesis_moto" id="1294" depart="905.80" from="-747447020#1" to="-96487803#1" departLane='best'/>
-    <trip type="thesis_moto" id="1295" depart="906.50" from="750570767" to="32836569#1" departLane='best'/>
+    <trip type="thesis_truck" id="1295" depart="906.50" from="750570767" to="32836569#1" departLane='best'/>
     <trip type="thesis_car" id="1296" depart="907.20" from="184852733#0" to="744926195#0" departLane='best'/>
     <trip type="thesis_car" id="1297" depart="907.90" from="747228982#0" to="35826312#0" departLane='best'/>
     <trip type="thesis_car" id="1298" depart="908.60" from="744632165#1" to="-747936760#1" departLane='best'/>
-    <trip type="thesis_car" id="1299" depart="909.30" from="744632165#1" to="-1279681436#0" departLane='best'/>
+    <trip type="thesis_moto" id="1299" depart="909.30" from="744632165#1" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="1300" depart="910.00" from="1279681436#0" to="744999974#1" departLane='best'/>
     <trip type="thesis_moto" id="1301" depart="910.70" from="-747853026#0" to="744999975#1" departLane='best'/>
     <trip type="thesis_car" id="1302" depart="911.40" from="-746423901#1" to="744634701#1" departLane='best'/>
@@ -1319,7 +1319,7 @@
     <trip type="thesis_moto" id="1304" depart="912.80" from="750570769#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="1305" depart="913.50" from="-182331870#0" to="-96487803#1" departLane='best'/>
     <trip type="thesis_car" id="1306" depart="914.20" from="23370756" to="-1279681436#0" departLane='best'/>
-    <trip type="thesis_truck" id="1307" depart="914.90" from="184852741#1" to="745365881" departLane='best'/>
+    <trip type="thesis_bicycle" id="1307" depart="914.90" from="184852741#1" to="745365881" departLane='best'/>
     <trip type="thesis_car" id="1308" depart="915.60" from="-96487801#2" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="1309" depart="916.30" from="744632165#1" to="174398024#2" departLane='best'/>
     <trip type="thesis_car" id="1310" depart="917.00" from="744949908" to="32487759#2" departLane='best'/>
@@ -1327,11 +1327,11 @@
     <trip type="thesis_moto" id="1312" depart="918.40" from="744632165#1" to="-747853026#0" departLane='best'/>
     <trip type="thesis_car" id="1313" depart="919.10" from="747936760#1" to="32487759#1" departLane='best'/>
     <trip type="thesis_car" id="1314" depart="919.80" from="174398011#3" to="744944960#0" departLane='best'/>
-    <trip type="thesis_car" id="1315" depart="920.50" from="744632165#1" to="32487759#2" departLane='best'/>
-    <trip type="thesis_car" id="1316" depart="921.20" from="747951014#0" to="96487804#2" departLane='best'/>
+    <trip type="thesis_moto" id="1315" depart="920.50" from="744632165#1" to="32487759#2" departLane='best'/>
+    <trip type="thesis_moto" id="1316" depart="921.20" from="747951014#0" to="96487804#2" departLane='best'/>
     <trip type="thesis_car" id="1317" depart="921.90" from="23370756" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1318" depart="922.60" from="23370756" to="-96487801#1" departLane='best'/>
-    <trip type="thesis_car" id="1319" depart="923.30" from="750570767" to="747447020#1" departLane='best'/>
+    <trip type="thesis_moto" id="1319" depart="923.30" from="750570767" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1320" depart="924.00" from="27788646#3" to="174398011#1" departLane='best'/>
     <trip type="thesis_car" id="1321" depart="924.70" from="745542368#0" to="-744954674" departLane='best'/>
     <trip type="thesis_car" id="1322" depart="925.40" from="746423901#2" to="744634701#1" departLane='best'/>
@@ -1376,10 +1376,10 @@
     <trip type="thesis_moto" id="1361" depart="952.70" from="750570767" to="-746653786#0" departLane='best'/>
     <trip type="thesis_car" id="1362" depart="953.40" from="319060501#1" to="744634701#1" departLane='best'/>
     <trip type="thesis_car" id="1363" depart="954.10" from="747228982#0" to="744645402#1" departLane='best'/>
-    <trip type="thesis_car" id="1364" depart="954.80" from="-747939433#1" to="32488019#2" departLane='best'/>
+    <trip type="thesis_moto" id="1364" depart="954.80" from="-747939433#1" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="1365" depart="955.50" from="23370756" to="-1279681436#0" departLane='best'/>
     <trip type="thesis_car" id="1366" depart="956.20" from="744944972#1" to="745365881" departLane='best'/>
-    <trip type="thesis_car" id="1367" depart="956.90" from="750570767" to="-744944960#0" departLane='best'/>
+    <trip type="thesis_moto" id="1367" depart="956.90" from="750570767" to="-744944960#0" departLane='best'/>
     <trip type="thesis_car" id="1368" depart="957.60" from="1279681436#0" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="1369" depart="958.30" from="744999974#1" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="1370" depart="959.00" from="572782867#2" to="96487801#1" departLane='best'/>
@@ -1395,7 +1395,7 @@
     <trip type="thesis_car" id="1380" depart="966.00" from="27788646#3" to="174398011#4" departLane='best'/>
     <trip type="thesis_car" id="1381" depart="966.70" from="319060501#1" to="745365881" departLane='best'/>
     <trip type="thesis_moto" id="1382" depart="967.40" from="-747217017#0" to="32488019#2" departLane='best'/>
-    <trip type="thesis_truck" id="1383" depart="968.10" from="51355540#1" to="-1212504575" departLane='best'/>
+    <trip type="thesis_bicycle" id="1383" depart="968.10" from="51355540#1" to="-1212504575" departLane='best'/>
     <trip type="thesis_car" id="1384" depart="968.80" from="-746423901#2" to="744634701#1" departLane='best'/>
     <trip type="thesis_moto" id="1385" depart="969.50" from="744632165#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="1386" depart="970.20" from="744944961" to="749508470" departLane='best'/>
@@ -1419,23 +1419,23 @@
     <trip type="thesis_car" id="1404" depart="982.80" from="750570767" to="745365881" departLane='best'/>
     <trip type="thesis_moto" id="1405" depart="983.50" from="750570767" to="-747936760#1" departLane='best'/>
     <trip type="thesis_car" id="1406" depart="984.20" from="-747447020#1" to="32488019#2" departLane='best'/>
-    <trip type="thesis_truck" id="1407" depart="984.90" from="744632165#1" to="747447020#1" departLane='best'/>
+    <trip type="thesis_bicycle" id="1407" depart="984.90" from="744632165#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_car" id="1408" depart="985.60" from="96487801#1" to="747447020#1" departLane='best'/>
     <trip type="thesis_moto" id="1409" depart="986.30" from="750570769#0" to="81548613#0" departLane='best'/>
     <trip type="thesis_car" id="1410" depart="987.00" from="747228971#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_car" id="1411" depart="987.70" from="744999974#0" to="747217017#0" departLane='best'/>
-    <trip type="thesis_car" id="1412" depart="988.40" from="745055614#2" to="747853028#1" departLane='best'/>
+    <trip type="thesis_moto" id="1412" depart="988.40" from="745055614#2" to="747853028#1" departLane='best'/>
     <trip type="thesis_car" id="1413" depart="989.10" from="744632165#1" to="-96487803#1" departLane='best'/>
     <trip type="thesis_truck" id="1414" depart="989.80" from="744632165#1" to="323726178#1" departLane='best'/>
     <trip type="thesis_car" id="1415" depart="990.50" from="23370756" to="744645402#1" departLane='best'/>
     <trip type="thesis_car" id="1416" depart="991.20" from="96487801#2" to="744645402#1" departLane='best'/>
-    <trip type="thesis_car" id="1417" depart="991.90" from="750570767" to="572782867#1" departLane='best'/>
+    <trip type="thesis_moto" id="1417" depart="991.90" from="750570767" to="572782867#1" departLane='best'/>
     <trip type="thesis_car" id="1418" depart="992.60" from="744949908" to="32487759#2" departLane='best'/>
-    <trip type="thesis_moto" id="1419" depart="993.30" from="-747447020#1" to="32487759#2" departLane='best'/>
+    <trip type="thesis_truck" id="1419" depart="993.30" from="-747447020#1" to="32487759#2" departLane='best'/>
     <trip type="thesis_moto" id="1420" depart="994.00" from="32836570#1" to="744632163#1" departLane='best'/>
     <trip type="thesis_car" id="1421" depart="994.70" from="744944960#0" to="32488019#2" departLane='best'/>
     <trip type="thesis_car" id="1422" depart="995.40" from="747228971#1" to="745377174" departLane='best'/>
-    <trip type="thesis_car" id="1423" depart="996.10" from="174398008#2" to="745542369#1" departLane='best'/>
+    <trip type="thesis_moto" id="1423" depart="996.10" from="174398008#2" to="745542369#1" departLane='best'/>
     <trip type="thesis_car" id="1424" depart="996.80" from="-174398023#3" to="-745062638#1" departLane='best'/>
     <trip type="thesis_car" id="1425" depart="997.50" from="744944961" to="-96487803#1" departLane='best'/>
     <trip type="thesis_car" id="1426" depart="998.20" from="747228980" to="-747217017#0" departLane='best'/>

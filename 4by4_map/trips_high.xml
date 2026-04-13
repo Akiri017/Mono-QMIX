@@ -14,7 +14,7 @@
     <trip type="thesis_moto" id="2" depart="5.12" from="-E5" to="-E0"/>
     <trip type="thesis_car" id="3" depart="7.68" from="-E2" to="E2"/>
     <trip type="thesis_truck" id="4" depart="10.24" from="-E1" to="-E5"/>
-    <trip type="thesis_car" id="5" depart="12.80" from="-E9" to="E2"/>
+    <trip type="thesis_moto" id="5" depart="12.80" from="-E9" to="E2"/>
     <trip type="thesis_moto" id="6" depart="15.36" from="-E2" to="E3"/>
     <trip type="thesis_moto" id="7" depart="17.92" from="E1" to="-E0"/>
     <trip type="thesis_car" id="8" depart="20.48" from="E1" to="E5"/>
@@ -30,7 +30,7 @@
     <trip type="thesis_moto" id="18" depart="46.08" from="E0" to="-E0"/>
     <trip type="thesis_moto" id="19" depart="48.64" from="-E2" to="-E7"/>
     <trip type="thesis_car" id="20" depart="51.20" from="-E10" to="-E5"/>
-    <trip type="thesis_moto" id="21" depart="53.76" from="-E10" to="-E7"/>
+    <trip type="thesis_truck" id="21" depart="53.76" from="-E10" to="-E7"/>
     <trip type="thesis_car" id="22" depart="56.32" from="-E9" to="E1"/>
     <trip type="thesis_car" id="23" depart="58.88" from="-E4" to="-E5"/>
     <trip type="thesis_car" id="24" depart="61.44" from="-E3" to="E8"/>
@@ -41,7 +41,7 @@
     <trip type="thesis_car" id="29" depart="74.24" from="-E7" to="E4"/>
     <trip type="thesis_moto" id="30" depart="76.80" from="E3" to="E6"/>
     <trip type="thesis_car" id="31" depart="79.36" from="-E2" to="-E0"/>
-    <trip type="thesis_moto" id="32" depart="81.92" from="-E4" to="-E7"/>
+    <trip type="thesis_truck" id="32" depart="81.92" from="-E4" to="-E7"/>
     <trip type="thesis_moto" id="33" depart="84.48" from="-E2" to="E9"/>
     <trip type="thesis_car" id="34" depart="87.04" from="E5" to="E1"/>
     <trip type="thesis_car" id="35" depart="89.60" from="-E9" to="E10"/>
@@ -51,7 +51,7 @@
     <trip type="thesis_car" id="39" depart="99.84" from="-E5" to="-E5"/>
     <trip type="thesis_moto" id="40" depart="102.40" from="E7" to="E2"/>
     <trip type="thesis_moto" id="41" depart="104.96" from="-E10" to="-E0"/>
-    <trip type="thesis_car" id="42" depart="107.52" from="-E10" to="E4"/>
+    <trip type="thesis_moto" id="42" depart="107.52" from="-E10" to="E4"/>
     <trip type="thesis_car" id="43" depart="110.08" from="E1" to="E10"/>
     <trip type="thesis_moto" id="44" depart="112.64" from="-E10" to="E10"/>
     <trip type="thesis_car" id="45" depart="115.20" from="E7" to="E2"/>
@@ -76,7 +76,7 @@
     <trip type="thesis_car" id="64" depart="163.84" from="-E3" to="E7"/>
     <trip type="thesis_car" id="65" depart="166.40" from="-E5" to="-E5"/>
     <trip type="thesis_moto" id="66" depart="168.96" from="-E2" to="-E7"/>
-    <trip type="thesis_truck" id="67" depart="171.52" from="E7" to="E4"/>
+    <trip type="thesis_bicycle" id="67" depart="171.52" from="E7" to="E4"/>
     <trip type="thesis_car" id="68" depart="174.08" from="-E6" to="E2"/>
     <trip type="thesis_car" id="69" depart="176.64" from="-E10" to="-E5"/>
     <trip type="thesis_car" id="70" depart="179.20" from="-E4" to="E3"/>
@@ -86,13 +86,13 @@
     <trip type="thesis_car" id="74" depart="189.44" from="E3" to="-E1"/>
     <trip type="thesis_car" id="75" depart="192.00" from="-E2" to="E4"/>
     <trip type="thesis_car" id="76" depart="194.56" from="-E2" to="-E3"/>
-    <trip type="thesis_truck" id="77" depart="197.12" from="-E6" to="E6"/>
+    <trip type="thesis_bicycle" id="77" depart="197.12" from="-E6" to="E6"/>
     <trip type="thesis_car" id="78" depart="199.68" from="-E10" to="E10"/>
     <trip type="thesis_moto" id="79" depart="202.24" from="-E5" to="E11"/>
     <trip type="thesis_car" id="80" depart="204.80" from="E0" to="E4"/>
     <trip type="thesis_moto" id="81" depart="207.36" from="E3" to="-E5"/>
     <trip type="thesis_car" id="82" depart="209.92" from="-E2" to="E11"/>
-    <trip type="thesis_moto" id="83" depart="212.48" from="-E5" to="-E7"/>
+    <trip type="thesis_truck" id="83" depart="212.48" from="-E5" to="-E7"/>
     <trip type="thesis_car" id="84" depart="215.04" from="-E2" to="E8"/>
     <trip type="thesis_car" id="85" depart="217.60" from="-E6" to="E7"/>
     <trip type="thesis_car" id="86" depart="220.16" from="-E7" to="-E0"/>
@@ -103,12 +103,12 @@
     <trip type="thesis_moto" id="91" depart="232.96" from="-E5" to="E9"/>
     <trip type="thesis_car" id="92" depart="235.52" from="-E3" to="E6"/>
     <trip type="thesis_car" id="93" depart="238.08" from="-E6" to="E10"/>
-    <trip type="thesis_car" id="94" depart="240.64" from="E7" to="E9"/>
+    <trip type="thesis_moto" id="94" depart="240.64" from="E7" to="E9"/>
     <trip type="thesis_car" id="95" depart="243.20" from="-E11" to="-E7"/>
     <trip type="thesis_car" id="96" depart="245.76" from="-E1" to="E3"/>
     <trip type="thesis_car" id="97" depart="248.32" from="-E11" to="E9"/>
     <trip type="thesis_car" id="98" depart="250.88" from="-E10" to="-E3"/>
-    <trip type="thesis_truck" id="99" depart="253.44" from="-E8" to="E4"/>
+    <trip type="thesis_bicycle" id="99" depart="253.44" from="-E8" to="E4"/>
     <trip type="thesis_car" id="100" depart="256.00" from="-E2" to="-E1"/>
     <trip type="thesis_moto" id="101" depart="258.56" from="-E8" to="E3"/>
     <trip type="thesis_car" id="102" depart="261.12" from="-E5" to="E3"/>
@@ -118,9 +118,9 @@
     <trip type="thesis_car" id="106" depart="271.36" from="-E9" to="-E7"/>
     <trip type="thesis_car" id="107" depart="273.92" from="-E4" to="E6"/>
     <trip type="thesis_moto" id="108" depart="276.48" from="-E10" to="E11"/>
-    <trip type="thesis_truck" id="109" depart="279.04" from="E7" to="E9"/>
+    <trip type="thesis_bicycle" id="109" depart="279.04" from="E7" to="E9"/>
     <trip type="thesis_car" id="110" depart="281.60" from="-E10" to="-E5"/>
-    <trip type="thesis_car" id="111" depart="284.16" from="-E3" to="E8"/>
+    <trip type="thesis_moto" id="111" depart="284.16" from="-E3" to="E8"/>
     <trip type="thesis_car" id="112" depart="286.72" from="E5" to="E8"/>
     <trip type="thesis_moto" id="113" depart="289.28" from="-E4" to="-E3"/>
     <trip type="thesis_truck" id="114" depart="291.84" from="-E8" to="E9"/>
@@ -141,12 +141,12 @@
     <trip type="thesis_moto" id="129" depart="330.24" from="-E10" to="E8"/>
     <trip type="thesis_truck" id="130" depart="332.80" from="E5" to="E2"/>
     <trip type="thesis_moto" id="131" depart="335.36" from="E3" to="E3"/>
-    <trip type="thesis_car" id="132" depart="337.92" from="-E11" to="-E3"/>
+    <trip type="thesis_moto" id="132" depart="337.92" from="-E11" to="-E3"/>
     <trip type="thesis_moto" id="133" depart="340.48" from="-E3" to="E8"/>
     <trip type="thesis_truck" id="134" depart="343.04" from="E1" to="E7"/>
     <trip type="thesis_car" id="135" depart="345.60" from="-E2" to="-E1"/>
     <trip type="thesis_car" id="136" depart="348.16" from="E1" to="E8"/>
-    <trip type="thesis_car" id="137" depart="350.72" from="-E5" to="E3"/>
+    <trip type="thesis_moto" id="137" depart="350.72" from="-E5" to="E3"/>
     <trip type="thesis_truck" id="138" depart="353.28" from="-E11" to="E8"/>
     <trip type="thesis_moto" id="139" depart="355.84" from="E3" to="E9"/>
     <trip type="thesis_car" id="140" depart="358.40" from="E1" to="E8"/>
@@ -171,7 +171,7 @@
     <trip type="thesis_moto" id="159" depart="407.04" from="-E4" to="E7"/>
     <trip type="thesis_car" id="160" depart="409.60" from="E0" to="-E7"/>
     <trip type="thesis_truck" id="161" depart="412.16" from="-E3" to="E10"/>
-    <trip type="thesis_truck" id="162" depart="414.72" from="-E5" to="-E7"/>
+    <trip type="thesis_bicycle" id="162" depart="414.72" from="-E5" to="-E7"/>
     <trip type="thesis_moto" id="163" depart="417.28" from="-E11" to="E10"/>
     <trip type="thesis_car" id="164" depart="419.84" from="E7" to="E4"/>
     <trip type="thesis_car" id="165" depart="422.40" from="-E3" to="E2"/>
@@ -181,7 +181,7 @@
     <trip type="thesis_truck" id="169" depart="432.64" from="-E6" to="-E5"/>
     <trip type="thesis_car" id="170" depart="435.20" from="-E6" to="E8"/>
     <trip type="thesis_car" id="171" depart="437.76" from="E1" to="-E3"/>
-    <trip type="thesis_car" id="172" depart="440.32" from="-E10" to="E2"/>
+    <trip type="thesis_moto" id="172" depart="440.32" from="-E10" to="E2"/>
     <trip type="thesis_car" id="173" depart="442.88" from="-E9" to="E1"/>
     <trip type="thesis_car" id="174" depart="445.44" from="E3" to="E6"/>
     <trip type="thesis_car" id="175" depart="448.00" from="-E9" to="-E5"/>
@@ -197,17 +197,17 @@
     <trip type="thesis_car" id="185" depart="473.60" from="-E11" to="E9"/>
     <trip type="thesis_car" id="186" depart="476.16" from="-E7" to="-E0"/>
     <trip type="thesis_car" id="187" depart="478.72" from="-E2" to="E7"/>
-    <trip type="thesis_truck" id="188" depart="481.28" from="-E6" to="E6"/>
+    <trip type="thesis_bicycle" id="188" depart="481.28" from="-E6" to="E6"/>
     <trip type="thesis_car" id="189" depart="483.84" from="-E9" to="E9"/>
     <trip type="thesis_car" id="190" depart="486.40" from="-E8" to="E9"/>
-    <trip type="thesis_truck" id="191" depart="488.96" from="E0" to="E2"/>
+    <trip type="thesis_bicycle" id="191" depart="488.96" from="E0" to="E2"/>
     <trip type="thesis_moto" id="192" depart="491.52" from="E3" to="E2"/>
     <trip type="thesis_car" id="193" depart="494.08" from="E5" to="E5"/>
     <trip type="thesis_car" id="194" depart="496.64" from="-E6" to="-E7"/>
     <trip type="thesis_car" id="195" depart="499.20" from="-E2" to="E4"/>
     <trip type="thesis_car" id="196" depart="501.76" from="E1" to="E2"/>
     <trip type="thesis_moto" id="197" depart="504.32" from="-E9" to="-E7"/>
-    <trip type="thesis_car" id="198" depart="506.88" from="-E10" to="-E7"/>
+    <trip type="thesis_moto" id="198" depart="506.88" from="-E10" to="-E7"/>
     <trip type="thesis_moto" id="199" depart="509.44" from="-E3" to="E1"/>
     <trip type="thesis_car" id="200" depart="512.00" from="-E2" to="E5"/>
     <trip type="thesis_car" id="201" depart="514.56" from="E0" to="-E1"/>
@@ -215,14 +215,14 @@
     <trip type="thesis_car" id="203" depart="519.68" from="-E5" to="-E5"/>
     <trip type="thesis_moto" id="204" depart="522.24" from="-E5" to="E8"/>
     <trip type="thesis_car" id="205" depart="524.80" from="-E8" to="E5"/>
-    <trip type="thesis_truck" id="206" depart="527.36" from="E3" to="E6"/>
+    <trip type="thesis_bicycle" id="206" depart="527.36" from="E3" to="E6"/>
     <trip type="thesis_car" id="207" depart="529.92" from="-E5" to="-E0"/>
     <trip type="thesis_car" id="208" depart="532.48" from="-E4" to="E6"/>
     <trip type="thesis_car" id="209" depart="535.04" from="E3" to="E9"/>
     <trip type="thesis_car" id="210" depart="537.60" from="-E7" to="E3"/>
     <trip type="thesis_car" id="211" depart="540.16" from="-E2" to="-E5"/>
     <trip type="thesis_car" id="212" depart="542.72" from="-E5" to="-E0"/>
-    <trip type="thesis_truck" id="213" depart="545.28" from="-E4" to="E4"/>
+    <trip type="thesis_bicycle" id="213" depart="545.28" from="-E4" to="E4"/>
     <trip type="thesis_truck" id="214" depart="547.84" from="-E6" to="-E3"/>
     <trip type="thesis_car" id="215" depart="550.40" from="-E8" to="-E0"/>
     <trip type="thesis_car" id="216" depart="552.96" from="-E5" to="E3"/>
@@ -232,13 +232,13 @@
     <trip type="thesis_car" id="220" depart="563.20" from="-E2" to="E1"/>
     <trip type="thesis_car" id="221" depart="565.76" from="E1" to="E10"/>
     <trip type="thesis_moto" id="222" depart="568.32" from="E1" to="E7"/>
-    <trip type="thesis_truck" id="223" depart="570.88" from="-E1" to="E2"/>
+    <trip type="thesis_bicycle" id="223" depart="570.88" from="-E1" to="E2"/>
     <trip type="thesis_car" id="224" depart="573.44" from="E7" to="E1"/>
     <trip type="thesis_car" id="225" depart="576.00" from="-E9" to="E6"/>
     <trip type="thesis_car" id="226" depart="578.56" from="-E9" to="E6"/>
     <trip type="thesis_truck" id="227" depart="581.12" from="-E11" to="E4"/>
     <trip type="thesis_car" id="228" depart="583.68" from="-E8" to="-E5"/>
-    <trip type="thesis_moto" id="229" depart="586.24" from="E0" to="E6"/>
+    <trip type="thesis_truck" id="229" depart="586.24" from="E0" to="E6"/>
     <trip type="thesis_moto" id="230" depart="588.80" from="-E11" to="E3"/>
     <trip type="thesis_car" id="231" depart="591.36" from="E0" to="-E1"/>
     <trip type="thesis_moto" id="232" depart="593.92" from="E3" to="E9"/>
@@ -249,7 +249,7 @@
     <trip type="thesis_car" id="237" depart="606.72" from="E0" to="E4"/>
     <trip type="thesis_car" id="238" depart="609.28" from="-E10" to="E6"/>
     <trip type="thesis_car" id="239" depart="611.84" from="E3" to="E3"/>
-    <trip type="thesis_truck" id="240" depart="614.40" from="-E10" to="E9"/>
+    <trip type="thesis_bicycle" id="240" depart="614.40" from="-E10" to="E9"/>
     <trip type="thesis_car" id="241" depart="616.96" from="E1" to="E1"/>
     <trip type="thesis_car" id="242" depart="619.52" from="-E10" to="E9"/>
     <trip type="thesis_car" id="243" depart="622.08" from="-E9" to="E7"/>
@@ -270,13 +270,13 @@
     <trip type="thesis_car" id="258" depart="660.48" from="E0" to="E4"/>
     <trip type="thesis_moto" id="259" depart="663.04" from="-E6" to="E6"/>
     <trip type="thesis_moto" id="260" depart="665.60" from="-E10" to="-E5"/>
-    <trip type="thesis_truck" id="261" depart="668.16" from="E0" to="-E7"/>
+    <trip type="thesis_bicycle" id="261" depart="668.16" from="E0" to="-E7"/>
     <trip type="thesis_car" id="262" depart="670.72" from="-E8" to="E11"/>
     <trip type="thesis_car" id="263" depart="673.28" from="-E7" to="E10"/>
     <trip type="thesis_car" id="264" depart="675.84" from="E0" to="E1"/>
     <trip type="thesis_car" id="265" depart="678.40" from="E0" to="-E7"/>
     <trip type="thesis_moto" id="266" depart="680.96" from="-E2" to="-E1"/>
-    <trip type="thesis_moto" id="267" depart="683.52" from="-E7" to="E6"/>
+    <trip type="thesis_truck" id="267" depart="683.52" from="-E7" to="E6"/>
     <trip type="thesis_car" id="268" depart="686.08" from="-E11" to="-E5"/>
     <trip type="thesis_car" id="269" depart="688.64" from="-E6" to="E5"/>
     <trip type="thesis_car" id="270" depart="691.20" from="E7" to="E2"/>
@@ -288,7 +288,7 @@
     <trip type="thesis_truck" id="276" depart="706.56" from="E3" to="E11"/>
     <trip type="thesis_car" id="277" depart="709.12" from="E3" to="E3"/>
     <trip type="thesis_moto" id="278" depart="711.68" from="-E6" to="E11"/>
-    <trip type="thesis_car" id="279" depart="714.24" from="-E11" to="-E0"/>
+    <trip type="thesis_moto" id="279" depart="714.24" from="-E11" to="-E0"/>
     <trip type="thesis_moto" id="280" depart="716.80" from="E7" to="E11"/>
     <trip type="thesis_moto" id="281" depart="719.36" from="E3" to="E10"/>
     <trip type="thesis_moto" id="282" depart="721.92" from="-E10" to="E4"/>
@@ -296,17 +296,17 @@
     <trip type="thesis_car" id="284" depart="727.04" from="-E7" to="E11"/>
     <trip type="thesis_moto" id="285" depart="729.60" from="-E6" to="E7"/>
     <trip type="thesis_moto" id="286" depart="732.16" from="-E8" to="E3"/>
-    <trip type="thesis_moto" id="287" depart="734.72" from="E0" to="E9"/>
+    <trip type="thesis_truck" id="287" depart="734.72" from="E0" to="E9"/>
     <trip type="thesis_car" id="288" depart="737.28" from="-E2" to="-E5"/>
     <trip type="thesis_car" id="289" depart="739.84" from="-E9" to="-E3"/>
-    <trip type="thesis_car" id="290" depart="742.40" from="-E11" to="-E1"/>
+    <trip type="thesis_moto" id="290" depart="742.40" from="-E11" to="-E1"/>
     <trip type="thesis_truck" id="291" depart="744.96" from="-E1" to="E11"/>
-    <trip type="thesis_truck" id="292" depart="747.52" from="-E8" to="-E7"/>
+    <trip type="thesis_bicycle" id="292" depart="747.52" from="-E8" to="-E7"/>
     <trip type="thesis_moto" id="293" depart="750.08" from="-E2" to="E5"/>
     <trip type="thesis_car" id="294" depart="752.64" from="E0" to="E11"/>
     <trip type="thesis_car" id="295" depart="755.20" from="-E9" to="E8"/>
-    <trip type="thesis_car" id="296" depart="757.76" from="E1" to="E4"/>
-    <trip type="thesis_moto" id="297" depart="760.32" from="-E9" to="E8"/>
+    <trip type="thesis_moto" id="296" depart="757.76" from="E1" to="E4"/>
+    <trip type="thesis_truck" id="297" depart="760.32" from="-E9" to="E8"/>
     <trip type="thesis_car" id="298" depart="762.88" from="-E5" to="E2"/>
     <trip type="thesis_moto" id="299" depart="765.44" from="-E9" to="E8"/>
     <trip type="thesis_truck" id="300" depart="768.00" from="E3" to="-E1"/>
@@ -320,7 +320,7 @@
     <trip type="thesis_moto" id="308" depart="788.48" from="-E10" to="E9"/>
     <trip type="thesis_car" id="309" depart="791.04" from="E3" to="E3"/>
     <trip type="thesis_car" id="310" depart="793.60" from="E7" to="E9"/>
-    <trip type="thesis_moto" id="311" depart="796.16" from="-E9" to="-E7"/>
+    <trip type="thesis_truck" id="311" depart="796.16" from="-E9" to="-E7"/>
     <trip type="thesis_car" id="312" depart="798.72" from="-E1" to="E6"/>
     <trip type="thesis_car" id="313" depart="801.28" from="-E6" to="E4"/>
     <trip type="thesis_truck" id="314" depart="803.84" from="E5" to="-E3"/>
@@ -336,7 +336,7 @@
     <trip type="thesis_car" id="324" depart="829.44" from="-E5" to="E2"/>
     <trip type="thesis_car" id="325" depart="832.00" from="E7" to="E4"/>
     <trip type="thesis_car" id="326" depart="834.56" from="-E7" to="E10"/>
-    <trip type="thesis_car" id="327" depart="837.12" from="-E2" to="E1"/>
+    <trip type="thesis_moto" id="327" depart="837.12" from="-E2" to="E1"/>
     <trip type="thesis_car" id="328" depart="839.68" from="E1" to="E4"/>
     <trip type="thesis_car" id="329" depart="842.24" from="-E7" to="E8"/>
     <trip type="thesis_moto" id="330" depart="844.80" from="-E6" to="E5"/>
@@ -346,9 +346,9 @@
     <trip type="thesis_car" id="334" depart="855.04" from="-E7" to="-E1"/>
     <trip type="thesis_car" id="335" depart="857.60" from="E7" to="E8"/>
     <trip type="thesis_car" id="336" depart="860.16" from="-E6" to="-E1"/>
-    <trip type="thesis_truck" id="337" depart="862.72" from="E3" to="E11"/>
+    <trip type="thesis_bicycle" id="337" depart="862.72" from="E3" to="E11"/>
     <trip type="thesis_car" id="338" depart="865.28" from="E0" to="E2"/>
-    <trip type="thesis_truck" id="339" depart="867.84" from="-E3" to="E7"/>
+    <trip type="thesis_bicycle" id="339" depart="867.84" from="-E3" to="E7"/>
     <trip type="thesis_moto" id="340" depart="870.40" from="-E7" to="E10"/>
     <trip type="thesis_car" id="341" depart="872.96" from="E5" to="E2"/>
     <trip type="thesis_car" id="342" depart="875.52" from="E5" to="E7"/>
@@ -362,15 +362,15 @@
     <trip type="thesis_moto" id="350" depart="896.00" from="-E8" to="-E5"/>
     <trip type="thesis_car" id="351" depart="898.56" from="E1" to="-E0"/>
     <trip type="thesis_car" id="352" depart="901.12" from="E0" to="E5"/>
-    <trip type="thesis_car" id="353" depart="903.68" from="E1" to="E10"/>
-    <trip type="thesis_car" id="354" depart="906.24" from="-E9" to="E7"/>
+    <trip type="thesis_moto" id="353" depart="903.68" from="E1" to="E10"/>
+    <trip type="thesis_moto" id="354" depart="906.24" from="-E9" to="E7"/>
     <trip type="thesis_moto" id="355" depart="908.80" from="E7" to="E11"/>
     <trip type="thesis_moto" id="356" depart="911.36" from="-E1" to="E2"/>
     <trip type="thesis_moto" id="357" depart="913.92" from="-E8" to="E7"/>
     <trip type="thesis_moto" id="358" depart="916.48" from="E3" to="E11"/>
-    <trip type="thesis_car" id="359" depart="919.04" from="-E7" to="E11"/>
+    <trip type="thesis_moto" id="359" depart="919.04" from="-E7" to="E11"/>
     <trip type="thesis_truck" id="360" depart="921.60" from="E0" to="E10"/>
-    <trip type="thesis_car" id="361" depart="924.16" from="-E9" to="-E3"/>
+    <trip type="thesis_moto" id="361" depart="924.16" from="-E9" to="-E3"/>
     <trip type="thesis_car" id="362" depart="926.72" from="-E6" to="E9"/>
     <trip type="thesis_car" id="363" depart="929.28" from="-E4" to="E5"/>
     <trip type="thesis_car" id="364" depart="931.84" from="-E9" to="E7"/>
@@ -381,7 +381,7 @@
     <trip type="thesis_car" id="369" depart="944.64" from="E0" to="E10"/>
     <trip type="thesis_car" id="370" depart="947.20" from="-E10" to="E4"/>
     <trip type="thesis_car" id="371" depart="949.76" from="E3" to="E11"/>
-    <trip type="thesis_truck" id="372" depart="952.32" from="E0" to="E8"/>
+    <trip type="thesis_bicycle" id="372" depart="952.32" from="E0" to="E8"/>
     <trip type="thesis_car" id="373" depart="954.88" from="-E1" to="E6"/>
     <trip type="thesis_truck" id="374" depart="957.44" from="-E3" to="E1"/>
     <trip type="thesis_moto" id="375" depart="960.00" from="-E11" to="E2"/>
@@ -397,7 +397,7 @@
     <trip type="thesis_truck" id="385" depart="985.60" from="-E9" to="E10"/>
     <trip type="thesis_moto" id="386" depart="988.16" from="-E3" to="E7"/>
     <trip type="thesis_moto" id="387" depart="990.72" from="-E2" to="E10"/>
-    <trip type="thesis_truck" id="388" depart="993.28" from="-E6" to="-E5"/>
+    <trip type="thesis_bicycle" id="388" depart="993.28" from="-E6" to="-E5"/>
     <trip type="thesis_truck" id="389" depart="995.84" from="-E8" to="E3"/>
     <trip type="thesis_moto" id="390" depart="998.40" from="E7" to="E4"/>
     <trip type="thesis_car" id="391" depart="1000.96" from="-E9" to="E5"/>
@@ -413,7 +413,7 @@
     <trip type="thesis_car" id="401" depart="1026.56" from="-E6" to="E3"/>
     <trip type="thesis_car" id="402" depart="1029.12" from="E0" to="-E1"/>
     <trip type="thesis_car" id="403" depart="1031.68" from="-E3" to="E5"/>
-    <trip type="thesis_moto" id="404" depart="1034.24" from="-E11" to="-E3"/>
+    <trip type="thesis_truck" id="404" depart="1034.24" from="-E11" to="-E3"/>
     <trip type="thesis_car" id="405" depart="1036.80" from="-E7" to="E9"/>
     <trip type="thesis_truck" id="406" depart="1039.36" from="-E7" to="E8"/>
     <trip type="thesis_car" id="407" depart="1041.92" from="E3" to="-E7"/>
@@ -427,7 +427,7 @@
     <trip type="thesis_car" id="415" depart="1062.40" from="-E4" to="E6"/>
     <trip type="thesis_car" id="416" depart="1064.96" from="-E1" to="E2"/>
     <trip type="thesis_car" id="417" depart="1067.52" from="-E6" to="E4"/>
-    <trip type="thesis_moto" id="418" depart="1070.08" from="-E9" to="E3"/>
+    <trip type="thesis_truck" id="418" depart="1070.08" from="-E9" to="E3"/>
     <trip type="thesis_car" id="419" depart="1072.64" from="E3" to="E9"/>
     <trip type="thesis_car" id="420" depart="1075.20" from="-E10" to="-E5"/>
     <trip type="thesis_moto" id="421" depart="1077.76" from="-E1" to="E8"/>
@@ -449,7 +449,7 @@
     <trip type="thesis_car" id="437" depart="1118.72" from="E7" to="E7"/>
     <trip type="thesis_moto" id="438" depart="1121.28" from="-E10" to="E4"/>
     <trip type="thesis_car" id="439" depart="1123.84" from="-E7" to="E9"/>
-    <trip type="thesis_truck" id="440" depart="1126.40" from="-E4" to="E10"/>
+    <trip type="thesis_bicycle" id="440" depart="1126.40" from="-E4" to="E10"/>
     <trip type="thesis_car" id="441" depart="1128.96" from="-E2" to="-E1"/>
     <trip type="thesis_car" id="442" depart="1131.52" from="E3" to="E11"/>
     <trip type="thesis_car" id="443" depart="1134.08" from="-E9" to="E4"/>
@@ -457,7 +457,7 @@
     <trip type="thesis_moto" id="445" depart="1139.20" from="-E11" to="E3"/>
     <trip type="thesis_car" id="446" depart="1141.76" from="-E10" to="E6"/>
     <trip type="thesis_moto" id="447" depart="1144.32" from="-E2" to="-E5"/>
-    <trip type="thesis_car" id="448" depart="1146.88" from="-E11" to="E8"/>
+    <trip type="thesis_moto" id="448" depart="1146.88" from="-E11" to="E8"/>
     <trip type="thesis_car" id="449" depart="1149.44" from="-E11" to="-E3"/>
     <trip type="thesis_car" id="450" depart="1152.00" from="-E3" to="-E3"/>
     <trip type="thesis_moto" id="451" depart="1154.56" from="-E9" to="-E0"/>
@@ -512,10 +512,10 @@
     <trip type="thesis_car" id="500" depart="1280.00" from="E3" to="E3"/>
     <trip type="thesis_car" id="501" depart="1282.56" from="-E9" to="-E0"/>
     <trip type="thesis_car" id="502" depart="1285.12" from="E0" to="-E5"/>
-    <trip type="thesis_car" id="503" depart="1287.68" from="-E4" to="E5"/>
+    <trip type="thesis_moto" id="503" depart="1287.68" from="-E4" to="E5"/>
     <trip type="thesis_car" id="504" depart="1290.24" from="-E10" to="-E0"/>
     <trip type="thesis_car" id="505" depart="1292.80" from="-E11" to="E3"/>
-    <trip type="thesis_truck" id="506" depart="1295.36" from="-E9" to="-E7"/>
+    <trip type="thesis_bicycle" id="506" depart="1295.36" from="-E9" to="-E7"/>
     <trip type="thesis_car" id="507" depart="1297.92" from="-E9" to="E11"/>
     <trip type="thesis_car" id="508" depart="1300.48" from="-E6" to="-E7"/>
     <trip type="thesis_car" id="509" depart="1303.04" from="-E5" to="-E7"/>
@@ -567,10 +567,10 @@
     <trip type="thesis_car" id="555" depart="1420.80" from="-E11" to="-E0"/>
     <trip type="thesis_moto" id="556" depart="1423.36" from="-E10" to="E8"/>
     <trip type="thesis_moto" id="557" depart="1425.92" from="-E4" to="E5"/>
-    <trip type="thesis_truck" id="558" depart="1428.48" from="-E2" to="E11"/>
+    <trip type="thesis_bicycle" id="558" depart="1428.48" from="-E2" to="E11"/>
     <trip type="thesis_moto" id="559" depart="1431.04" from="-E6" to="E2"/>
     <trip type="thesis_car" id="560" depart="1433.60" from="-E11" to="E1"/>
-    <trip type="thesis_car" id="561" depart="1436.16" from="-E3" to="E10"/>
+    <trip type="thesis_moto" id="561" depart="1436.16" from="-E3" to="E10"/>
     <trip type="thesis_car" id="562" depart="1438.72" from="-E4" to="E3"/>
     <trip type="thesis_truck" id="563" depart="1441.28" from="E1" to="E4"/>
     <trip type="thesis_moto" id="564" depart="1443.84" from="-E10" to="-E1"/>
@@ -584,7 +584,7 @@
     <trip type="thesis_car" id="572" depart="1464.32" from="-E5" to="E6"/>
     <trip type="thesis_car" id="573" depart="1466.88" from="E3" to="E4"/>
     <trip type="thesis_car" id="574" depart="1469.44" from="-E9" to="E2"/>
-    <trip type="thesis_car" id="575" depart="1472.00" from="-E9" to="E10"/>
+    <trip type="thesis_moto" id="575" depart="1472.00" from="-E9" to="E10"/>
     <trip type="thesis_car" id="576" depart="1474.56" from="-E4" to="E1"/>
     <trip type="thesis_moto" id="577" depart="1477.12" from="-E11" to="-E5"/>
     <trip type="thesis_car" id="578" depart="1479.68" from="E7" to="E11"/>
@@ -677,10 +677,10 @@
     <trip type="thesis_car" id="665" depart="1702.40" from="-E8" to="E2"/>
     <trip type="thesis_truck" id="666" depart="1704.96" from="-E5" to="E4"/>
     <trip type="thesis_car" id="667" depart="1707.52" from="-E2" to="-E1"/>
-    <trip type="thesis_car" id="668" depart="1710.08" from="E0" to="E11"/>
-    <trip type="thesis_car" id="669" depart="1712.64" from="-E5" to="E2"/>
+    <trip type="thesis_moto" id="668" depart="1710.08" from="E0" to="E11"/>
+    <trip type="thesis_moto" id="669" depart="1712.64" from="-E5" to="E2"/>
     <trip type="thesis_moto" id="670" depart="1715.20" from="-E6" to="E9"/>
-    <trip type="thesis_car" id="671" depart="1717.76" from="-E3" to="E8"/>
+    <trip type="thesis_moto" id="671" depart="1717.76" from="-E3" to="E8"/>
     <trip type="thesis_car" id="672" depart="1720.32" from="-E6" to="-E1"/>
     <trip type="thesis_car" id="673" depart="1722.88" from="E3" to="E11"/>
     <trip type="thesis_car" id="674" depart="1725.44" from="E5" to="E11"/>
@@ -700,7 +700,7 @@
     <trip type="thesis_car" id="688" depart="1761.28" from="E3" to="-E1"/>
     <trip type="thesis_car" id="689" depart="1763.84" from="E7" to="E4"/>
     <trip type="thesis_moto" id="690" depart="1766.40" from="-E6" to="E4"/>
-    <trip type="thesis_moto" id="691" depart="1768.96" from="-E4" to="E8"/>
+    <trip type="thesis_truck" id="691" depart="1768.96" from="-E4" to="E8"/>
     <trip type="thesis_car" id="692" depart="1771.52" from="E1" to="E4"/>
     <trip type="thesis_moto" id="693" depart="1774.08" from="-E11" to="E9"/>
     <trip type="thesis_moto" id="694" depart="1776.64" from="-E5" to="E8"/>
@@ -709,7 +709,7 @@
     <trip type="thesis_car" id="697" depart="1784.32" from="-E4" to="E5"/>
     <trip type="thesis_car" id="698" depart="1786.88" from="-E4" to="E9"/>
     <trip type="thesis_car" id="699" depart="1789.44" from="E5" to="E7"/>
-    <trip type="thesis_moto" id="700" depart="1792.00" from="-E3" to="E4"/>
+    <trip type="thesis_truck" id="700" depart="1792.00" from="-E3" to="E4"/>
     <trip type="thesis_car" id="701" depart="1794.56" from="-E3" to="E2"/>
     <trip type="thesis_moto" id="702" depart="1797.12" from="E7" to="-E3"/>
     <trip type="thesis_car" id="703" depart="1799.68" from="-E9" to="E5"/>
@@ -725,7 +725,7 @@
     <trip type="thesis_car" id="713" depart="1825.28" from="-E9" to="-E7"/>
     <trip type="thesis_car" id="714" depart="1827.84" from="-E10" to="-E0"/>
     <trip type="thesis_moto" id="715" depart="1830.40" from="-E6" to="E11"/>
-    <trip type="thesis_car" id="716" depart="1832.96" from="-E2" to="E3"/>
+    <trip type="thesis_moto" id="716" depart="1832.96" from="-E2" to="E3"/>
     <trip type="thesis_car" id="717" depart="1835.52" from="-E4" to="E5"/>
     <trip type="thesis_car" id="718" depart="1838.08" from="E0" to="E7"/>
     <trip type="thesis_moto" id="719" depart="1840.64" from="E7" to="-E3"/>
@@ -733,7 +733,7 @@
     <trip type="thesis_moto" id="721" depart="1845.76" from="-E4" to="E11"/>
     <trip type="thesis_moto" id="722" depart="1848.32" from="-E10" to="-E7"/>
     <trip type="thesis_truck" id="723" depart="1850.88" from="-E5" to="E3"/>
-    <trip type="thesis_moto" id="724" depart="1853.44" from="-E2" to="E7"/>
+    <trip type="thesis_truck" id="724" depart="1853.44" from="-E2" to="E7"/>
     <trip type="thesis_car" id="725" depart="1856.00" from="-E11" to="E1"/>
     <trip type="thesis_car" id="726" depart="1858.56" from="-E8" to="E1"/>
     <trip type="thesis_car" id="727" depart="1861.12" from="E1" to="E11"/>
@@ -752,7 +752,7 @@
     <trip type="thesis_moto" id="740" depart="1894.40" from="-E3" to="E9"/>
     <trip type="thesis_moto" id="741" depart="1896.96" from="-E9" to="-E1"/>
     <trip type="thesis_car" id="742" depart="1899.52" from="E7" to="E10"/>
-    <trip type="thesis_car" id="743" depart="1902.08" from="E1" to="E1"/>
+    <trip type="thesis_moto" id="743" depart="1902.08" from="E1" to="E1"/>
     <trip type="thesis_car" id="744" depart="1904.64" from="E7" to="E6"/>
     <trip type="thesis_car" id="745" depart="1907.20" from="-E2" to="E2"/>
     <trip type="thesis_car" id="746" depart="1909.76" from="-E7" to="-E0"/>
@@ -767,7 +767,7 @@
     <trip type="thesis_car" id="755" depart="1932.80" from="-E4" to="E4"/>
     <trip type="thesis_moto" id="756" depart="1935.36" from="E1" to="E5"/>
     <trip type="thesis_moto" id="757" depart="1937.92" from="E0" to="-E0"/>
-    <trip type="thesis_moto" id="758" depart="1940.48" from="-E6" to="E9"/>
+    <trip type="thesis_truck" id="758" depart="1940.48" from="-E6" to="E9"/>
     <trip type="thesis_car" id="759" depart="1943.04" from="E1" to="E6"/>
     <trip type="thesis_car" id="760" depart="1945.60" from="-E8" to="E5"/>
     <trip type="thesis_moto" id="761" depart="1948.16" from="-E8" to="-E3"/>
@@ -793,7 +793,7 @@
     <trip type="thesis_moto" id="781" depart="1999.36" from="E7" to="E7"/>
     <trip type="thesis_car" id="782" depart="2001.92" from="E7" to="E6"/>
     <trip type="thesis_truck" id="783" depart="2004.48" from="E0" to="E1"/>
-    <trip type="thesis_truck" id="784" depart="2007.04" from="-E6" to="-E7"/>
+    <trip type="thesis_bicycle" id="784" depart="2007.04" from="-E6" to="-E7"/>
     <trip type="thesis_car" id="785" depart="2009.60" from="-E6" to="-E5"/>
     <trip type="thesis_car" id="786" depart="2012.16" from="-E7" to="E8"/>
     <trip type="thesis_car" id="787" depart="2014.72" from="E0" to="-E3"/>
@@ -803,8 +803,8 @@
     <trip type="thesis_moto" id="791" depart="2024.96" from="-E1" to="E10"/>
     <trip type="thesis_car" id="792" depart="2027.52" from="E0" to="-E1"/>
     <trip type="thesis_car" id="793" depart="2030.08" from="E1" to="-E0"/>
-    <trip type="thesis_car" id="794" depart="2032.64" from="-E7" to="E8"/>
-    <trip type="thesis_moto" id="795" depart="2035.20" from="-E5" to="E8"/>
+    <trip type="thesis_moto" id="794" depart="2032.64" from="-E7" to="E8"/>
+    <trip type="thesis_truck" id="795" depart="2035.20" from="-E5" to="E8"/>
     <trip type="thesis_car" id="796" depart="2037.76" from="E5" to="E11"/>
     <trip type="thesis_car" id="797" depart="2040.32" from="-E2" to="E9"/>
     <trip type="thesis_moto" id="798" depart="2042.88" from="-E4" to="E4"/>
@@ -823,12 +823,12 @@
     <trip type="thesis_car" id="811" depart="2076.16" from="E7" to="E7"/>
     <trip type="thesis_car" id="812" depart="2078.72" from="-E6" to="-E5"/>
     <trip type="thesis_car" id="813" depart="2081.28" from="-E10" to="-E3"/>
-    <trip type="thesis_truck" id="814" depart="2083.84" from="-E6" to="-E7"/>
+    <trip type="thesis_bicycle" id="814" depart="2083.84" from="-E6" to="-E7"/>
     <trip type="thesis_car" id="815" depart="2086.40" from="-E11" to="E5"/>
     <trip type="thesis_car" id="816" depart="2088.96" from="E1" to="-E3"/>
     <trip type="thesis_truck" id="817" depart="2091.52" from="E3" to="E8"/>
     <trip type="thesis_moto" id="818" depart="2094.08" from="E3" to="E2"/>
-    <trip type="thesis_car" id="819" depart="2096.64" from="-E10" to="E4"/>
+    <trip type="thesis_moto" id="819" depart="2096.64" from="-E10" to="E4"/>
     <trip type="thesis_moto" id="820" depart="2099.20" from="-E11" to="-E3"/>
     <trip type="thesis_car" id="821" depart="2101.76" from="-E4" to="-E5"/>
     <trip type="thesis_car" id="822" depart="2104.32" from="E1" to="E9"/>
@@ -864,22 +864,22 @@
     <trip type="thesis_car" id="852" depart="2181.12" from="-E5" to="E6"/>
     <trip type="thesis_moto" id="853" depart="2183.68" from="E1" to="E9"/>
     <trip type="thesis_car" id="854" depart="2186.24" from="-E9" to="E10"/>
-    <trip type="thesis_truck" id="855" depart="2188.80" from="E7" to="E10"/>
+    <trip type="thesis_bicycle" id="855" depart="2188.80" from="E7" to="E10"/>
     <trip type="thesis_car" id="856" depart="2191.36" from="E3" to="E8"/>
     <trip type="thesis_car" id="857" depart="2193.92" from="-E5" to="E4"/>
     <trip type="thesis_car" id="858" depart="2196.48" from="-E9" to="E2"/>
-    <trip type="thesis_truck" id="859" depart="2199.04" from="-E9" to="E1"/>
+    <trip type="thesis_bicycle" id="859" depart="2199.04" from="-E9" to="E1"/>
     <trip type="thesis_car" id="860" depart="2201.60" from="-E11" to="E2"/>
     <trip type="thesis_car" id="861" depart="2204.16" from="-E2" to="-E0"/>
     <trip type="thesis_car" id="862" depart="2206.72" from="-E1" to="-E7"/>
-    <trip type="thesis_car" id="863" depart="2209.28" from="-E9" to="E2"/>
-    <trip type="thesis_truck" id="864" depart="2211.84" from="-E2" to="E1"/>
+    <trip type="thesis_moto" id="863" depart="2209.28" from="-E9" to="E2"/>
+    <trip type="thesis_bicycle" id="864" depart="2211.84" from="-E2" to="E1"/>
     <trip type="thesis_car" id="865" depart="2214.40" from="-E3" to="E8"/>
     <trip type="thesis_car" id="866" depart="2216.96" from="E0" to="-E1"/>
     <trip type="thesis_moto" id="867" depart="2219.52" from="E1" to="E10"/>
     <trip type="thesis_car" id="868" depart="2222.08" from="E1" to="E8"/>
     <trip type="thesis_moto" id="869" depart="2224.64" from="-E1" to="-E5"/>
-    <trip type="thesis_car" id="870" depart="2227.20" from="-E10" to="-E0"/>
+    <trip type="thesis_moto" id="870" depart="2227.20" from="-E10" to="-E0"/>
     <trip type="thesis_moto" id="871" depart="2229.76" from="-E8" to="E5"/>
     <trip type="thesis_moto" id="872" depart="2232.32" from="-E5" to="-E5"/>
     <trip type="thesis_car" id="873" depart="2234.88" from="-E2" to="E7"/>
@@ -890,7 +890,7 @@
     <trip type="thesis_moto" id="878" depart="2247.68" from="-E4" to="-E7"/>
     <trip type="thesis_car" id="879" depart="2250.24" from="-E11" to="E4"/>
     <trip type="thesis_moto" id="880" depart="2252.80" from="-E2" to="-E7"/>
-    <trip type="thesis_car" id="881" depart="2255.36" from="-E1" to="E9"/>
+    <trip type="thesis_moto" id="881" depart="2255.36" from="-E1" to="E9"/>
     <trip type="thesis_moto" id="882" depart="2257.92" from="E5" to="E8"/>
     <trip type="thesis_car" id="883" depart="2260.48" from="-E9" to="E10"/>
     <trip type="thesis_moto" id="884" depart="2263.04" from="-E6" to="E9"/>
@@ -901,7 +901,7 @@
     <trip type="thesis_car" id="889" depart="2275.84" from="-E3" to="E5"/>
     <trip type="thesis_truck" id="890" depart="2278.40" from="E1" to="E8"/>
     <trip type="thesis_car" id="891" depart="2280.96" from="-E7" to="E9"/>
-    <trip type="thesis_truck" id="892" depart="2283.52" from="-E2" to="-E5"/>
+    <trip type="thesis_bicycle" id="892" depart="2283.52" from="-E2" to="-E5"/>
     <trip type="thesis_car" id="893" depart="2286.08" from="-E9" to="E8"/>
     <trip type="thesis_car" id="894" depart="2288.64" from="E3" to="-E1"/>
     <trip type="thesis_moto" id="895" depart="2291.20" from="E0" to="-E5"/>
@@ -912,11 +912,11 @@
     <trip type="thesis_car" id="900" depart="2304.00" from="-E6" to="E7"/>
     <trip type="thesis_car" id="901" depart="2306.56" from="-E4" to="E9"/>
     <trip type="thesis_car" id="902" depart="2309.12" from="-E1" to="E8"/>
-    <trip type="thesis_moto" id="903" depart="2311.68" from="E7" to="E11"/>
+    <trip type="thesis_truck" id="903" depart="2311.68" from="E7" to="E11"/>
     <trip type="thesis_moto" id="904" depart="2314.24" from="-E2" to="E3"/>
-    <trip type="thesis_moto" id="905" depart="2316.80" from="-E2" to="E8"/>
+    <trip type="thesis_truck" id="905" depart="2316.80" from="-E2" to="E8"/>
     <trip type="thesis_car" id="906" depart="2319.36" from="-E7" to="E6"/>
-    <trip type="thesis_truck" id="907" depart="2321.92" from="-E5" to="E2"/>
+    <trip type="thesis_bicycle" id="907" depart="2321.92" from="-E5" to="E2"/>
     <trip type="thesis_car" id="908" depart="2324.48" from="-E4" to="-E7"/>
     <trip type="thesis_car" id="909" depart="2327.04" from="-E7" to="E11"/>
     <trip type="thesis_truck" id="910" depart="2329.60" from="-E10" to="E9"/>
@@ -936,14 +936,14 @@
     <trip type="thesis_moto" id="924" depart="2365.44" from="-E6" to="E8"/>
     <trip type="thesis_car" id="925" depart="2368.00" from="-E7" to="E4"/>
     <trip type="thesis_car" id="926" depart="2370.56" from="-E1" to="-E0"/>
-    <trip type="thesis_moto" id="927" depart="2373.12" from="E3" to="E9"/>
+    <trip type="thesis_truck" id="927" depart="2373.12" from="E3" to="E9"/>
     <trip type="thesis_car" id="928" depart="2375.68" from="-E9" to="E6"/>
-    <trip type="thesis_truck" id="929" depart="2378.24" from="-E2" to="E5"/>
+    <trip type="thesis_bicycle" id="929" depart="2378.24" from="-E2" to="E5"/>
     <trip type="thesis_car" id="930" depart="2380.80" from="-E1" to="E2"/>
-    <trip type="thesis_truck" id="931" depart="2383.36" from="-E4" to="E3"/>
+    <trip type="thesis_bicycle" id="931" depart="2383.36" from="-E4" to="E3"/>
     <trip type="thesis_truck" id="932" depart="2385.92" from="-E9" to="E3"/>
     <trip type="thesis_car" id="933" depart="2388.48" from="-E6" to="E11"/>
-    <trip type="thesis_car" id="934" depart="2391.04" from="-E1" to="E2"/>
+    <trip type="thesis_moto" id="934" depart="2391.04" from="-E1" to="E2"/>
     <trip type="thesis_car" id="935" depart="2393.60" from="-E1" to="E2"/>
     <trip type="thesis_moto" id="936" depart="2396.16" from="-E3" to="E9"/>
     <trip type="thesis_moto" id="937" depart="2398.72" from="-E9" to="E6"/>
@@ -965,7 +965,7 @@
     <trip type="thesis_car" id="953" depart="2439.68" from="-E10" to="E8"/>
     <trip type="thesis_car" id="954" depart="2442.24" from="-E1" to="E8"/>
     <trip type="thesis_car" id="955" depart="2444.80" from="-E4" to="E9"/>
-    <trip type="thesis_car" id="956" depart="2447.36" from="-E8" to="E6"/>
+    <trip type="thesis_moto" id="956" depart="2447.36" from="-E8" to="E6"/>
     <trip type="thesis_car" id="957" depart="2449.92" from="E0" to="E10"/>
     <trip type="thesis_car" id="958" depart="2452.48" from="-E10" to="-E3"/>
     <trip type="thesis_moto" id="959" depart="2455.04" from="-E2" to="E7"/>
@@ -975,14 +975,14 @@
     <trip type="thesis_car" id="963" depart="2465.28" from="E0" to="E2"/>
     <trip type="thesis_car" id="964" depart="2467.84" from="E7" to="-E0"/>
     <trip type="thesis_car" id="965" depart="2470.40" from="-E4" to="E6"/>
-    <trip type="thesis_truck" id="966" depart="2472.96" from="E7" to="E10"/>
+    <trip type="thesis_bicycle" id="966" depart="2472.96" from="E7" to="E10"/>
     <trip type="thesis_car" id="967" depart="2475.52" from="E1" to="-E0"/>
     <trip type="thesis_truck" id="968" depart="2478.08" from="-E3" to="E9"/>
     <trip type="thesis_car" id="969" depart="2480.64" from="-E6" to="E1"/>
     <trip type="thesis_car" id="970" depart="2483.20" from="E7" to="E10"/>
     <trip type="thesis_moto" id="971" depart="2485.76" from="-E9" to="E4"/>
     <trip type="thesis_car" id="972" depart="2488.32" from="-E10" to="E3"/>
-    <trip type="thesis_moto" id="973" depart="2490.88" from="E1" to="E5"/>
+    <trip type="thesis_truck" id="973" depart="2490.88" from="E1" to="E5"/>
     <trip type="thesis_car" id="974" depart="2493.44" from="-E10" to="-E3"/>
     <trip type="thesis_car" id="975" depart="2496.00" from="E0" to="E4"/>
     <trip type="thesis_moto" id="976" depart="2498.56" from="E0" to="E1"/>
@@ -991,11 +991,11 @@
     <trip type="thesis_car" id="979" depart="2506.24" from="-E3" to="-E3"/>
     <trip type="thesis_car" id="980" depart="2508.80" from="-E11" to="E11"/>
     <trip type="thesis_car" id="981" depart="2511.36" from="-E7" to="E10"/>
-    <trip type="thesis_moto" id="982" depart="2513.92" from="-E10" to="E3"/>
+    <trip type="thesis_truck" id="982" depart="2513.92" from="-E10" to="E3"/>
     <trip type="thesis_moto" id="983" depart="2516.48" from="-E4" to="E10"/>
     <trip type="thesis_moto" id="984" depart="2519.04" from="-E3" to="E10"/>
     <trip type="thesis_truck" id="985" depart="2521.60" from="-E10" to="E8"/>
-    <trip type="thesis_car" id="986" depart="2524.16" from="E5" to="E9"/>
+    <trip type="thesis_moto" id="986" depart="2524.16" from="E5" to="E9"/>
     <trip type="thesis_moto" id="987" depart="2526.72" from="-E8" to="-E3"/>
     <trip type="thesis_car" id="988" depart="2529.28" from="-E3" to="E11"/>
     <trip type="thesis_car" id="989" depart="2531.84" from="-E10" to="E10"/>
@@ -1010,20 +1010,20 @@
     <trip type="thesis_car" id="998" depart="2554.88" from="E7" to="-E3"/>
     <trip type="thesis_car" id="999" depart="2557.44" from="-E4" to="E9"/>
     <trip type="thesis_car" id="1000" depart="2560.00" from="-E2" to="E1"/>
-    <trip type="thesis_truck" id="1001" depart="2562.56" from="E7" to="E9"/>
+    <trip type="thesis_bicycle" id="1001" depart="2562.56" from="E7" to="E9"/>
     <trip type="thesis_moto" id="1002" depart="2565.12" from="-E3" to="E5"/>
     <trip type="thesis_car" id="1003" depart="2567.68" from="-E6" to="E3"/>
     <trip type="thesis_moto" id="1004" depart="2570.24" from="-E2" to="E10"/>
     <trip type="thesis_moto" id="1005" depart="2572.80" from="E3" to="E10"/>
     <trip type="thesis_car" id="1006" depart="2575.36" from="-E10" to="E3"/>
-    <trip type="thesis_truck" id="1007" depart="2577.92" from="-E8" to="E2"/>
-    <trip type="thesis_car" id="1008" depart="2580.48" from="-E9" to="E2"/>
+    <trip type="thesis_bicycle" id="1007" depart="2577.92" from="-E8" to="E2"/>
+    <trip type="thesis_moto" id="1008" depart="2580.48" from="-E9" to="E2"/>
     <trip type="thesis_car" id="1009" depart="2583.04" from="E7" to="E11"/>
     <trip type="thesis_moto" id="1010" depart="2585.60" from="E0" to="E11"/>
     <trip type="thesis_car" id="1011" depart="2588.16" from="-E3" to="E5"/>
-    <trip type="thesis_moto" id="1012" depart="2590.72" from="E3" to="E6"/>
+    <trip type="thesis_truck" id="1012" depart="2590.72" from="E3" to="E6"/>
     <trip type="thesis_moto" id="1013" depart="2593.28" from="-E5" to="E11"/>
-    <trip type="thesis_car" id="1014" depart="2595.84" from="-E9" to="-E5"/>
+    <trip type="thesis_moto" id="1014" depart="2595.84" from="-E9" to="-E5"/>
     <trip type="thesis_car" id="1015" depart="2598.40" from="-E9" to="E5"/>
     <trip type="thesis_truck" id="1016" depart="2600.96" from="E7" to="E11"/>
     <trip type="thesis_car" id="1017" depart="2603.52" from="-E5" to="E2"/>
@@ -1036,10 +1036,10 @@
     <trip type="thesis_moto" id="1024" depart="2621.44" from="-E9" to="-E0"/>
     <trip type="thesis_car" id="1025" depart="2624.00" from="E7" to="E4"/>
     <trip type="thesis_truck" id="1026" depart="2626.56" from="-E5" to="E6"/>
-    <trip type="thesis_moto" id="1027" depart="2629.12" from="E7" to="E10"/>
+    <trip type="thesis_truck" id="1027" depart="2629.12" from="E7" to="E10"/>
     <trip type="thesis_moto" id="1028" depart="2631.68" from="-E1" to="-E7"/>
     <trip type="thesis_car" id="1029" depart="2634.24" from="-E7" to="E2"/>
-    <trip type="thesis_car" id="1030" depart="2636.80" from="-E8" to="E3"/>
+    <trip type="thesis_moto" id="1030" depart="2636.80" from="-E8" to="E3"/>
     <trip type="thesis_car" id="1031" depart="2639.36" from="-E6" to="E10"/>
     <trip type="thesis_car" id="1032" depart="2641.92" from="-E1" to="-E1"/>
     <trip type="thesis_car" id="1033" depart="2644.48" from="-E5" to="E9"/>
@@ -1056,14 +1056,14 @@
     <trip type="thesis_moto" id="1044" depart="2672.64" from="-E2" to="E10"/>
     <trip type="thesis_car" id="1045" depart="2675.20" from="-E11" to="E4"/>
     <trip type="thesis_car" id="1046" depart="2677.76" from="-E5" to="-E0"/>
-    <trip type="thesis_car" id="1047" depart="2680.32" from="-E8" to="-E5"/>
+    <trip type="thesis_moto" id="1047" depart="2680.32" from="-E8" to="-E5"/>
     <trip type="thesis_car" id="1048" depart="2682.88" from="-E8" to="E10"/>
     <trip type="thesis_moto" id="1049" depart="2685.44" from="E0" to="-E5"/>
     <trip type="thesis_moto" id="1050" depart="2688.00" from="E1" to="E6"/>
     <trip type="thesis_car" id="1051" depart="2690.56" from="-E10" to="-E1"/>
-    <trip type="thesis_car" id="1052" depart="2693.12" from="-E4" to="E11"/>
+    <trip type="thesis_moto" id="1052" depart="2693.12" from="-E4" to="E11"/>
     <trip type="thesis_car" id="1053" depart="2695.68" from="-E3" to="E7"/>
-    <trip type="thesis_car" id="1054" depart="2698.24" from="-E7" to="E4"/>
+    <trip type="thesis_moto" id="1054" depart="2698.24" from="-E7" to="E4"/>
     <trip type="thesis_car" id="1055" depart="2700.80" from="-E8" to="E3"/>
     <trip type="thesis_truck" id="1056" depart="2703.36" from="-E8" to="E1"/>
     <trip type="thesis_car" id="1057" depart="2705.92" from="E3" to="E3"/>
@@ -1080,7 +1080,7 @@
     <trip type="thesis_moto" id="1068" depart="2734.08" from="E3" to="E9"/>
     <trip type="thesis_moto" id="1069" depart="2736.64" from="-E7" to="E11"/>
     <trip type="thesis_moto" id="1070" depart="2739.20" from="-E9" to="E10"/>
-    <trip type="thesis_truck" id="1071" depart="2741.76" from="E3" to="E11"/>
+    <trip type="thesis_bicycle" id="1071" depart="2741.76" from="E3" to="E11"/>
     <trip type="thesis_car" id="1072" depart="2744.32" from="-E10" to="-E0"/>
     <trip type="thesis_car" id="1073" depart="2746.88" from="-E3" to="E2"/>
     <trip type="thesis_car" id="1074" depart="2749.44" from="-E11" to="E11"/>
@@ -1111,13 +1111,13 @@
     <trip type="thesis_car" id="1099" depart="2813.44" from="-E6" to="E3"/>
     <trip type="thesis_car" id="1100" depart="2816.00" from="-E3" to="E10"/>
     <trip type="thesis_car" id="1101" depart="2818.56" from="-E6" to="E4"/>
-    <trip type="thesis_moto" id="1102" depart="2821.12" from="-E7" to="-E7"/>
+    <trip type="thesis_truck" id="1102" depart="2821.12" from="-E7" to="-E7"/>
     <trip type="thesis_moto" id="1103" depart="2823.68" from="E5" to="E1"/>
     <trip type="thesis_car" id="1104" depart="2826.24" from="E7" to="E1"/>
     <trip type="thesis_car" id="1105" depart="2828.80" from="-E1" to="E6"/>
     <trip type="thesis_moto" id="1106" depart="2831.36" from="E0" to="E5"/>
     <trip type="thesis_car" id="1107" depart="2833.92" from="-E6" to="E4"/>
-    <trip type="thesis_moto" id="1108" depart="2836.48" from="-E4" to="-E1"/>
+    <trip type="thesis_truck" id="1108" depart="2836.48" from="-E4" to="-E1"/>
     <trip type="thesis_moto" id="1109" depart="2839.04" from="-E7" to="-E5"/>
     <trip type="thesis_moto" id="1110" depart="2841.60" from="-E5" to="-E5"/>
     <trip type="thesis_car" id="1111" depart="2844.16" from="-E3" to="E7"/>
@@ -1129,10 +1129,10 @@
     <trip type="thesis_car" id="1117" depart="2859.52" from="-E10" to="E7"/>
     <trip type="thesis_moto" id="1118" depart="2862.08" from="-E6" to="-E0"/>
     <trip type="thesis_car" id="1119" depart="2864.64" from="E0" to="-E3"/>
-    <trip type="thesis_truck" id="1120" depart="2867.20" from="-E9" to="-E3"/>
+    <trip type="thesis_bicycle" id="1120" depart="2867.20" from="-E9" to="-E3"/>
     <trip type="thesis_moto" id="1121" depart="2869.76" from="-E9" to="-E7"/>
     <trip type="thesis_car" id="1122" depart="2872.32" from="-E4" to="E8"/>
-    <trip type="thesis_truck" id="1123" depart="2874.88" from="-E11" to="E10"/>
+    <trip type="thesis_bicycle" id="1123" depart="2874.88" from="-E11" to="E10"/>
     <trip type="thesis_car" id="1124" depart="2877.44" from="-E3" to="E5"/>
     <trip type="thesis_moto" id="1125" depart="2880.00" from="-E2" to="E4"/>
     <trip type="thesis_car" id="1126" depart="2882.56" from="E0" to="-E0"/>
@@ -1151,7 +1151,7 @@
     <trip type="thesis_car" id="1139" depart="2915.84" from="-E11" to="E10"/>
     <trip type="thesis_car" id="1140" depart="2918.40" from="-E9" to="E7"/>
     <trip type="thesis_car" id="1141" depart="2920.96" from="-E10" to="-E1"/>
-    <trip type="thesis_truck" id="1142" depart="2923.52" from="-E5" to="E9"/>
+    <trip type="thesis_bicycle" id="1142" depart="2923.52" from="-E5" to="E9"/>
     <trip type="thesis_moto" id="1143" depart="2926.08" from="-E4" to="-E3"/>
     <trip type="thesis_car" id="1144" depart="2928.64" from="-E7" to="E3"/>
     <trip type="thesis_car" id="1145" depart="2931.20" from="-E8" to="E6"/>
@@ -1162,7 +1162,7 @@
     <trip type="thesis_moto" id="1150" depart="2944.00" from="-E1" to="E8"/>
     <trip type="thesis_car" id="1151" depart="2946.56" from="E7" to="E11"/>
     <trip type="thesis_moto" id="1152" depart="2949.12" from="-E10" to="E11"/>
-    <trip type="thesis_truck" id="1153" depart="2951.68" from="-E8" to="E2"/>
+    <trip type="thesis_bicycle" id="1153" depart="2951.68" from="-E8" to="E2"/>
     <trip type="thesis_car" id="1154" depart="2954.24" from="E7" to="E9"/>
     <trip type="thesis_moto" id="1155" depart="2956.80" from="E5" to="-E3"/>
     <trip type="thesis_moto" id="1156" depart="2959.36" from="E3" to="E3"/>
@@ -1176,7 +1176,7 @@
     <trip type="thesis_moto" id="1164" depart="2979.84" from="-E10" to="E2"/>
     <trip type="thesis_car" id="1165" depart="2982.40" from="-E8" to="-E7"/>
     <trip type="thesis_car" id="1166" depart="2984.96" from="-E3" to="E2"/>
-    <trip type="thesis_car" id="1167" depart="2987.52" from="-E2" to="E6"/>
+    <trip type="thesis_moto" id="1167" depart="2987.52" from="-E2" to="E6"/>
     <trip type="thesis_car" id="1168" depart="2990.08" from="-E7" to="E10"/>
     <trip type="thesis_moto" id="1169" depart="2992.64" from="-E9" to="E7"/>
     <trip type="thesis_car" id="1170" depart="2995.20" from="-E9" to="-E1"/>
@@ -1191,7 +1191,7 @@
     <trip type="thesis_car" id="1179" depart="3018.24" from="-E7" to="E6"/>
     <trip type="thesis_moto" id="1180" depart="3020.80" from="E0" to="-E3"/>
     <trip type="thesis_truck" id="1181" depart="3023.36" from="-E11" to="E6"/>
-    <trip type="thesis_moto" id="1182" depart="3025.92" from="-E3" to="E8"/>
+    <trip type="thesis_truck" id="1182" depart="3025.92" from="-E3" to="E8"/>
     <trip type="thesis_moto" id="1183" depart="3028.48" from="E1" to="-E0"/>
     <trip type="thesis_car" id="1184" depart="3031.04" from="-E10" to="E5"/>
     <trip type="thesis_car" id="1185" depart="3033.60" from="-E8" to="-E1"/>
@@ -1206,14 +1206,14 @@
     <trip type="thesis_car" id="1194" depart="3056.64" from="-E11" to="E8"/>
     <trip type="thesis_moto" id="1195" depart="3059.20" from="E3" to="E2"/>
     <trip type="thesis_moto" id="1196" depart="3061.76" from="E5" to="E5"/>
-    <trip type="thesis_car" id="1197" depart="3064.32" from="-E4" to="E2"/>
+    <trip type="thesis_moto" id="1197" depart="3064.32" from="-E4" to="E2"/>
     <trip type="thesis_moto" id="1198" depart="3066.88" from="E5" to="-E3"/>
     <trip type="thesis_car" id="1199" depart="3069.44" from="E1" to="E9"/>
     <trip type="thesis_car" id="1200" depart="3072.00" from="-E6" to="-E7"/>
     <trip type="thesis_car" id="1201" depart="3074.56" from="-E7" to="-E0"/>
     <trip type="thesis_car" id="1202" depart="3077.12" from="-E2" to="E3"/>
     <trip type="thesis_car" id="1203" depart="3079.68" from="-E6" to="E3"/>
-    <trip type="thesis_truck" id="1204" depart="3082.24" from="-E6" to="E6"/>
+    <trip type="thesis_bicycle" id="1204" depart="3082.24" from="-E6" to="E6"/>
     <trip type="thesis_car" id="1205" depart="3084.80" from="-E2" to="E8"/>
     <trip type="thesis_car" id="1206" depart="3087.36" from="-E1" to="E10"/>
     <trip type="thesis_car" id="1207" depart="3089.92" from="-E2" to="E1"/>
@@ -1226,7 +1226,7 @@
     <trip type="thesis_car" id="1214" depart="3107.84" from="E7" to="E5"/>
     <trip type="thesis_moto" id="1215" depart="3110.40" from="-E10" to="E8"/>
     <trip type="thesis_car" id="1216" depart="3112.96" from="E5" to="E2"/>
-    <trip type="thesis_truck" id="1217" depart="3115.52" from="E0" to="E1"/>
+    <trip type="thesis_bicycle" id="1217" depart="3115.52" from="E0" to="E1"/>
     <trip type="thesis_moto" id="1218" depart="3118.08" from="-E10" to="-E3"/>
     <trip type="thesis_truck" id="1219" depart="3120.64" from="E3" to="-E1"/>
     <trip type="thesis_moto" id="1220" depart="3123.20" from="-E8" to="E10"/>
@@ -1247,7 +1247,7 @@
     <trip type="thesis_car" id="1235" depart="3161.60" from="-E5" to="E11"/>
     <trip type="thesis_moto" id="1236" depart="3164.16" from="E0" to="-E5"/>
     <trip type="thesis_car" id="1237" depart="3166.72" from="-E6" to="E6"/>
-    <trip type="thesis_car" id="1238" depart="3169.28" from="-E11" to="-E0"/>
+    <trip type="thesis_moto" id="1238" depart="3169.28" from="-E11" to="-E0"/>
     <trip type="thesis_car" id="1239" depart="3171.84" from="E3" to="E9"/>
     <trip type="thesis_car" id="1240" depart="3174.40" from="-E11" to="E7"/>
     <trip type="thesis_moto" id="1241" depart="3176.96" from="-E4" to="E4"/>
@@ -1258,12 +1258,12 @@
     <trip type="thesis_truck" id="1246" depart="3189.76" from="-E11" to="E8"/>
     <trip type="thesis_car" id="1247" depart="3192.32" from="-E1" to="E11"/>
     <trip type="thesis_truck" id="1248" depart="3194.88" from="-E11" to="E3"/>
-    <trip type="thesis_moto" id="1249" depart="3197.44" from="E3" to="E10"/>
+    <trip type="thesis_truck" id="1249" depart="3197.44" from="E3" to="E10"/>
     <trip type="thesis_car" id="1250" depart="3200.00" from="-E1" to="E4"/>
     <trip type="thesis_car" id="1251" depart="3202.56" from="-E11" to="-E5"/>
     <trip type="thesis_truck" id="1252" depart="3205.12" from="-E11" to="-E7"/>
     <trip type="thesis_car" id="1253" depart="3207.68" from="E5" to="-E0"/>
-    <trip type="thesis_car" id="1254" depart="3210.24" from="-E8" to="-E5"/>
+    <trip type="thesis_moto" id="1254" depart="3210.24" from="-E8" to="-E5"/>
     <trip type="thesis_truck" id="1255" depart="3212.80" from="-E3" to="E10"/>
     <trip type="thesis_car" id="1256" depart="3215.36" from="-E7" to="-E0"/>
     <trip type="thesis_car" id="1257" depart="3217.92" from="-E3" to="-E3"/>
@@ -1272,22 +1272,22 @@
     <trip type="thesis_truck" id="1260" depart="3225.60" from="E1" to="E6"/>
     <trip type="thesis_truck" id="1261" depart="3228.16" from="E7" to="E6"/>
     <trip type="thesis_car" id="1262" depart="3230.72" from="-E4" to="E2"/>
-    <trip type="thesis_moto" id="1263" depart="3233.28" from="-E6" to="E8"/>
+    <trip type="thesis_truck" id="1263" depart="3233.28" from="-E6" to="E8"/>
     <trip type="thesis_car" id="1264" depart="3235.84" from="-E7" to="E10"/>
     <trip type="thesis_truck" id="1265" depart="3238.40" from="-E11" to="E1"/>
-    <trip type="thesis_truck" id="1266" depart="3240.96" from="-E2" to="E8"/>
+    <trip type="thesis_bicycle" id="1266" depart="3240.96" from="-E2" to="E8"/>
     <trip type="thesis_car" id="1267" depart="3243.52" from="E1" to="-E0"/>
     <trip type="thesis_car" id="1268" depart="3246.08" from="E7" to="E2"/>
     <trip type="thesis_truck" id="1269" depart="3248.64" from="E1" to="E9"/>
     <trip type="thesis_truck" id="1270" depart="3251.20" from="-E9" to="-E7"/>
     <trip type="thesis_truck" id="1271" depart="3253.76" from="E3" to="E8"/>
-    <trip type="thesis_moto" id="1272" depart="3256.32" from="-E1" to="E9"/>
+    <trip type="thesis_truck" id="1272" depart="3256.32" from="-E1" to="E9"/>
     <trip type="thesis_car" id="1273" depart="3258.88" from="-E2" to="E7"/>
     <trip type="thesis_car" id="1274" depart="3261.44" from="E1" to="E1"/>
     <trip type="thesis_car" id="1275" depart="3264.00" from="-E11" to="E3"/>
-    <trip type="thesis_truck" id="1276" depart="3266.56" from="E1" to="E5"/>
+    <trip type="thesis_bicycle" id="1276" depart="3266.56" from="E1" to="E5"/>
     <trip type="thesis_car" id="1277" depart="3269.12" from="E5" to="-E0"/>
-    <trip type="thesis_truck" id="1278" depart="3271.68" from="E0" to="E9"/>
+    <trip type="thesis_bicycle" id="1278" depart="3271.68" from="E0" to="E9"/>
     <trip type="thesis_car" id="1279" depart="3274.24" from="-E8" to="E3"/>
     <trip type="thesis_car" id="1280" depart="3276.80" from="-E2" to="E9"/>
     <trip type="thesis_truck" id="1281" depart="3279.36" from="E5" to="E11"/>
@@ -1305,7 +1305,7 @@
     <trip type="thesis_moto" id="1293" depart="3310.08" from="-E11" to="-E3"/>
     <trip type="thesis_car" id="1294" depart="3312.64" from="E7" to="E6"/>
     <trip type="thesis_moto" id="1295" depart="3315.20" from="E7" to="E4"/>
-    <trip type="thesis_moto" id="1296" depart="3317.76" from="-E11" to="E9"/>
+    <trip type="thesis_truck" id="1296" depart="3317.76" from="-E11" to="E9"/>
     <trip type="thesis_moto" id="1297" depart="3320.32" from="E0" to="E8"/>
     <trip type="thesis_car" id="1298" depart="3322.88" from="-E8" to="-E3"/>
     <trip type="thesis_car" id="1299" depart="3325.44" from="-E3" to="E5"/>
@@ -1328,7 +1328,7 @@
     <trip type="thesis_car" id="1316" depart="3368.96" from="-E5" to="E2"/>
     <trip type="thesis_car" id="1317" depart="3371.52" from="-E10" to="E11"/>
     <trip type="thesis_car" id="1318" depart="3374.08" from="E3" to="E4"/>
-    <trip type="thesis_moto" id="1319" depart="3376.64" from="-E9" to="-E3"/>
+    <trip type="thesis_truck" id="1319" depart="3376.64" from="-E9" to="-E3"/>
     <trip type="thesis_moto" id="1320" depart="3379.20" from="-E10" to="E7"/>
     <trip type="thesis_car" id="1321" depart="3381.76" from="-E3" to="E1"/>
     <trip type="thesis_car" id="1322" depart="3384.32" from="-E11" to="E10"/>
@@ -1348,7 +1348,7 @@
     <trip type="thesis_car" id="1336" depart="3420.16" from="-E2" to="-E0"/>
     <trip type="thesis_car" id="1337" depart="3422.72" from="-E11" to="-E7"/>
     <trip type="thesis_moto" id="1338" depart="3425.28" from="-E10" to="E7"/>
-    <trip type="thesis_moto" id="1339" depart="3427.84" from="-E3" to="E10"/>
+    <trip type="thesis_truck" id="1339" depart="3427.84" from="-E3" to="E10"/>
     <trip type="thesis_car" id="1340" depart="3430.40" from="-E6" to="E4"/>
     <trip type="thesis_car" id="1341" depart="3432.96" from="-E10" to="E2"/>
     <trip type="thesis_moto" id="1342" depart="3435.52" from="-E11" to="E8"/>
@@ -1381,7 +1381,7 @@
     <trip type="thesis_car" id="1369" depart="3504.64" from="-E8" to="-E1"/>
     <trip type="thesis_car" id="1370" depart="3507.20" from="-E3" to="E2"/>
     <trip type="thesis_car" id="1371" depart="3509.76" from="-E4" to="E10"/>
-    <trip type="thesis_truck" id="1372" depart="3512.32" from="-E5" to="E11"/>
+    <trip type="thesis_bicycle" id="1372" depart="3512.32" from="-E5" to="E11"/>
     <trip type="thesis_truck" id="1373" depart="3514.88" from="-E8" to="-E0"/>
     <trip type="thesis_car" id="1374" depart="3517.44" from="-E3" to="-E3"/>
     <trip type="thesis_truck" id="1375" depart="3520.00" from="-E8" to="E5"/>
@@ -1389,10 +1389,10 @@
     <trip type="thesis_car" id="1377" depart="3525.12" from="-E4" to="-E5"/>
     <trip type="thesis_moto" id="1378" depart="3527.68" from="E0" to="E8"/>
     <trip type="thesis_moto" id="1379" depart="3530.24" from="E5" to="-E0"/>
-    <trip type="thesis_truck" id="1380" depart="3532.80" from="E3" to="-E7"/>
-    <trip type="thesis_car" id="1381" depart="3535.36" from="-E3" to="E11"/>
+    <trip type="thesis_bicycle" id="1380" depart="3532.80" from="E3" to="-E7"/>
+    <trip type="thesis_moto" id="1381" depart="3535.36" from="-E3" to="E11"/>
     <trip type="thesis_car" id="1382" depart="3537.92" from="E0" to="-E1"/>
-    <trip type="thesis_truck" id="1383" depart="3540.48" from="E7" to="E11"/>
+    <trip type="thesis_bicycle" id="1383" depart="3540.48" from="E7" to="E11"/>
     <trip type="thesis_car" id="1384" depart="3543.04" from="E3" to="-E7"/>
     <trip type="thesis_moto" id="1385" depart="3545.60" from="-E5" to="E4"/>
     <trip type="thesis_truck" id="1386" depart="3548.16" from="-E2" to="-E5"/>

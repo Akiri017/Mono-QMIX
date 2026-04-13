@@ -14,8 +14,8 @@ import random
 import re
 from pathlib import Path
 
-TYPES = ["thesis_car", "thesis_moto", "thesis_truck"]
-WEIGHTS = [0.65, 0.25, 0.10]
+TYPES = ["thesis_car", "thesis_moto", "thesis_truck", "thesis_bicycle"]
+WEIGHTS = [0.62, 0.25, 0.10, 0.03]
 
 FILES = [
     "4by4_map/trips_low.xml",

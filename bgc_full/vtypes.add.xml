@@ -1,5 +1,6 @@
 <additional>
     <vType id="thesis_car"   vClass="passenger"   emissionClass="HBEFA3/PC_G_EU4"  accel="2.6" decel="4.5" sigma="0.5" length="4.5"  minGap="2.5" maxSpeed="50" color="1,0.8,0"/>
     <vType id="thesis_moto"  vClass="motorcycle"  emissionClass="HBEFA3/MC_G_EU4"  accel="3.5" decel="5.0" sigma="0.6" length="2.2"  minGap="1.5" maxSpeed="60" color="0.2,0.6,1"/>
-<vType id="thesis_truck" vClass="truck"       emissionClass="HBEFA3/RT_le20t_D_EU4" accel="1.0" decel="3.0" sigma="0.4" length="8.0"  minGap="3.5" maxSpeed="35" color="0.5,0.3,0.1"/>
+    <vType id="thesis_truck"   vClass="truck"    emissionClass="HBEFA3/RT_le20t_D_EU4" accel="1.0" decel="3.0" sigma="0.4" length="8.0"  minGap="3.5" maxSpeed="35" color="0.5,0.3,0.1"/>
+    <vType id="thesis_bicycle" vClass="bicycle"  emissionClass="zero"                  accel="1.2" decel="3.0" sigma="0.5" length="1.8"  minGap="1.0" maxSpeed="7"  color="0.1,0.8,0.3"/>
 </additional>
