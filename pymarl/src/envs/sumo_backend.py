@@ -38,7 +38,15 @@ def set_backend(name: str) -> None:
         return  # already initialised with this backend
 
     if name == "libsumo":
-        import libsumo as mod
+        try:
+            import libsumo as mod
+        except ModuleNotFoundError:
+            logger.warning(
+                "libsumo not found — falling back to traci. "
+                "Set sumo_backend: 'traci' in your env config to silence this."
+            )
+            import traci as mod
+            name = "traci"
     elif name == "traci":
         import traci as mod
     else:

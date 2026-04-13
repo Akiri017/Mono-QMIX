@@ -210,12 +210,14 @@ class SUMOGridRerouteEnv:
         self._total_speed_sum: float = 0.0     # sum of all vehicle speeds across sub-steps
         self._total_speed_veh_steps: int = 0   # count of (vehicle, sub-step) pairs
         self.episode_stops_count = 0  # Total stop events in episode
-        self.episode_emissions = 0.0  # Total emissions in episode
+        self.episode_emissions = 0.0  # Total CO2 emissions in episode (grams)
+        self.episode_fuel_consumption = 0.0  # Total fuel consumption in episode (ml)
         self.episode_arrivals = 0  # Number of arrivals in episode
         self.total_spawned = 0  # Total vehicles spawned in episode
         self.controlled_travel_times = []  # Travel times for controlled vehicles only
         self.background_travel_times = []  # Travel times for background vehicles only
         self.controlled_vehicle_ids = set()  # Set of controlled vehicle IDs
+        self._episode_wall_start = 0.0  # Wall-clock time at episode start (for real-time factor)
 
         # RSU zone manager (Civiq only — instantiated if rsu_config present in env_args)
         self.zone_manager = None
@@ -279,11 +281,13 @@ class SUMOGridRerouteEnv:
         self._total_speed_veh_steps = 0
         self.episode_stops_count = 0
         self.episode_emissions = 0.0
+        self.episode_fuel_consumption = 0.0
         self.episode_arrivals = 0
         self.total_spawned = 0
         self.controlled_travel_times = []
         self.background_travel_times = []
         self.controlled_vehicle_ids.clear()
+        self._episode_wall_start = time.monotonic()
 
         # Clear caches
         self.route_candidates.clear()
@@ -677,6 +681,13 @@ class SUMOGridRerouteEnv:
                         self.vehicle_accumulated_waiting[veh_id] += self.sumo_step_length
                 except Exception:
                     pass
+                try:
+                    # getFuelConsumption returns mg/s; multiply by step length to get mg,
+                    # then divide by petrol density (740 mg/ml) to convert to ml.
+                    fuel_mg_s = traci.vehicle.getFuelConsumption(veh_id)
+                    self.episode_fuel_consumption += (fuel_mg_s * self.sumo_step_length) / 740.0
+                except Exception:
+                    pass
 
             self._sub_step_count += 1
             self._total_vehicle_steps += len(current_vehicles)
@@ -697,6 +708,10 @@ class SUMOGridRerouteEnv:
 
             # Handle vehicle arrivals and replacements
             self._handle_arrivals(current_vehicles)
+
+            # Track background vehicle arrivals (vehicles no longer in simulation
+            # that are not in the controlled agent slots)
+            self._handle_background_arrivals(current_vehicles)
 
         self.last_decision_time = self.sim_time
 
@@ -824,6 +839,25 @@ class SUMOGridRerouteEnv:
             except:
                 pass
 
+    def _handle_background_arrivals(self, current_vehicles: set) -> None:
+        """Record travel/waiting times for background vehicles that left the simulation."""
+        # IDs currently assigned to controlled agent slots (may be None)
+        controlled_ids = {vid for vid in self.agent_vehicle_ids if vid is not None}
+
+        # Any vehicle we were tracking that is no longer in the simulation
+        # and is not a currently-assigned controlled vehicle has departed.
+        departed = set(self.vehicle_spawn_times.keys()) - current_vehicles - controlled_ids
+
+        for veh_id in departed:
+            spawn_time = self.vehicle_spawn_times.pop(veh_id)
+            travel_time = self.sim_time - spawn_time
+            self.vehicle_travel_times.append(travel_time)
+            self.background_travel_times.append(travel_time)
+            self.episode_arrivals += 1
+
+            waiting_time = self.vehicle_accumulated_waiting.pop(veh_id, 0.0)
+            self.vehicle_waiting_times.append(waiting_time)
+
     def _track_new_vehicles(self, current_vehicles: set) -> None:
         """Track spawn times for newly entered vehicles (Step 6)."""
         for veh_id in current_vehicles:
@@ -903,17 +937,14 @@ class SUMOGridRerouteEnv:
             metrics["background_arrivals"] = 0
 
         # Waiting time metrics.
-        # vehicle_waiting_times holds values for vehicles that arrived during the
-        # episode (flushed in _handle_arrivals).  vehicle_accumulated_waiting holds
-        # values for vehicles still active at episode end.  Both are included so the
-        # mean is over *all* vehicles that appeared in the episode — including those
-        # that never stopped (waiting time = 0.0) so the denominator is correct.
-        all_waiting = list(self.vehicle_waiting_times)
-        all_waiting.extend(self.vehicle_accumulated_waiting.values())
-
-        if len(all_waiting) > 0:
-            metrics["mean_waiting_time"] = float(np.mean(all_waiting))
-            metrics["total_waiting_time"] = float(np.sum(all_waiting))
+        # vehicle_waiting_times holds values for every vehicle that completed its
+        # trip (populated in _handle_arrivals for controlled and
+        # _handle_background_arrivals for background vehicles).  This is the same
+        # population as vehicle_travel_times, so mean_waiting_time and
+        # mean_travel_time are directly comparable.
+        if len(self.vehicle_waiting_times) > 0:
+            metrics["mean_waiting_time"] = float(np.mean(self.vehicle_waiting_times))
+            metrics["total_waiting_time"] = float(np.sum(self.vehicle_waiting_times))
         else:
             metrics["mean_waiting_time"] = 0.0
             metrics["total_waiting_time"] = 0.0
@@ -935,6 +966,10 @@ class SUMOGridRerouteEnv:
         # Stops and emissions
         metrics["total_stops"] = int(self.episode_stops_count)
         metrics["total_emissions"] = float(self.episode_emissions)
+        metrics["co2_emissions"] = float(self.episode_emissions)  # grams, alias for clarity
+
+        # Fuel consumption (ml)
+        metrics["fuel_consumption"] = float(self.episode_fuel_consumption)
 
         # Arrival rate
         metrics["arrivals"] = self.episode_arrivals
@@ -943,6 +978,17 @@ class SUMOGridRerouteEnv:
             metrics["arrival_rate"] = float(self.episode_arrivals / self.total_spawned)
         else:
             metrics["arrival_rate"] = 0.0
+
+        # Network throughput: vehicles that completed their trip per simulated hour
+        sim_hours = self.sim_time / 3600.0 if self.sim_time > 0 else 1.0
+        metrics["network_throughput"] = float(self.episode_arrivals / sim_hours)
+
+        # Real-time factor: simulated seconds elapsed per wall-clock second
+        wall_elapsed = time.monotonic() - self._episode_wall_start
+        if wall_elapsed > 0:
+            metrics["real_time_factor"] = float(self.sim_time / wall_elapsed)
+        else:
+            metrics["real_time_factor"] = 0.0
 
         # Episode info
         metrics["episode_steps"] = self.episode_step

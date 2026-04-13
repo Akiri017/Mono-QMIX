@@ -44,6 +44,10 @@ from utils.logging import Logger
 METRIC_KEYS = [
     "mean_travel_time",
     "mean_waiting_time",
+    "network_throughput",
+    "real_time_factor",
+    "co2_emissions",
+    "fuel_consumption",
     "total_stops",
     "total_emissions",
     "arrival_rate",
@@ -170,8 +174,12 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
         # Progress line
         metric_str = ""
         if "mean_travel_time" in ep_metrics:
-            metric_str = (f", tt={ep_metrics['mean_travel_time']:.0f}s"
-                          f", arr={ep_metrics.get('arrival_rate', 0):.2f}")
+            metric_str = (
+                f", tt={ep_metrics['mean_travel_time']:.0f}s"
+                f", arr={ep_metrics.get('arrival_rate', 0):.2f}"
+                f", tput={ep_metrics.get('network_throughput', 0):.0f}veh/h"
+                f", rtf={ep_metrics.get('real_time_factor', 0):.1f}"
+            )
         print(f"  Episode {ep+1}/{args['eval_episodes']}: "
               f"return={ep_return:.2f}, length={ep_length}{metric_str}")
 
@@ -208,11 +216,15 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
 
     print("\n--- Traffic Metrics ---")
     labels = {
-        "mean_travel_time":          "Mean Travel Time (s)",
-        "mean_waiting_time":         "Mean Waiting Time (s)",
-        "total_stops":               "Total Stops",
-        "total_emissions":           "Total Emissions",
-        "arrival_rate":              "Arrival Rate",
+        "mean_travel_time":            "Mean Travel Time (s)",
+        "mean_waiting_time":           "Mean Waiting Time (s)",
+        "network_throughput":          "Network Throughput (veh/h)",
+        "real_time_factor":            "Real-Time Factor",
+        "co2_emissions":               "CO2 Emissions (g)",
+        "fuel_consumption":            "Fuel Consumption (ml)",
+        "total_stops":                 "Total Stops",
+        "total_emissions":             "Total Emissions (g)",
+        "arrival_rate":                "Arrival Rate",
         "controlled_mean_travel_time": "Controlled Mean Travel Time (s)",
     }
     for key in METRIC_KEYS:
@@ -321,7 +333,7 @@ def main():
     parser.add_argument("--model", type=str, default=None,
                        help="Path to trained QMIX model directory")
     parser.add_argument("--baseline", type=str, default=None,
-                       choices=["noop", "greedy_shortest", "random"],
+                       choices=["noop", "greedy_shortest", "random", "selfish_routing"],
                        help="Baseline policy type")
 
     # Evaluation settings
@@ -348,6 +360,9 @@ def main():
     parser.add_argument("--los_level", type=str, default=None,
                        choices=["low", "med", "high"],
                        help="Override los_level in env_args (low/med/high)")
+    parser.add_argument("--sumo_backend", type=str, default=None,
+                       choices=["libsumo", "traci"],
+                       help="Override SUMO backend (default: use env config value)")
 
     args_cmd = parser.parse_args()
 
@@ -383,6 +398,8 @@ def main():
     args["use_tensorboard"] = False
     if args_cmd.los_level is not None:
         args["env_args"]["los_level"] = args_cmd.los_level
+    if args_cmd.sumo_backend is not None:
+        args["sumo_backend"] = args_cmd.sumo_backend
 
     # Determine policy type and run evaluation
     if args_cmd.model is not None:

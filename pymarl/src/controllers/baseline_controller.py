@@ -76,6 +76,8 @@ class BaselineMAC:
             return self._select_greedy_shortest(batch_size, avail_actions)
         elif self.policy_type == "random":
             return self._select_random(batch_size, avail_actions)
+        elif self.policy_type == "selfish_routing":
+            return self._select_noop(batch_size, avail_actions)
         else:
             raise ValueError(f"Unknown baseline policy: {self.policy_type}")
 
