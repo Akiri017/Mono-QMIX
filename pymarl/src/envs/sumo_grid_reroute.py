@@ -447,7 +447,7 @@ class SUMOGridRerouteEnv:
             traci.vehicle.add(
                 vehID=vehicle_id,
                 routeID="",  # We'll set route manually
-                typeID="DEFAULT_VEHTYPE",
+                typeID="thesis_car",
                 depart=str(int(depart_time)),
                 departLane="best",
                 departSpeed="max"
