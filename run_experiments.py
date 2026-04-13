@@ -229,6 +229,8 @@ def main():
     # eval_extra must carry the same env/alg config as training so evaluate.py
     # doesn't fall back to its default sumo_grid4x4 env (obs_shape=65 vs 751)
     eval_extra = ["--env_config", args.env_config]
+    if args.los_level is not None:
+        eval_extra += ["--los_level", args.los_level]
     if args.alg_config:
         train_extra += ["--alg_config", args.alg_config]
         eval_extra  += ["--alg_config", args.alg_config]
