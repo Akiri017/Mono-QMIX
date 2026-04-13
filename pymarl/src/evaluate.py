@@ -345,6 +345,9 @@ def main():
     # SUMO settings
     parser.add_argument("--use_gui", action="store_true",
                        help="Use SUMO GUI for visualization")
+    parser.add_argument("--los_level", type=str, default=None,
+                       choices=["low", "med", "high"],
+                       help="Override los_level in env_args (low/med/high)")
 
     args_cmd = parser.parse_args()
 
@@ -378,6 +381,8 @@ def main():
     args["eval_episodes"] = args_cmd.episodes
     args["use_cuda"] = False  # Evaluation on CPU
     args["use_tensorboard"] = False
+    if args_cmd.los_level is not None:
+        args["env_args"]["los_level"] = args_cmd.los_level
 
     # Determine policy type and run evaluation
     if args_cmd.model is not None:
