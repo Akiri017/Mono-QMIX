@@ -93,9 +93,10 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
     np.random.seed(args["seed"])
     torch.manual_seed(args["seed"])
 
-    # Enable CPU monitoring only for learned policies (QMIX / CiViQ), not baselines.
+    # Enable CPU monitoring for all policies if set in env config; always on for QMIX.
     # Must be set BEFORE the runner/env is created — the env reads this flag once in __init__.
-    args["env_args"]["enable_cpu_monitoring"] = (policy_type == "qmix")
+    config_cpu = args.get("env_args", {}).get("enable_cpu_monitoring", False)
+    args["env_args"]["enable_cpu_monitoring"] = (policy_type == "qmix") or config_cpu
 
     # Create logger (disable TensorBoard for evaluation)
     logger = Logger(use_tensorboard=False, log_dir=None)
