@@ -164,11 +164,15 @@ class EpisodeRunner:
             state = self.env.get_state()
             avail_actions = self.env.get_avail_actions()
 
+            # Collect reset mask before next step() clears it
+            reset_mask = self.env.get_reset_mask()  # list of bool, one per agent
+
             # Store transition data
             post_transition_data = {
                 "actions": actions.cpu(),
                 "reward": [(reward,)],
                 "terminated": [(terminated,)],
+                "reset_mask": [[int(v)] for v in reset_mask],
             }
 
             self.batch.update(post_transition_data, ts=self.t)
@@ -218,8 +222,19 @@ class EpisodeRunner:
 
         # Log per-episode metrics (Step 6)
         prefix = "test_" if test_mode else "train_"
-        for key in ("mean_travel_time", "mean_waiting_time", "total_stops",
-                    "total_emissions", "arrival_rate", "controlled_mean_travel_time"):
+        for key in (
+            # Core traffic metrics
+            "mean_travel_time", "mean_waiting_time", "total_stops",
+            "total_emissions", "arrival_rate", "controlled_mean_travel_time",
+            # Network-split metrics — controlled vs background
+            "controlled_arrivals", "background_mean_travel_time", "background_arrivals",
+            # Network congestion and flow
+            "mean_vehicle_count", "mean_speed",
+            # Travel time distribution
+            "std_travel_time", "median_travel_time",
+            # Distance and efficiency
+            "total_completed_km",
+        ):
             if key in episode_metrics:
                 self.logger.log_stat(prefix + key, episode_metrics[key], self.t_env)
 
