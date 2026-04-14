@@ -1011,23 +1011,24 @@ class SUMOGridRerouteEnv:
         # Fuel consumption (ml)
         metrics["fuel_consumption"] = float(self.episode_fuel_consumption)
 
-        # Per-km emission metrics (requires completed_route_lengths populated above)
+        # Avg route length for completed vehicles (planned path length)
         if len(self.completed_route_lengths) > 0:
-            avg_rl_m = float(np.mean(self.completed_route_lengths))
-            total_completed_km = float(np.sum(self.completed_route_lengths)) / 1000.0
-            metrics["avg_route_length_m"] = avg_rl_m
-            metrics["total_completed_km"] = total_completed_km
-            if total_completed_km > 0:
-                metrics["co2_g_per_km"] = round(self.episode_emissions / total_completed_km, 2)
-                metrics["fuel_l_per_100km"] = round(
-                    (self.episode_fuel_consumption / 1000.0) / total_completed_km * 100, 2
-                )
-            else:
-                metrics["co2_g_per_km"] = 0.0
-                metrics["fuel_l_per_100km"] = 0.0
+            metrics["avg_route_length_m"] = float(np.mean(self.completed_route_lengths))
         else:
             metrics["avg_route_length_m"] = 0.0
-            metrics["total_completed_km"] = 0.0
+
+        # Per-km emission metrics.
+        # Denominator: total distance actually driven by ALL vehicles (completed + in-network)
+        # = sum of per-vehicle speeds (m/s) × 1 s step, accumulated in _total_speed_sum.
+        # This matches the emissions numerator which also covers all vehicles every step,
+        # avoiding the inflation that occurs when few vehicles complete their routes.
+        total_driven_km = self._total_speed_sum / 1000.0
+        if total_driven_km > 0:
+            metrics["co2_g_per_km"] = round(self.episode_emissions / total_driven_km, 2)
+            metrics["fuel_l_per_100km"] = round(
+                (self.episode_fuel_consumption / 1000.0) / total_driven_km * 100, 2
+            )
+        else:
             metrics["co2_g_per_km"] = 0.0
             metrics["fuel_l_per_100km"] = 0.0
 

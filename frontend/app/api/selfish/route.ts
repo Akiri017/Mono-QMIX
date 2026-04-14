@@ -3,9 +3,9 @@
  *
  * Returns real KPIs and time-series data for the Selfish Routing algorithm.
  * Data availability:
- *   2km   (bgc_full)  — free_flow, stable_flow, forced_flow  ✓
- *   0.75km (bgc_core) — free_flow, stable_flow               ✓  (forced_flow run incomplete)
- *   4x4               — no selfish routing data available
+ *   2km   (bgc_full)  — free_flow, stable_flow, forced_flow  ✓  (PyMARL pipeline, 30 eps)
+ *   0.75km (bgc_core) — free_flow, stable_flow               ✓  (SUMO stats XML; forced_flow run incomplete)
+ *   4x4               — free_flow, stable_flow, forced_flow  ✓  (PyMARL pipeline, 100 eps)
  */
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
@@ -19,8 +19,9 @@ const VALID_LEVELS: TrafficLevel[] = ['free_flow', 'stable_flow', 'forced_flow']
 
 // Map query param → metrics file
 const MAP_METRICS: Record<string, string> = {
-  '2km':    'metrics.json',
+  '2km':    'metrics_bgc_full.json',
   '0.75km': 'metrics_bgc_core.json',
+  '4x4':    'metrics_4x4.json',
 }
 
 function parseCSV(content: string): { step: number; active_vehicles: number; total_system_wait: number }[] {
@@ -40,14 +41,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: `Invalid trafficLevel. Must be one of: ${VALID_LEVELS.join(', ')}` },
         { status: 400 }
-      )
-    }
-
-    // 4x4 map has no selfish routing simulation data
-    if (mapParam === '4x4') {
-      return NextResponse.json(
-        { success: false, error: 'No selfish routing simulation data available for the 4×4 grid map.' },
-        { status: 404 }
       )
     }
 

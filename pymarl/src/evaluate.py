@@ -236,8 +236,13 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
         "total_stops":                 "Total Stops",
         "arrival_rate":                "Arrival Rate",
         "controlled_mean_travel_time": "Controlled Mean Travel Time (s)",
+        "cpu_percent_mean":            "CPU Usage Mean (%)",
+        "cpu_percent_peak":            "CPU Usage Peak (%)",
+        "process_cpu_s":               "Process CPU Time (s)",
     }
     for key in METRIC_KEYS:
+        if key not in results["metrics"]:
+            continue  # metric not collected for this policy (e.g. CPU metrics on baselines)
         stats = results["metrics"][key]
         if stats["mean"] is not None:
             print(f"  {labels[key]:<35}: {stats['mean']:.3f} ± {stats['std']:.3f}")
