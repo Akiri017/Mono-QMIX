@@ -41,6 +41,8 @@ DEFAULT_SEEDS = [42, 43, 44, 45, 46]
 # ----------------------------------------------
 
 def train_seed(seed: int, t_max: int, checkpoint_root: str,
+               env_config: Optional[str] = None,
+               los_level: Optional[str] = None,
                extra_args: Optional[List[str]] = None) -> str:
     """
     Train a QMIX model for one seed via subprocess.
@@ -64,6 +66,10 @@ def train_seed(seed: int, t_max: int, checkpoint_root: str,
         "--t_max", str(t_max),
         "--checkpoint_path", model_dir,
     ]
+    if env_config:
+        cmd += ["--env_config", env_config]
+    if los_level:
+        cmd += ["--los_level", los_level]
     if extra_args:
         cmd.extend(extra_args)
 
@@ -88,7 +94,9 @@ def train_seed(seed: int, t_max: int, checkpoint_root: str,
 def evaluate_policy_subprocess(policy_type: str, seed: int,
                                 eval_episodes: int, output_path: str,
                                 model_path: Optional[str] = None,
-                                baseline_name: Optional[str] = None) -> Dict:
+                                baseline_name: Optional[str] = None,
+                                env_config: Optional[str] = None,
+                                los_level: Optional[str] = None) -> Dict:
     """
     Run evaluate.py for one policy via subprocess and load results JSON.
 
@@ -101,6 +109,10 @@ def evaluate_policy_subprocess(policy_type: str, seed: int,
         cmd += ["--model", model_path, "--output", output_path]
     else:
         cmd += ["--baseline", baseline_name, "--output", output_path]
+    if env_config:
+        cmd += ["--env_config", env_config]
+    if los_level:
+        cmd += ["--los_level", los_level]
 
     print(f"  Evaluating {'QMIX' if policy_type == 'qmix' else baseline_name} "
           f"(seed={seed}, episodes={eval_episodes}) …")
@@ -110,11 +122,13 @@ def evaluate_policy_subprocess(policy_type: str, seed: int,
         print(f"  [WARNING] Evaluation failed: {e}")
         return {}
 
-    # Locate result file
-    result_file = f"results/eval/{output_path}_seed{seed}.json"
+    # evaluate.py saves to {output_path}.json when --output is passed explicitly
+    # (no extra _seed{N} suffix — the seed is already embedded in output_path)
+    result_file = f"results/eval/{output_path}.json"
     if os.path.exists(result_file):
         with open(result_file, "r") as f:
             return json.load(f)
+    print(f"  [WARNING] Result file not found: {result_file}")
     return {}
 
 
@@ -134,8 +148,10 @@ def aggregate_results(results_list: List[Dict]) -> Dict:
 
     METRIC_KEYS = [
         "mean_travel_time", "mean_waiting_time",
-        "total_stops", "total_emissions",
-        "arrival_rate", "controlled_mean_travel_time",
+        "network_throughput", "co2_emissions", "fuel_consumption",
+        "co2_g_per_km", "fuel_l_per_100km", "avg_route_length_m",
+        "total_stops", "arrival_rate", "controlled_mean_travel_time",
+        "cpu_percent_mean", "cpu_percent_peak", "process_cpu_s",
     ]
 
     def _agg(values):
@@ -182,12 +198,20 @@ def print_aggregate_table(label: str, agg: Dict) -> None:
               f"std={ret['std']:.2f}, n={ret['n']}")
 
     LABELS = {
-        "mean_travel_time":           "Mean Travel Time (s)",
-        "mean_waiting_time":          "Mean Waiting Time (s)",
-        "total_stops":                "Total Stops",
-        "total_emissions":            "Total Emissions (g)",
-        "arrival_rate":               "Arrival Rate",
-        "controlled_mean_travel_time":"Controlled Travel Time (s)",
+        "mean_travel_time":            "Mean Travel Time (s)",
+        "mean_waiting_time":           "Mean Waiting Time (s)",
+        "network_throughput":          "Network Throughput (veh/h)",
+        "co2_emissions":               "CO2 Emissions (g/episode)",
+        "fuel_consumption":            "Fuel Consumption (ml/episode)",
+        "co2_g_per_km":                "CO2 Emissions (g/km)",
+        "fuel_l_per_100km":            "Fuel Consumption (L/100km)",
+        "avg_route_length_m":          "Avg Route Length (m)",
+        "total_stops":                 "Total Stops",
+        "arrival_rate":                "Arrival Rate",
+        "controlled_mean_travel_time": "Controlled Travel Time (s)",
+        "cpu_percent_mean":            "CPU Usage Mean (%)",
+        "cpu_percent_peak":            "CPU Usage Peak (%)",
+        "process_cpu_s":               "Process CPU Time (s)",
     }
     for key, lbl in LABELS.items():
         m = agg.get("metrics", {}).get(key, {})
@@ -291,7 +315,10 @@ def run_experiments(args) -> None:
 
         for seed in seeds:
             try:
-                model_path = train_seed(seed, args.t_max, checkpoint_root, extra)
+                model_path = train_seed(seed, args.t_max, checkpoint_root,
+                                        env_config=args.env_config,
+                                        los_level=args.los_level,
+                                        extra_args=extra)
                 qmix_model_paths[seed] = model_path
                 print(f"  [OK] Seed {seed} -> {model_path}")
             except subprocess.CalledProcessError as e:
@@ -327,17 +354,21 @@ def run_experiments(args) -> None:
                 "qmix", seed, args.eval_episodes,
                 output_path=f"qmix_exp_{seed}",
                 model_path=qmix_model_paths[seed],
+                env_config=args.env_config,
+                los_level=args.los_level,
             )
             all_results["qmix"].append(r)
         else:
             all_results["qmix"].append({})
 
-        # Baselines (only need one seed's data if non-random, but we run per seed for consistency)
+        # Baselines
         for bl in baselines:
             r = evaluate_policy_subprocess(
                 "baseline", seed, args.eval_episodes,
                 output_path=f"{bl}_exp_{seed}",
                 baseline_name=bl,
+                env_config=args.env_config,
+                los_level=args.los_level,
             )
             all_results[bl].append(r)
 
@@ -398,14 +429,21 @@ def main():
                         help="Disable validation during training")
 
     # Evaluation
-    parser.add_argument("--eval_episodes", type=int, default=50,
-                        help="Evaluation episodes per policy per seed (default: 50)")
+    parser.add_argument("--eval_episodes", type=int, default=5,
+                        help="Evaluation episodes per policy per seed (default: 5)")
     parser.add_argument("--include_random", action="store_true",
                         help="Also evaluate a random-action baseline")
 
     # Paths
     parser.add_argument("--checkpoint_root", type=str, default=None,
                         help="Root dir for model checkpoints (default: results/experiments/<timestamp>)")
+
+    # Environment
+    parser.add_argument("--env_config", type=str, default=None,
+                        help="Environment config name (default: sumo_grid4x4)")
+    parser.add_argument("--los_level", type=str, default=None,
+                        choices=["low", "med", "high"],
+                        help="Traffic demand level override (low/med/high)")
 
     # Modes
     parser.add_argument("--eval_only", action="store_true",
