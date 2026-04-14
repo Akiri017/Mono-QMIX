@@ -122,11 +122,7 @@ def evaluate_policy_subprocess(policy_type: str, seed: int,
 
     print(f"  Evaluating {'QMIX' if policy_type == 'qmix' else baseline_name} "
           f"(seed={seed}, episodes={eval_episodes}) …")
-    try:
-        subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"  [WARNING] Evaluation failed: {e}")
-        return {}
+    subprocess.run(cmd)  # don't check=True — libsumo munmap crash gives non-zero exit but results are saved
 
     # evaluate.py saves to {output_path}.json when --output is passed explicitly
     # (no extra _seed{N} suffix — the seed is already embedded in output_path)
