@@ -3,8 +3,8 @@
 ## Overview
 
 This document covers the selfish routing baseline added to the evaluation pipeline,
-what each extracted metric means, how it is computed, and the accuracy assessment
-performed on the evaluation run (100 episodes, seed 5, 4×4 map, high demand).
+what each extracted metric means, how it is computed, and the evaluation results
+for each map.
 
 ---
 
@@ -20,20 +20,79 @@ and make no adaptive rerouting decisions. Background vehicles already follow
 pre-computed Wardrop-equilibrium routes (`wardrop_routes_*.rou.xml`), so the entire
 network operates under selfish routing conditions.
 
-**Run command:**
+**Run commands:**
 ```bash
 cd pymarl/src
+
+# 4×4 grid map (default)
 python evaluate.py --baseline selfish_routing --episodes 100 --seed 5
+
+# BGC Full map
+python evaluate.py --baseline selfish_routing --env_config sumo_bgc_full --episodes 30 --seed 5
 ```
 
-**Output file:** `pymarl/src/results/eval/selfish_routing_seed5.json`
+**Output files:**
+- `pymarl/src/results/eval/selfish_routing_seed5.json` — 4×4 map
+- `pymarl/src/results/eval/selfish_routing_bgc_full_seed5.json` — BGC Full map
+
+---
+
+## Evaluation Results by Map
+
+### 4×4 Grid Map — High Demand (LOS E)
+
+100 episodes, seed 5. Background traffic: `wardrop_routes_high.rou.xml` (~1 406 veh/h).
+
+| Metric | Mean | Std |
+|---|---|---|
+| Mean Travel Time (s) | 76.46 | 11.30 |
+| Controlled Mean Travel Time (s) | 14.08 | 3.13 |
+| Mean Waiting Time (s) | 16.78 | 1.86 |
+| Network Throughput (veh/h) | 8 009.4 | 1 375.7 |
+| CO2 Emissions (g/episode) | 655 031.6 | 85 588.6 |
+| Fuel Consumption (ml/episode) | 283 571.1 | 36 919.9 |
+| CO2 Emissions (g/km) | 747.1 | 115.1 |
+| Fuel Consumption (L/100km) | 32.3 | 5.0 |
+| Avg Route Length (m) | 1 637.5 | 37.8 |
+| Total Stops | 97 428.9 | 26 657.0 |
+| Arrival Rate | 0.849 | 0.009 |
+| Real-Time Factor | 481.8 | 62.3 |
+
+---
+
+### BGC Full Map (2 km) — High Demand (LOS E)
+
+30 episodes, seed 5. Background traffic: `wardrop_routes_highEnough.rou.xml` (~7 200 veh/h).
+
+| Metric | Mean | Std |
+|---|---|---|
+| Mean Travel Time (s) | 127.0 | 9.5 |
+| Controlled Mean Travel Time (s) | 102.3 | 16.1 |
+| Mean Waiting Time (s) | 20.8 | 1.4 |
+| Network Throughput (veh/h) | 2 177.9 | 196.7 |
+| CO2 Emissions (g/episode) | 308 012.2 | 10 933.3 |
+| Fuel Consumption (ml/episode) | 132 483.8 | 4 711.0 |
+| CO2 Emissions (g/km) | 1 007.1 | 10.7 |
+| Fuel Consumption (L/100km) | 43.3 | 0.5 |
+| Avg Route Length (m) | 938.2 | 13.0 |
+| Total Stops | 29 814.4 | 1 156.4 |
+| Arrival Rate | 0.859 | 0.011 |
+| Real-Time Factor | 240.0 | 8.3 |
+
+**Notes:**
+- Controlled mean travel time (102 s) is close to overall mean (127 s), unlike the 4×4 map.
+  This is because BGC Full controlled routes are longer cross-network paths, similar in length
+  to background vehicle routes.
+- CO2 g/km is notably higher than the 4×4 result (1 007 vs 747) despite lower overall
+  vehicle count, reflecting the denser urban network with more stop-and-go conditions.
+- Avg route length (938 m) is shorter than 4×4 (1 638 m), consistent with the BGC Full
+  network being more compact with shorter OD distances.
 
 ---
 
 ## Metrics — Definitions and Computation
 
-All metrics are computed per episode and averaged over 100 episodes. Mean ± Std
-values below are from seed 5, 100 episodes, 4×4 map, high demand.
+All metrics are computed per episode. Mean ± Std values are episode averages.
 
 ---
 
@@ -392,7 +451,7 @@ each edge. This always produces a correct positive value.
 | File | Change |
 |---|---|
 | `pymarl/src/envs/sumo_grid_reroute.py` | Added `_handle_background_arrivals()`, fixed waiting time population, fixed fuel density (petrol 740 mg/ml), added `episode_fuel_consumption`, `_episode_wall_start`, `vehicle_route_lengths`, `completed_route_lengths`, `controlled_travel_times`; fixed route length fallback (`getRoute` + edge sum) |
-| `pymarl/src/evaluate.py` | Added `network_throughput`, `real_time_factor`, `co2_emissions`, `fuel_consumption`, `co2_g_per_km`, `fuel_l_per_100km`, `avg_route_length_m`, `controlled_mean_travel_time` to `METRIC_KEYS`; removed duplicate `total_emissions`; added `--baseline selfish_routing` choice; added `--sumo_backend` CLI flag |
+| `pymarl/src/evaluate.py` | Added `network_throughput`, `real_time_factor`, `co2_emissions`, `fuel_consumption`, `co2_g_per_km`, `fuel_l_per_100km`, `avg_route_length_m`, `controlled_mean_travel_time` to `METRIC_KEYS`; removed duplicate `total_emissions`; added `--baseline selfish_routing` choice; added `--sumo_backend` CLI flag; output filename now includes env name for non-default maps (e.g. `selfish_routing_bgc_full_seed5.json`) |
 | `pymarl/src/controllers/baseline_controller.py` | Added `selfish_routing` policy (maps to noop — no adaptive rerouting) |
 | `pymarl/src/envs/sumo_backend.py` | Added libsumo → traci auto-fallback when libsumo is not installed |
 | `sumo/scenarios/4by4_map/train_*.sumocfg` | Added `vtypes.add.xml` as additional-files so `thesis_car` vType is loaded during training and evaluation |

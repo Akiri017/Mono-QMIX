@@ -22,6 +22,7 @@ import threading
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Set
 import logging
+import psutil
 
 # SUMO imports
 from envs.sumo_backend import backend as traci
@@ -220,6 +221,9 @@ class SUMOGridRerouteEnv:
         self.background_travel_times = []  # Travel times for background vehicles only
         self.controlled_vehicle_ids = set()  # Set of controlled vehicle IDs
         self._episode_wall_start = 0.0  # Wall-clock time at episode start (for real-time factor)
+        self._enable_cpu_monitoring = bool(env_args.get("enable_cpu_monitoring", False))
+        self._proc = psutil.Process(os.getpid()) if self._enable_cpu_monitoring else None
+        self._cpu_samples: list = []              # Per-sub-step CPU usage samples (%)
 
         # RSU zone manager (Civiq only — instantiated if rsu_config present in env_args)
         self.zone_manager = None
@@ -292,6 +296,9 @@ class SUMOGridRerouteEnv:
         self.background_travel_times = []
         self.controlled_vehicle_ids.clear()
         self._episode_wall_start = time.monotonic()
+        self._cpu_samples = []
+        if self._enable_cpu_monitoring:
+            self._proc.cpu_percent(interval=None)  # prime — first call always returns 0
 
         # Clear caches
         self.route_candidates.clear()
@@ -695,6 +702,8 @@ class SUMOGridRerouteEnv:
 
             self._sub_step_count += 1
             self._total_vehicle_steps += len(current_vehicles)
+            if self._enable_cpu_monitoring:
+                self._cpu_samples.append(self._proc.cpu_percent(interval=None))
             self._total_speed_sum += speed_sum
             self._total_speed_veh_steps += speed_count
 
@@ -1040,6 +1049,13 @@ class SUMOGridRerouteEnv:
             metrics["real_time_factor"] = float(self.sim_time / wall_elapsed)
         else:
             metrics["real_time_factor"] = 0.0
+
+        # CPU utilization (only collected for QMIX / CiViQ — not baselines)
+        if self._enable_cpu_monitoring and self._cpu_samples:
+            metrics["cpu_percent_mean"] = round(float(np.mean(self._cpu_samples)), 2)
+            metrics["cpu_percent_peak"] = round(float(np.max(self._cpu_samples)), 2)
+            cpu_times = self._proc.cpu_times()
+            metrics["process_cpu_s"] = round(float(cpu_times.user + cpu_times.system), 3)
 
         # Episode info
         metrics["episode_steps"] = self.episode_step

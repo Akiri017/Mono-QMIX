@@ -54,6 +54,9 @@ METRIC_KEYS = [
     "total_stops",
     "arrival_rate",
     "controlled_mean_travel_time",
+    "cpu_percent_mean",
+    "cpu_percent_peak",
+    "process_cpu_s",
 ]
 
 
@@ -116,6 +119,9 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
     }
     groups = {"agents": args["n_agents"]}
     preprocess = {}
+
+    # Enable CPU monitoring only for learned policies (QMIX / CiViQ), not baselines
+    args["enable_cpu_monitoring"] = (policy_type == "qmix")
 
     # Create MAC based on policy type
     if policy_type == "qmix":
@@ -411,7 +417,17 @@ def main():
         policy_stem = args_cmd.output or "qmix"
     else:
         results = evaluate_policy(args, policy_type="baseline", baseline_type=args_cmd.baseline)
-        policy_stem = args_cmd.output or args_cmd.baseline
+        if args_cmd.output:
+            policy_stem = args_cmd.output
+        else:
+            # Build stem: <baseline>[_<env>][_<los>]
+            # Include env name for non-default maps and LOS when explicitly set,
+            # so runs on different maps/LOS levels don't overwrite each other.
+            env_tag = ""
+            if args_cmd.env_config != "sumo_grid4x4":
+                env_tag = "_" + args_cmd.env_config.replace("sumo_", "")
+            los_tag = f"_{args_cmd.los_level}" if args_cmd.los_level else ""
+            policy_stem = f"{args_cmd.baseline}{env_tag}{los_tag}"
 
     # Save results. If an explicit --output stem was provided by the caller
     # (e.g. "qmix_seed0"), use it directly — the seed is already embedded.
