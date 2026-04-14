@@ -93,6 +93,10 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
     np.random.seed(args["seed"])
     torch.manual_seed(args["seed"])
 
+    # Enable CPU monitoring only for learned policies (QMIX / CiViQ), not baselines.
+    # Must be set BEFORE the runner/env is created — the env reads this flag once in __init__.
+    args["env_args"]["enable_cpu_monitoring"] = (policy_type == "qmix")
+
     # Create logger (disable TensorBoard for evaluation)
     logger = Logger(use_tensorboard=False, log_dir=None)
 
@@ -155,9 +159,6 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
 
     groups = {"agents": args["n_agents"]}
     preprocess = {}
-
-    # Enable CPU monitoring only for learned policies (QMIX / CiViQ), not baselines
-    args["enable_cpu_monitoring"] = (policy_type == "qmix")
 
     # Create MAC based on policy type
     if policy_type == "qmix":
@@ -455,7 +456,12 @@ def main():
     # Determine policy type and run evaluation
     if args_cmd.model is not None:
         results = evaluate_policy(args, policy_type="qmix", model_path=args_cmd.model)
-        policy_stem = args_cmd.output or "qmix"
+        if args_cmd.output:
+            policy_stem = args_cmd.output
+        else:
+            env_tag = "" if args_cmd.env_config == "sumo_grid4x4" else "_" + args_cmd.env_config.replace("sumo_", "")
+            los_tag = f"_{args_cmd.los_level}" if args_cmd.los_level else ""
+            policy_stem = f"qmix{env_tag}{los_tag}"
     else:
         results = evaluate_policy(args, policy_type="baseline", baseline_type=args_cmd.baseline)
         if args_cmd.output:
