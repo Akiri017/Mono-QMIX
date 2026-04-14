@@ -107,16 +107,52 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
     print(f"  obs_shape: {env_info['obs_shape']}")
     print(f"  state_shape: {env_info['state_shape']}")
 
-    # Create data scheme
+    # Create data scheme.
+    # reset_mask must be included: the runner always stores it in post_transition_data,
+    # and BasicMAC.forward() reads it to zero-out hidden states after mid-episode slot
+    # resets. Without it the tensor is never allocated, the guard in forward() sees
+    # False, and hidden states are never reset — silently degrading eval fidelity.
     scheme = {
         "state": {"vshape": env_info["state_shape"]},
         "obs": {"vshape": env_info["obs_shape"], "group": "agents"},
         "actions": {"vshape": (1,), "group": "agents", "dtype": torch.long},
         "avail_actions": {"vshape": (env_info["n_actions"],), "group": "agents", "dtype": torch.int},
+        "reset_mask": {"vshape": (1,), "group": "agents", "dtype": torch.uint8},
         "reward": {"vshape": (1,)},
         "terminated": {"vshape": (1,), "dtype": torch.uint8},
-        "filled": {"vshape": (1,), "dtype": torch.uint8}
+        "filled": {"vshape": (1,), "dtype": torch.uint8},
     }
+
+    # Civiq: add hierarchical mixing fields so the runner can write zone data into
+    # the batch without them being silently dropped. These fields are not consumed
+    # during eval (mixers aren't called in test_mode), but they must exist in the
+    # scheme for EpisodeBatch to allocate storage; otherwise zone_manager writes
+    # are silently discarded and any future use of the batch (e.g. off-policy eval)
+    # would see all-zeros for these fields rather than the real zone data.
+    if args.get("mixer") == "civiq":
+        max_rsus = args["max_rsus"]
+        max_agents_per_rsu = args["max_agents_per_rsu"]
+        obs_dim = args["obs_dim"]
+        n_agents = env_info["n_agents"]
+        scheme.update({
+            "zone_assignments": {
+                "vshape": (n_agents,),
+                "dtype": torch.int32,
+            },
+            "rsu_agent_qs": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            "agent_masks_per_rsu": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            "local_states": {
+                "vshape": (max_rsus, max_agents_per_rsu * obs_dim),
+                "dtype": torch.float32,
+            },
+        })
+
     groups = {"agents": args["n_agents"]}
     preprocess = {}
 
