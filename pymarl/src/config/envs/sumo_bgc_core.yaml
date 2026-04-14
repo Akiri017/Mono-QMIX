@@ -34,7 +34,7 @@ env_args:
 
   # Episode configuration
   max_episode_steps: 1000
-  episode_limit: 1000
+  episode_limit: 100 # agent decision steps = max_episode_steps / decision_period = 1000 / 10
 
   # Replacement / lifelong agent configuration
   replacement_enabled: true
@@ -95,7 +95,6 @@ env_args:
   render_mode: null
 
 # Top-level PyMARL fields
-episode_limit: 1000
 obs_shape: 201        # 5 + 184 + 12
 state_shape: 6432     # 32 * 201
 n_actions: 4
