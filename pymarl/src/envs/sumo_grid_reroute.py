@@ -197,10 +197,12 @@ class SUMOGridRerouteEnv:
         self.sumo_port = None
 
         # Episode metrics tracking (Step 6)
-        self.vehicle_spawn_times = {}  # Map vehicle_id -> spawn time
-        self.vehicle_travel_times = []  # List of completed travel times
-        self.vehicle_waiting_times = []  # List of total waiting times per vehicle
+        self.vehicle_spawn_times = {}       # Map vehicle_id -> spawn time
+        self.vehicle_route_lengths = {}     # Map vehicle_id -> planned route length (m) at spawn
+        self.vehicle_travel_times = []      # List of completed travel times
+        self.vehicle_waiting_times = []     # List of total waiting times per vehicle
         self.vehicle_accumulated_waiting = {}  # Running waiting-time sum per vehicle (seconds)
+        self.completed_route_lengths = []   # Route lengths (m) for completed vehicles only
 
         # Episode-level congestion tracking — used to produce mean_vehicle_count
         # and mean_speed in _compute_episode_metrics so a single episode run can
@@ -272,9 +274,11 @@ class SUMOGridRerouteEnv:
 
         # Reset episode metrics (Step 6)
         self.vehicle_spawn_times.clear()
+        self.vehicle_route_lengths.clear()
         self.vehicle_travel_times = []
         self.vehicle_waiting_times = []
         self.vehicle_accumulated_waiting.clear()
+        self.completed_route_lengths = []
         self._sub_step_count = 0
         self._total_vehicle_steps = 0
         self._total_speed_sum = 0.0
@@ -824,6 +828,10 @@ class SUMOGridRerouteEnv:
                         waiting_time = self.vehicle_accumulated_waiting.pop(vehicle_id, 0.0)
                         self.vehicle_waiting_times.append(waiting_time)
 
+                        rl = self.vehicle_route_lengths.pop(vehicle_id, None)
+                        if rl is not None:
+                            self.completed_route_lengths.append(rl)
+
                         # Clean up
                         del self.vehicle_spawn_times[vehicle_id]
                         if vehicle_id in self.controlled_vehicle_ids:
@@ -858,6 +866,10 @@ class SUMOGridRerouteEnv:
             waiting_time = self.vehicle_accumulated_waiting.pop(veh_id, 0.0)
             self.vehicle_waiting_times.append(waiting_time)
 
+            rl = self.vehicle_route_lengths.pop(veh_id, None)
+            if rl is not None:
+                self.completed_route_lengths.append(rl)
+
     def _track_new_vehicles(self, current_vehicles: set) -> None:
         """Track spawn times for newly entered vehicles (Step 6)."""
         for veh_id in current_vehicles:
@@ -872,6 +884,26 @@ class SUMOGridRerouteEnv:
                     # If we can't get departure time, use current sim time
                     self.vehicle_spawn_times[veh_id] = self.sim_time
                     self.total_spawned += 1
+
+                # Record planned route length at entry so we can compute per-km metrics.
+                try:
+                    rl = traci.vehicle.getRouteLength(veh_id)
+                    if rl > 0:
+                        self.vehicle_route_lengths[veh_id] = rl
+                    else:
+                        raise ValueError("getRouteLength returned 0")
+                except Exception:
+                    # Fallback: sum edge lengths from the route edge list
+                    try:
+                        edges = traci.vehicle.getRoute(veh_id)
+                        rl = sum(
+                            traci.lane.getLength(e + "_0")
+                            for e in edges if e
+                        )
+                        if rl > 0:
+                            self.vehicle_route_lengths[veh_id] = rl
+                    except Exception:
+                        pass  # omit this vehicle from route-length stats
 
                 # Initialize waiting-time accumulator so vehicles that never stop
                 # still appear in the denominator when computing mean_waiting_time.
@@ -965,11 +997,30 @@ class SUMOGridRerouteEnv:
 
         # Stops and emissions
         metrics["total_stops"] = int(self.episode_stops_count)
-        metrics["total_emissions"] = float(self.episode_emissions)
-        metrics["co2_emissions"] = float(self.episode_emissions)  # grams, alias for clarity
+        metrics["co2_emissions"] = float(self.episode_emissions)  # total grams for episode
 
         # Fuel consumption (ml)
         metrics["fuel_consumption"] = float(self.episode_fuel_consumption)
+
+        # Per-km emission metrics (requires completed_route_lengths populated above)
+        if len(self.completed_route_lengths) > 0:
+            avg_rl_m = float(np.mean(self.completed_route_lengths))
+            total_completed_km = float(np.sum(self.completed_route_lengths)) / 1000.0
+            metrics["avg_route_length_m"] = avg_rl_m
+            metrics["total_completed_km"] = total_completed_km
+            if total_completed_km > 0:
+                metrics["co2_g_per_km"] = round(self.episode_emissions / total_completed_km, 2)
+                metrics["fuel_l_per_100km"] = round(
+                    (self.episode_fuel_consumption / 1000.0) / total_completed_km * 100, 2
+                )
+            else:
+                metrics["co2_g_per_km"] = 0.0
+                metrics["fuel_l_per_100km"] = 0.0
+        else:
+            metrics["avg_route_length_m"] = 0.0
+            metrics["total_completed_km"] = 0.0
+            metrics["co2_g_per_km"] = 0.0
+            metrics["fuel_l_per_100km"] = 0.0
 
         # Arrival rate
         metrics["arrivals"] = self.episode_arrivals
