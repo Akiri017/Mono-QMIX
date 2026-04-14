@@ -325,7 +325,18 @@ def run_experiments(args) -> None:
                 qmix_model_paths[seed] = model_path
                 print(f"  [OK] Seed {seed} -> {model_path}")
             except subprocess.CalledProcessError as e:
-                print(f"  [FAIL] Seed {seed} training failed: {e}")
+                # libsumo crashes on shutdown (SIGABRT/munmap) after saving the model.
+                # Check if the model was saved before the crash and recover it.
+                best = os.path.join(checkpoint_root, f"seed_{seed}", "best")
+                final = os.path.join(checkpoint_root, f"seed_{seed}", "final")
+                if os.path.isdir(best):
+                    qmix_model_paths[seed] = best
+                    print(f"  [WARN] Seed {seed} subprocess crashed (libsumo shutdown) but model recovered: {best}")
+                elif os.path.isdir(final):
+                    qmix_model_paths[seed] = final
+                    print(f"  [WARN] Seed {seed} subprocess crashed (libsumo shutdown) but model recovered: {final}")
+                else:
+                    print(f"  [FAIL] Seed {seed} training failed and no model found: {e}")
     else:
         # Load pre-existing models
         for seed in seeds:
