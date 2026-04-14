@@ -42,6 +42,7 @@ DEFAULT_SEEDS = [42, 43, 44, 45, 46]
 
 def train_seed(seed: int, t_max: int, checkpoint_root: str,
                env_config: Optional[str] = None,
+               alg_config: Optional[str] = None,
                los_level: Optional[str] = None,
                extra_args: Optional[List[str]] = None) -> str:
     """
@@ -68,6 +69,8 @@ def train_seed(seed: int, t_max: int, checkpoint_root: str,
     ]
     if env_config:
         cmd += ["--env_config", env_config]
+    if alg_config:
+        cmd += ["--alg_config", alg_config]
     if los_level:
         cmd += ["--los_level", los_level]
     if extra_args:
@@ -96,6 +99,7 @@ def evaluate_policy_subprocess(policy_type: str, seed: int,
                                 model_path: Optional[str] = None,
                                 baseline_name: Optional[str] = None,
                                 env_config: Optional[str] = None,
+                                alg_config: Optional[str] = None,
                                 los_level: Optional[str] = None) -> Dict:
     """
     Run evaluate.py for one policy via subprocess and load results JSON.
@@ -111,6 +115,8 @@ def evaluate_policy_subprocess(policy_type: str, seed: int,
         cmd += ["--baseline", baseline_name, "--output", output_path]
     if env_config:
         cmd += ["--env_config", env_config]
+    if alg_config:
+        cmd += ["--alg_config", alg_config]
     if los_level:
         cmd += ["--los_level", los_level]
 
@@ -317,6 +323,7 @@ def run_experiments(args) -> None:
             try:
                 model_path = train_seed(seed, args.t_max, checkpoint_root,
                                         env_config=args.env_config,
+                                        alg_config=args.alg_config,
                                         los_level=args.los_level,
                                         extra_args=extra)
                 qmix_model_paths[seed] = model_path
@@ -355,6 +362,7 @@ def run_experiments(args) -> None:
                 output_path=f"qmix_exp_{seed}",
                 model_path=qmix_model_paths[seed],
                 env_config=args.env_config,
+                alg_config=args.alg_config,
                 los_level=args.los_level,
             )
             all_results["qmix"].append(r)
@@ -368,6 +376,7 @@ def run_experiments(args) -> None:
                 output_path=f"{bl}_exp_{seed}",
                 baseline_name=bl,
                 env_config=args.env_config,
+                alg_config=args.alg_config,
                 los_level=args.los_level,
             )
             all_results[bl].append(r)
@@ -441,6 +450,8 @@ def main():
     # Environment
     parser.add_argument("--env_config", type=str, default=None,
                         help="Environment config name (default: sumo_grid4x4)")
+    parser.add_argument("--alg_config", type=str, default=None,
+                        help="Algorithm config name (default: qmix_sumo)")
     parser.add_argument("--los_level", type=str, default=None,
                         choices=["low", "med", "high"],
                         help="Traffic demand level override (low/med/high)")
