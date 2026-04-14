@@ -1,7 +1,7 @@
 {
-  "timestamp": "20260414_170528",
+  "timestamp": "20260414_170723",
   "seeds": [
-    1803
+    1802
   ],
   "t_max": 5000,
   "eval_episodes": 5,
