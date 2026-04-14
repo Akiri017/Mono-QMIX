@@ -51,6 +51,7 @@ def get_scheme(env_info, args=None):
         "obs": {"vshape": env_info["obs_shape"], "group": "agents"},
         "actions": {"vshape": (1,), "group": "agents", "dtype": torch.long},
         "avail_actions": {"vshape": (env_info["n_actions"],), "group": "agents", "dtype": torch.int},
+        "reset_mask": {"vshape": (1,), "group": "agents", "dtype": torch.uint8},
         "reward": {"vshape": (1,)},
         "terminated": {"vshape": (1,), "dtype": torch.uint8},
         "filled": {"vshape": (1,), "dtype": torch.uint8},  # Mask for valid timesteps

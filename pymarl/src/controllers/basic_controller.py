@@ -135,7 +135,7 @@ class BasicMAC:
 
         # Check for reset mask (for mid-episode slot resets)
         if hasattr(ep_batch.data, 'transition_data') and "reset_mask" in ep_batch.data.transition_data and t > 0:
-            reset_mask = ep_batch["reset_mask"][:, t]  # (batch_size, n_agents)
+            reset_mask = ep_batch["reset_mask"][:, t].squeeze(-1)  # (batch_size, n_agents) — strip vshape trailing dim
             self._reset_hidden_states(reset_mask)
 
         # Reshape observations: (batch_size * n_agents, obs_dim)
