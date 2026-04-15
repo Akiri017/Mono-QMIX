@@ -410,11 +410,20 @@ class HierarchicalQLearner:
         self.mac.save_models(path)
         torch.save(self.local_mixer.state_dict(), f"{path}/local_mixer.th")
         torch.save(self.global_mixer.state_dict(), f"{path}/global_mixer.th")
+        # Target mixer weights — saved separately so resume preserves the lag
+        # accumulated since the last hard sync, keeping TD targets stable
+        torch.save(self.target_local_mixer.state_dict(), f"{path}/target_local_mixer.th")
+        torch.save(self.target_global_mixer.state_dict(), f"{path}/target_global_mixer.th")
         torch.save(self.optimizer.state_dict(), f"{path}/optimizer.pth")
-        # Reward normalisation state — must be restored on resume so the scale
-        # doesn't reset mid-training and destabilise the TD targets
+        # Reward normalisation state + target update counter — must be restored
+        # on resume so the scale doesn't reset and the target sync interval
+        # isn't immediately re-triggered
         torch.save(
-            {"running_mean": self.reward_running_mean, "running_var": self.reward_running_var},
+            {
+                "running_mean": self.reward_running_mean,
+                "running_var": self.reward_running_var,
+                "last_target_update_episode": self.last_target_update_episode,
+            },
             f"{path}/reward_stats.pth"
         )
 
@@ -427,7 +436,22 @@ class HierarchicalQLearner:
         self.global_mixer.load_state_dict(
             torch.load(f"{path}/global_mixer.th", map_location=self.device)
         )
-        self._update_targets()
+        # Restore target mixers from saved weights if available so the lag
+        # accumulated before the checkpoint is preserved. Fall back to syncing
+        # from online weights (old behaviour) for checkpoints that predate this.
+        target_local_path = f"{path}/target_local_mixer.th"
+        target_global_path = f"{path}/target_global_mixer.th"
+        if os.path.exists(target_local_path) and os.path.exists(target_global_path):
+            self.target_local_mixer.load_state_dict(
+                torch.load(target_local_path, map_location=self.device)
+            )
+            self.target_global_mixer.load_state_dict(
+                torch.load(target_global_path, map_location=self.device)
+            )
+            # Sync only the target MAC since we have no separate saved file for it
+            self.target_mac.load_state(self.mac)
+        else:
+            self._update_targets()
         opt_path = f"{path}/optimizer.pth"
         if os.path.exists(opt_path):
             self.optimizer.load_state_dict(
@@ -438,3 +462,4 @@ class HierarchicalQLearner:
             stats = torch.load(stats_path, map_location="cpu")
             self.reward_running_mean = stats["running_mean"]
             self.reward_running_var = stats["running_var"]
+            self.last_target_update_episode = stats.get("last_target_update_episode", 0)
