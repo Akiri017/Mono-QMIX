@@ -378,29 +378,30 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     marl:       makeMarlMetrics(3.2, -50, 72, 2.5, -180, 980, 200, 28),
   },
   selfish: {
-    // ── Real SUMO data (forced_flow / Selfish Nash — bgc_full, Wardrop routes) ──
-    // Source: bgc_full/data/stats_highEnough.xml (2026-03-08, wardrop_routes_highEnough.rou.xml)
+    // ── Real PyMARL data — bgc_full map (2 km²), forced_flow (LOS E), seed 5, 30 episodes ──
+    // Source: pymarl/src/results/eval/selfish_routing_bgc_full_{low,med,high}_seed5.json
     // Detail page fetches per-traffic-level values dynamically via /api/selfish
     id: 'selfish', label: 'Selfish Routing', sublabel: 'Nash Equilibrium', rank: 3,
     color: '#F87171', colorDim: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.3)',
-    travelTime: 4.61, waitTime: 76.8, throughput: 4255, speed: 36.41,
-    co2: 431.9, fuel: 18.61, computeTime: 0, convergence: null, reward: null, efficiency: 48,
+    // forced_flow (LOS E) bgc_full defaults — overridden per-level by useSelfishRealData
+    travelTime: 2.12, waitTime: 20.8, throughput: 2178, speed: 248.84,
+    co2: 485.6, fuel: 20.89, computeTime: 0, convergence: null, reward: null, efficiency: 48,
     description: 'Selfish Routing models each vehicle independently optimizing its own route via shortest-path algorithms, representing the Nash Equilibrium state of the network. Without coordination, vehicles converge on popular routes causing Braess\'s Paradox — where adding road capacity can paradoxically worsen network-wide performance.',
     strengths: ['No training or setup required', 'Simple and fully interpretable', 'Establishes the Price of Anarchy baseline', 'Handles novel edge cases naturally'],
     scores: [0.58, 0.42, 0.40, 0.80, 0.42, 0.52, 0.70],
-    // Sparklines: narrow variation around the real forced_flow measurement
+    // Sparklines: flat at the forced_flow measurement (overridden by real data once loaded)
     sparklines: {
-      travelTime:  [4.8, 5.0, 4.6, 4.9, 4.7, 5.1, 4.5, 4.9, 4.7, 4.61],
-      waitTime:    [78, 80, 75, 79, 77, 81, 74, 78, 77, 76.8],
-      throughput:  [4320, 4180, 4290, 4150, 4265, 4100, 4230, 4200, 4240, 4255],
-      speed:       [35, 38, 34, 37, 36, 39, 33, 37, 36, 36.41],
+      travelTime:  [2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12],
+      waitTime:    [20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8],
+      throughput:  [2178, 2178, 2178, 2178, 2178, 2178, 2178, 2178, 2178, 2178],
+      speed:       [248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84],
     },
-    changes: { travelTime: 1.2, waitTime: 3.1, throughput: -1.8, speed: 1.4 },
+    changes: { travelTime: 0, waitTime: 0, throughput: 0, speed: 0 },
     episodes: {
-      travelTime:  makeSeries(4.61, 4.61, 0.4, 0.3,  200, 9),
-      waitTime:    makeSeries(76.8, 76.8, 4.0, 3.0,  200, 10),
-      throughput:  makeSeries(4255, 4255, 120, 90,   200, 11),
-      speed:       makeSeries(36.4, 36.4, 2.0, 1.5,  200, 12),
+      travelTime:  makeSeries(2.12, 2.12, 0.15, 0.10, 200, 9),
+      waitTime:    makeSeries(20.8, 20.8, 1.5,  1.0,  200, 10),
+      throughput:  makeSeries(2178, 2178, 60,   45,   200, 11),
+      speed:       makeSeries(248.84, 248.84, 8, 5,   200, 12),
     },
     system: {
       training: [],  // Selfish Routing has no training phase
@@ -720,11 +721,6 @@ function detectConvergence(training: TrainingPoint[]): number | null {
   return training[training.length - 1].episode
 }
 
-function avgCpu(pts: CpuPoint[]): number {
-  if (!pts.length) return 0
-  return Math.round(pts.reduce((s, p) => s + p.cpu, 0) / pts.length)
-}
-
 function calcDelta(lv: number, rv: number, lowerBetter: boolean) {
   const diff = lv - rv
   const pct = rv !== 0 ? Math.abs(diff / rv) * 100 : 0
@@ -915,9 +911,8 @@ const ENVIRON_KPI: KpiMetaDef[] = [
   { label: 'Average Fuel Consumption', unit: 'l/100km', getValue: a => a.fuel, lowerBetter: true },
 ]
 const COMPUTE_KPI: KpiMetaDef[] = [
-  { label: 'Real-time Factor', unit: '×',  getValue: a => a.speed,             lowerBetter: false },
-  { label: 'Decision Latency', unit: 'ms', getValue: a => a.computeTime,       lowerBetter: true },
-  { label: 'CPU Utilization',  unit: '%',  getValue: a => avgCpu(a.system.cpu), lowerBetter: true },
+  { label: 'Real-time Factor', unit: '×',  getValue: a => a.speed,       lowerBetter: false },
+  { label: 'Decision Latency', unit: 'ms', getValue: a => a.computeTime, lowerBetter: true },
 ]
 
 function MetricRow({ label, unit, lv, rv, lowerBetter, la, ra, intFmt }: {
@@ -1063,8 +1058,7 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
         <CompareSection title="Computational Factors" icon={computeIcon}>
           {COMPUTE_KPI.map(m => (
             <MetricRow key={m.label} label={m.label} unit={m.unit}
-              lv={m.getValue(la)} rv={m.getValue(ra)} lowerBetter={m.lowerBetter} la={la} ra={ra}
-              intFmt={m.label === 'CPU Utilization'} />
+              lv={m.getValue(la)} rv={m.getValue(ra)} lowerBetter={m.lowerBetter} la={la} ra={ra} />
           ))}
           {convL !== null && convR !== null && (
             <MetricRow label="Convergence Episode" unit="ep"
@@ -2162,36 +2156,6 @@ const TrainingCurveChart = ({ algo }: { algo: AlgoData }) => {
   )
 }
 
-// 2 — CPU Utilisation
-const CpuChart = ({ algo }: { algo: AlgoData }) => (
-  <GlassCard className="p-5 flex flex-col gap-3">
-    <div>
-      <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>CPU Utilization</span>
-      <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.32)' }}>
-        System CPU (%) over simulation runtime · real-world feasibility
-      </p>
-    </div>
-    <ResponsiveContainer width="100%" height={180}>
-      <ComposedChart data={algo.system.cpu} margin={{ top: 4, right: 12, left: 0, bottom: 20 }}>
-        <CartesianGrid stroke={CHART_GRID} strokeDasharray="3 4" />
-        <XAxis dataKey="step" tick={CHART_AXIS} tickLine={CHART_TICK_LINE} axisLine={CHART_AXIS_LINE}
-          label={{ value: 'Step', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
-          interval={Math.floor(algo.system.cpu.length / 6)} />
-        <YAxis tick={CHART_AXIS} tickLine={CHART_TICK_LINE} axisLine={CHART_AXIS_LINE} width={40} domain={[0, 100]}
-          label={{ value: '%', angle: -90, position: 'insideLeft', offset: 14, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }} />
-        <Tooltip content={<ChartTooltip xLabel="Step" rows={[
-          { key: 'cpu', label: 'CPU', color: algo.color, unit: '%' },
-          { key: 'ma',  label: 'MA-8', color: 'rgba(255,255,255,0.65)', unit: '%' },
-        ]} />} />
-        <Area type="monotone" dataKey="cpu" stroke={algo.color} strokeWidth={1.5}
-          fill={algo.color} fillOpacity={0.12} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
-        <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.58)" strokeWidth={1.5}
-          dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
-      </ComposedChart>
-    </ResponsiveContainer>
-  </GlassCard>
-)
-
 // ─── Shared info bubble (matches KpiCard / GaugeChart tooltip style) ──────────
 
 function InfoBubble({ text, side = 'left' }: { text: string; side?: 'left' | 'right' }) {
@@ -2810,17 +2774,8 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     </div>
 
     {/* Analytics row */}
-    {displayAlgo.id === 'selfish' ? (
-      <div className="grid grid-cols-1 gap-4">
-        <CpuChart algo={displayAlgo} />
-      </div>
-    ) : (
-      <div className="grid grid-cols-5 gap-4">
-        <div className="col-span-4">
-          <TrainingCurveChart algo={displayAlgo} />
-        </div>
-        <CpuChart algo={displayAlgo} />
-      </div>
+    {displayAlgo.id !== 'selfish' && (
+      <TrainingCurveChart algo={displayAlgo} />
     )}
 
     {/* MARL training diagnostics (learning-based only) */}

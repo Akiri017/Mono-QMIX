@@ -74,11 +74,13 @@ export async function GET(request: NextRequest) {
     const kpis = levelData.kpis
     const vehicles = levelData.vehicles
 
-    // Load timeseries CSV
-    const csvPath = path.join(RESULTS_DIR, levelData.timeseries_file)
+    // Load timeseries CSV (timeseries_file may be null for some maps)
     let timeseries: ReturnType<typeof parseCSV> = []
-    if (fs.existsSync(csvPath)) {
-      timeseries = parseCSV(fs.readFileSync(csvPath, 'utf-8'))
+    if (levelData.timeseries_file) {
+      const csvPath = path.join(RESULTS_DIR, levelData.timeseries_file)
+      if (fs.existsSync(csvPath)) {
+        timeseries = parseCSV(fs.readFileSync(csvPath, 'utf-8'))
+      }
     }
 
     return NextResponse.json({
@@ -89,12 +91,12 @@ export async function GET(request: NextRequest) {
       vehicles,
       kpis: {
         // Primary display KPIs (matching AlgoData fields)
-        travelTime: parseFloat(kpis.avg_travel_time_min.toFixed(2)),   // min
-        waitTime: parseFloat(kpis.avg_waiting_time_s.toFixed(1)),       // sec
-        throughput: kpis.throughput,                                      // veh completed
-        speed: parseFloat(kpis.real_time_factor.toFixed(2)),             // real-time factor
-        co2: kpis.avg_co2_g_per_km,                                      // g/km
-        fuel: kpis.avg_fuel_l_per_100km,                                  // L/100km
+        travelTime: parseFloat(kpis.avg_travel_time_min.toFixed(2)),             // min
+        waitTime:   parseFloat(kpis.avg_waiting_time_s.toFixed(1)),               // sec
+        throughput: parseFloat(kpis.network_throughput_veh_h.toFixed(0)),         // veh/hr
+        speed:      parseFloat(kpis.real_time_factor.toFixed(2)),                  // real-time factor ×
+        co2:        kpis.avg_co2_g_per_km,                                         // g/km
+        fuel:       kpis.avg_fuel_l_per_100km,                                     // L/100km
         avgSpeedKmh: kpis.avg_speed_kmh,
         avgRouteLengthM: kpis.avg_route_length_m,
         timeLossS: kpis.time_loss_s,
