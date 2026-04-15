@@ -41,7 +41,8 @@ def get_scheme(env_info, args=None):
 
     Defines what data to store for each timestep. When args["mixer"] == "civiq",
     adds Civiq hierarchical fields (zone_assignments, rsu_agent_qs,
-    agent_masks_per_rsu, local_states).
+    agent_masks_per_rsu). local_states is NOT stored — computed on-the-fly in
+    HierarchicalQLearner._build_local_states() to avoid ~25–50 GB buffer overhead.
 
     Note: global_states is NOT a separate field — batch["state"] serves as the
     GlobalQMixer input (state_dim = n_agents * obs_dim = global_state_dim).
@@ -77,11 +78,6 @@ def get_scheme(env_info, args=None):
             # 1.0 = real agent slot, 0.0 = padding
             "agent_masks_per_rsu": {
                 "vshape": (max_rsus, max_agents_per_rsu),
-                "dtype": torch.float32,
-            },
-            # Padded per-RSU concatenated agent observations
-            "local_states": {
-                "vshape": (max_rsus, max_agents_per_rsu * obs_dim),
                 "dtype": torch.float32,
             },
         })

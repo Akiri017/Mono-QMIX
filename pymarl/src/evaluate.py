@@ -111,16 +111,45 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
     print(f"  obs_shape: {env_info['obs_shape']}")
     print(f"  state_shape: {env_info['state_shape']}")
 
-    # Create data scheme
+    # Create data scheme.
+    # reset_mask must be included: the runner always stores it in post_transition_data,
+    # and BasicMAC.forward() reads it to zero-out hidden states after mid-episode slot
+    # resets. Without it the tensor is never allocated, the guard in forward() sees
+    # False, and hidden states are never reset — silently degrading eval fidelity.
     scheme = {
         "state": {"vshape": env_info["state_shape"]},
         "obs": {"vshape": env_info["obs_shape"], "group": "agents"},
         "actions": {"vshape": (1,), "group": "agents", "dtype": torch.long},
         "avail_actions": {"vshape": (env_info["n_actions"],), "group": "agents", "dtype": torch.int},
+        "reset_mask": {"vshape": (1,), "group": "agents", "dtype": torch.uint8},
         "reward": {"vshape": (1,)},
         "terminated": {"vshape": (1,), "dtype": torch.uint8},
-        "filled": {"vshape": (1,), "dtype": torch.uint8}
+        "filled": {"vshape": (1,), "dtype": torch.uint8},
     }
+
+    # Civiq: add hierarchical mixing fields so the runner can write zone data into
+    # the batch without them being silently dropped. local_states is NOT included —
+    # it is computed on-the-fly in HierarchicalQLearner._build_local_states() and
+    # never stored in the buffer (avoids ~25–50 GB allocation overhead).
+    if args.get("mixer") == "civiq":
+        max_rsus = args["max_rsus"]
+        max_agents_per_rsu = args["max_agents_per_rsu"]
+        n_agents = env_info["n_agents"]
+        scheme.update({
+            "zone_assignments": {
+                "vshape": (n_agents,),
+                "dtype": torch.int32,
+            },
+            "rsu_agent_qs": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            "agent_masks_per_rsu": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+        })
+
     groups = {"agents": args["n_agents"]}
     preprocess = {}
 

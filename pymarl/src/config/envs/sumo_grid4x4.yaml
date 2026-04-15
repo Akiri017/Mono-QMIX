@@ -27,7 +27,7 @@ env_args:
 
   # Episode configuration
   max_episode_steps: 1000  # T_max: maximum simulation time in seconds
-  episode_limit: 1000  # PyMARL episode limit (same as max_episode_steps for SUMO)
+  episode_limit: 100  # agent decision steps = max_episode_steps / decision_period = 1000 / 10
 
   # Replacement/lifelong agent configuration
   replacement_enabled: true
@@ -83,7 +83,6 @@ env_args:
   render_mode: null  # "human" for visualization, null for headless
 
 # Additional PyMARL environment info
-episode_limit: 1000  # redundant but PyMARL expects this at top level
 obs_shape: 65  # will be computed dynamically, this is an example
 state_shape: 2080  # n_agents * obs_shape (32 * 65)
 n_actions: 2
