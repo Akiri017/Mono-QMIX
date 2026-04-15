@@ -124,15 +124,12 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
     }
 
     # Civiq: add hierarchical mixing fields so the runner can write zone data into
-    # the batch without them being silently dropped. These fields are not consumed
-    # during eval (mixers aren't called in test_mode), but they must exist in the
-    # scheme for EpisodeBatch to allocate storage; otherwise zone_manager writes
-    # are silently discarded and any future use of the batch (e.g. off-policy eval)
-    # would see all-zeros for these fields rather than the real zone data.
+    # the batch without them being silently dropped. local_states is NOT included —
+    # it is computed on-the-fly in HierarchicalQLearner._build_local_states() and
+    # never stored in the buffer (avoids ~25–50 GB allocation overhead).
     if args.get("mixer") == "civiq":
         max_rsus = args["max_rsus"]
         max_agents_per_rsu = args["max_agents_per_rsu"]
-        obs_dim = args["obs_dim"]
         n_agents = env_info["n_agents"]
         scheme.update({
             "zone_assignments": {
@@ -145,10 +142,6 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
             },
             "agent_masks_per_rsu": {
                 "vshape": (max_rsus, max_agents_per_rsu),
-                "dtype": torch.float32,
-            },
-            "local_states": {
-                "vshape": (max_rsus, max_agents_per_rsu * obs_dim),
                 "dtype": torch.float32,
             },
         })

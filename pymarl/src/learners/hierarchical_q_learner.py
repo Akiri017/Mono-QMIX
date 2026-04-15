@@ -184,7 +184,9 @@ class HierarchicalQLearner:
         # Batch fields (online timesteps: [0..T-1], i.e. :-1)
         zone_assignments_t = batch["zone_assignments"][:, :-1].long().to(self.device)  # (B, T, n_agents)
         agent_masks = batch["agent_masks_per_rsu"][:, :-1].to(self.device)             # (B, T, R, A)
-        local_states = batch["local_states"][:, :-1].to(self.device)                   # (B, T, R, A*obs)
+        local_states = self._build_local_states(                                        # (B, T, R, A*obs)
+            batch["obs"][:, :-1].to(self.device), zone_assignments_t, batch_size, max_t
+        )
         global_states = batch["state"][:, :-1].to(self.device)                         # (B, T, G)
 
         # -- Online path --
@@ -216,7 +218,9 @@ class HierarchicalQLearner:
         # Use next-timestep zone data (batch fields at [1:]) for bootstrapping.
         target_zone_assignments = batch["zone_assignments"][:, 1:].long().to(self.device)  # (B, T, n_agents)
         target_agent_masks = batch["agent_masks_per_rsu"][:, 1:].to(self.device)           # (B, T, R, A)
-        target_local_states = batch["local_states"][:, 1:].to(self.device)                 # (B, T, R, A*obs)
+        target_local_states = self._build_local_states(                                     # (B, T, R, A*obs)
+            batch["obs"][:, 1:].to(self.device), target_zone_assignments, batch_size, max_t
+        )
         target_global_states = batch["state"][:, 1:].to(self.device)                       # (B, T, G)
 
         target_rsu_agent_qs = self._build_rsu_agent_qs(
@@ -316,6 +320,54 @@ class HierarchicalQLearner:
         for r in range(max_rsus):
             src = qvals * in_rsu_all[..., r].float()                           # (B, T, A)
             out[:, :, r, :].scatter_add_(dim=-1, index=slot_idx_all[..., r], src=src)
+        return out
+
+    def _build_local_states(self, obs, zone_assignments, batch_size, max_t):
+        """Compute padded local observation tensor on-the-fly from obs and zone_assignments.
+
+        Replaces the pre-allocated local_states buffer field to avoid ~25–50 GB
+        of replay buffer overhead on large maps (BGC Full at buffer_size=400).
+
+        Slot ordering mirrors _build_agents_per_rsu in the env: agents are placed
+        into RSU slots in ascending agent_id order (cumsum over agent dim), so
+        LocalQMixer receives the same layout it would have seen from the buffer.
+
+        Args:
+            obs: (B, T, n_agents, obs_dim) — per-agent observations on self.device
+            zone_assignments: (B, T, n_agents) LongTensor — RSU id per agent
+
+        Returns:
+            local_states: (B, T, R, A*obs_dim)
+        """
+        max_rsus           = self.args["max_rsus"]
+        max_agents_per_rsu = self.args["max_agents_per_rsu"]
+        obs_dim            = self.args["obs_dim"]
+
+        # Membership mask and slot indices — identical logic to _build_rsu_agent_qs
+        in_rsu_all   = (zone_assignments.unsqueeze(-1) ==
+                        torch.arange(max_rsus, device=self.device))        # (B,T,A,R)
+        slot_idx_all = (in_rsu_all.long().cumsum(dim=2) - 1).clamp(
+                        0, max_agents_per_rsu - 1)                         # (B,T,A,R)
+
+        out = torch.zeros(batch_size, max_t, max_rsus,
+                          max_agents_per_rsu * obs_dim, device=self.device)
+
+        for r in range(max_rsus):
+            member_mask = in_rsu_all[..., r].float()               # (B,T,A)
+            slot_idx    = slot_idx_all[..., r]                     # (B,T,A)
+
+            # Flat index in (A*obs_dim) where each agent's observation is written
+            scatter_idx = (
+                slot_idx.unsqueeze(-1) * obs_dim +
+                torch.arange(obs_dim, device=self.device)
+            ).reshape(batch_size, max_t, -1)                       # (B,T,A*obs_dim)
+
+            # Zero out non-members then flatten agent × obs dims
+            flat_obs = (obs * member_mask.unsqueeze(-1)
+                        ).reshape(batch_size, max_t, -1)           # (B,T,A*obs_dim)
+
+            out[:, :, r].scatter_add_(dim=-1, index=scatter_idx, src=flat_obs)
+
         return out
 
     def _update_targets(self):

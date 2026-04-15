@@ -26,7 +26,7 @@ epsilon_anneal_time: 500000
 # Training configuration
 batch_size: 32
 batch_size_run: 1
-buffer_size: 32  # minimum viable for training (= batch_size); Civiq local_states is ~124MB/episode so keep this low for smoketests; raise to 200–400 for full 200k training (will require ~25–50GB RAM)
+buffer_size: 400 # local_states removed from buffer (computed on-the-fly); safe at 400 across all maps (~8–9 GB total for BGC Full)
 buffer_cpu_only: true
 
 # Learning

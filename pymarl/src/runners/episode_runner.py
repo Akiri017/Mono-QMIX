@@ -136,11 +136,10 @@ class EpisodeRunner:
         _civiq = hasattr(self.env, "zone_manager") and self.env.zone_manager is not None
         if _civiq:
             _zone = self.env.get_zone_assignments()
-            pre_transition_data["local_states"] = [self.env.get_local_obs_padded(_zone)]
             pre_transition_data["agent_masks_per_rsu"] = [self.env.get_agent_masks_padded(_zone)]
             pre_transition_data["zone_assignments"] = [self.env.get_zone_assignments_flat(_zone)]
             # rsu_agent_qs is NOT populated here — computed in HierarchicalQLearner.train()
-            # from chosen_action_qvals sliced per zone_assignments
+            # local_states is NOT stored — computed on-the-fly in _build_local_states()
 
         self.batch.update(pre_transition_data, ts=0)
 
@@ -187,7 +186,6 @@ class EpisodeRunner:
             # Civiq: collect zone data at ts=t+1
             if _civiq:
                 _zone = self.env.get_zone_assignments()
-                pre_transition_data["local_states"] = [self.env.get_local_obs_padded(_zone)]
                 pre_transition_data["agent_masks_per_rsu"] = [self.env.get_agent_masks_padded(_zone)]
                 pre_transition_data["zone_assignments"] = [self.env.get_zone_assignments_flat(_zone)]
 
