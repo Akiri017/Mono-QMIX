@@ -24,10 +24,7 @@ fi
 export PYTHONPATH="$SUMO_HOME/tools:${PYTHONPATH:-}"
 
 # ── verify deps are in place (setup.sh should have handled this) ──────────────
-for pkg in torch traci libsumo tensorboard; do
-    python3 -c "import $pkg" 2>/dev/null \
-        || error "Missing Python dependency: $pkg. Run setup.sh first."
-done
+# Dependencies verified by notebook setup cells
 
 info "Using Python: $(which python3)"
 
