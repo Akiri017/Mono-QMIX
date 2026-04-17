@@ -1,0 +1,1248 @@
+{
+  "generated_at": "2026-04-17T05:41:32.537Z",
+  "scenario": "LOS E (Forced flow / near-capacity)",
+  "map": "BGC Full (2km²)",
+  "seed": 1803,
+  "t_max": 1000000,
+  "n_eval_episodes": 30,
+  "kpis": {
+    "travelTime_s": 124.792,
+    "waitTime_s": 24.0477,
+    "throughput": 1674.7,
+    "co2_g_per_km": 584.452,
+    "fuel_l_per_100km": 25.1403,
+    "cpuMean": 111.865,
+    "cpuPeak": 878.99,
+    "arrivalRate": 0.786,
+    "avgRouteLength_m": 927.28,
+    "totalStops": 47936.8,
+    "returnMean": -105961.277,
+    "travelTime_std": 20.905,
+    "waitTime_std": 4.1955,
+    "throughput_std": 244.7,
+    "realTimeFactor": 70.87
+  },
+  "baselines": {
+    "noop": {
+      "travelTime_s": 125.53,
+      "waitTime_s": 20.5332,
+      "throughput": 2186.6,
+      "co2_g_per_km": 486.906,
+      "fuel_l_per_100km": 20.943,
+      "returnMean": -94369.879
+    },
+    "greedy_shortest": {
+      "travelTime_s": 126.414,
+      "waitTime_s": 20.7368,
+      "throughput": 2121.5,
+      "co2_g_per_km": 502.18,
+      "fuel_l_per_100km": 21.5997,
+      "returnMean": -96345.402
+    }
+  },
+  "evalReturns": [
+    -108912.28,
+    -105739.83,
+    -108931.16,
+    -104522.34,
+    -106688.18,
+    -107549.29,
+    -105512.35,
+    -106348.08,
+    -104910.09,
+    -105419.77,
+    -105110.69,
+    -105504.95,
+    -105205.8,
+    -104933.05,
+    -107742.42,
+    -103963.32,
+    -106066.47,
+    -106589.24,
+    -104626.24,
+    -104308.23,
+    -105488.62,
+    -103710.94,
+    -107210.21,
+    -106555.33,
+    -106520.98,
+    -104858.54,
+    -108052.5,
+    -105661.2,
+    -107592.39,
+    -104603.81
+  ],
+  "evalTravelTimes": [
+    123.63,
+    111.941,
+    116.301,
+    115.01,
+    114.066,
+    160.289,
+    162.373,
+    153.25,
+    116.308,
+    119.453,
+    163.921,
+    105.776,
+    111.647,
+    115.713,
+    101.857,
+    118.581,
+    103.677,
+    156.478,
+    154.657,
+    113.814,
+    103.629,
+    102.817,
+    155.739,
+    104.832,
+    113.294,
+    127.198,
+    105.23,
+    155.258,
+    111.833,
+    125.177
+  ],
+  "evalWaitingTimes": [
+    24.4213,
+    20.4934,
+    23.0235,
+    21.8251,
+    22.3496,
+    32.9306,
+    31.6853,
+    28.0082,
+    21.1653,
+    22.6417,
+    30.0421,
+    19.9848,
+    22.0947,
+    20.7799,
+    19.4294,
+    23.6442,
+    20.6167,
+    30.1141,
+    29.8747,
+    21.7436,
+    19.1893,
+    20.4275,
+    31.2407,
+    21.1676,
+    21.2227,
+    24.5797,
+    20.8336,
+    30.2528,
+    20.5767,
+    25.0728
+  ],
+  "evalThroughputs": [
+    1553.6,
+    1895.3,
+    1686.7,
+    1747.9,
+    1697.5,
+    1294.7,
+    1348.7,
+    1309.1,
+    1740.7,
+    1776.6,
+    1280.3,
+    1895.3,
+    1823.4,
+    1715.5,
+    1884.5,
+    1758.6,
+    1895.3,
+    1323.5,
+    1319.9,
+    1837.8,
+    1956.4,
+    1985.2,
+    1255.1,
+    1931.3,
+    1809,
+    1668.7,
+    1988.8,
+    1280.3,
+    1852.1,
+    1729.9
+  ],
+  "training": {
+    "note": "Log coverage: t=5000–345000 and t=955000–1000000; middle segment (300k–900k) not logged",
+    "curve": [
+      {
+        "t": 5000,
+        "episode": 50,
+        "reward": -105913,
+        "ma": -105913,
+        "loss": 2.9771,
+        "gradNorm": 396.6441,
+        "qTaken": -0.4574,
+        "targetMean": -8.9505
+      },
+      {
+        "t": 10000,
+        "episode": 100,
+        "reward": -99013.9,
+        "ma": -102463.5,
+        "loss": 0.5776,
+        "gradNorm": 133.4827,
+        "qTaken": -0.5476,
+        "targetMean": -0.9568
+      },
+      {
+        "t": 15000,
+        "episode": 150,
+        "reward": -108230.2,
+        "ma": -104385.7,
+        "loss": 0.3223,
+        "gradNorm": 5.2167,
+        "qTaken": -0.5492,
+        "targetMean": 0.4092
+      },
+      {
+        "t": 20000,
+        "episode": 200,
+        "reward": -102000.8,
+        "ma": -103789.5,
+        "loss": 0.288,
+        "gradNorm": 9.9007,
+        "qTaken": -0.5467,
+        "targetMean": 0.7748
+      },
+      {
+        "t": 25000,
+        "episode": 250,
+        "reward": -100226.5,
+        "ma": -103076.9,
+        "loss": 0.2879,
+        "gradNorm": 66.6625,
+        "qTaken": -0.547,
+        "targetMean": 0.2269
+      },
+      {
+        "t": 30000,
+        "episode": 300,
+        "reward": -105460.1,
+        "ma": -103474.1,
+        "loss": 0.1798,
+        "gradNorm": 20.8756,
+        "qTaken": -0.5448,
+        "targetMean": 0.2419
+      },
+      {
+        "t": 35000,
+        "episode": 350,
+        "reward": -97997.6,
+        "ma": -102691.7,
+        "loss": 0.1663,
+        "gradNorm": 18.1526,
+        "qTaken": -0.5444,
+        "targetMean": 0.2542
+      },
+      {
+        "t": 40000,
+        "episode": 400,
+        "reward": -100552.4,
+        "ma": -102424.3,
+        "loss": 0.155,
+        "gradNorm": 12.709,
+        "qTaken": -0.5443,
+        "targetMean": 0.2307
+      },
+      {
+        "t": 45000,
+        "episode": 450,
+        "reward": -107626.4,
+        "ma": -103002.3,
+        "loss": 0.1734,
+        "gradNorm": 7.6043,
+        "qTaken": -0.5442,
+        "targetMean": -0.0206
+      },
+      {
+        "t": 50000,
+        "episode": 500,
+        "reward": -104653.9,
+        "ma": -103167.5,
+        "loss": 0.1397,
+        "gradNorm": 4.5705,
+        "qTaken": -0.5432,
+        "targetMean": 0.0065
+      },
+      {
+        "t": 55000,
+        "episode": 550,
+        "reward": -103277.1,
+        "ma": -102903.9,
+        "loss": 0.1285,
+        "gradNorm": 6.8788,
+        "qTaken": -0.5395,
+        "targetMean": -0.0441
+      },
+      {
+        "t": 60000,
+        "episode": 600,
+        "reward": -98337.2,
+        "ma": -102836.2,
+        "loss": 0.1227,
+        "gradNorm": 11.3031,
+        "qTaken": -0.536,
+        "targetMean": 0.0259
+      },
+      {
+        "t": 65000,
+        "episode": 650,
+        "reward": -102788,
+        "ma": -102292,
+        "loss": 0.1305,
+        "gradNorm": 5.6533,
+        "qTaken": -0.5365,
+        "targetMean": -0.091
+      },
+      {
+        "t": 70000,
+        "episode": 700,
+        "reward": -97783.7,
+        "ma": -101870.3,
+        "loss": 0.1134,
+        "gradNorm": 1.5214,
+        "qTaken": -0.5312,
+        "targetMean": -0.0013
+      },
+      {
+        "t": 75000,
+        "episode": 750,
+        "reward": -106590.7,
+        "ma": -102506.7,
+        "loss": 0.0972,
+        "gradNorm": 2.6868,
+        "qTaken": -0.5282,
+        "targetMean": 0.0531
+      },
+      {
+        "t": 80000,
+        "episode": 800,
+        "reward": -106401.4,
+        "ma": -102600.8,
+        "loss": 0.0968,
+        "gradNorm": 3.6101,
+        "qTaken": -0.5273,
+        "targetMean": -0.0186
+      },
+      {
+        "t": 85000,
+        "episode": 850,
+        "reward": -106619.2,
+        "ma": -103463,
+        "loss": 0.1076,
+        "gradNorm": 2.2137,
+        "qTaken": -0.5328,
+        "targetMean": -0.0043
+      },
+      {
+        "t": 90000,
+        "episode": 900,
+        "reward": -99507.6,
+        "ma": -103358.5,
+        "loss": 0.0995,
+        "gradNorm": 7.6792,
+        "qTaken": -0.5259,
+        "targetMean": -0.1231
+      },
+      {
+        "t": 95000,
+        "episode": 950,
+        "reward": -106848,
+        "ma": -103280.7,
+        "loss": 0.0952,
+        "gradNorm": 6.4074,
+        "qTaken": -0.5239,
+        "targetMean": -0.0145
+      },
+      {
+        "t": 100000,
+        "episode": 1000,
+        "reward": -97365.5,
+        "ma": -102551.8,
+        "loss": 0.0869,
+        "gradNorm": 2.0637,
+        "qTaken": -0.5232,
+        "targetMean": 0.0005
+      },
+      {
+        "t": 105000,
+        "episode": 1050,
+        "reward": -107644.1,
+        "ma": -102988.5,
+        "loss": 0.0965,
+        "gradNorm": 2.7281,
+        "qTaken": -0.5209,
+        "targetMean": -0.0357
+      },
+      {
+        "t": 110000,
+        "episode": 1100,
+        "reward": -105354.3,
+        "ma": -103690.2,
+        "loss": 0.0829,
+        "gradNorm": 3.9895,
+        "qTaken": -0.5172,
+        "targetMean": -0.0155
+      },
+      {
+        "t": 115000,
+        "episode": 1150,
+        "reward": -102127.2,
+        "ma": -103624.2,
+        "loss": 0.0758,
+        "gradNorm": 2.1973,
+        "qTaken": -0.5178,
+        "targetMean": 0.0112
+      },
+      {
+        "t": 120000,
+        "episode": 1200,
+        "reward": -104742.9,
+        "ma": -104320.1,
+        "loss": 0.0802,
+        "gradNorm": 1.339,
+        "qTaken": -0.5162,
+        "targetMean": -0.0711
+      },
+      {
+        "t": 125000,
+        "episode": 1250,
+        "reward": -101107.7,
+        "ma": -103771.8,
+        "loss": 0.084,
+        "gradNorm": 2.2063,
+        "qTaken": -0.5114,
+        "targetMean": -0.0045
+      },
+      {
+        "t": 130000,
+        "episode": 1300,
+        "reward": -105382.1,
+        "ma": -103669.9,
+        "loss": 0.0729,
+        "gradNorm": 1.1689,
+        "qTaken": -0.5076,
+        "targetMean": -0.0478
+      },
+      {
+        "t": 135000,
+        "episode": 1350,
+        "reward": -106150.9,
+        "ma": -103623,
+        "loss": 0.0723,
+        "gradNorm": 4.6658,
+        "qTaken": -0.5083,
+        "targetMean": 0.0489
+      },
+      {
+        "t": 140000,
+        "episode": 1400,
+        "reward": -105603.4,
+        "ma": -104232.6,
+        "loss": 0.0692,
+        "gradNorm": 1.3338,
+        "qTaken": -0.5087,
+        "targetMean": -0.0193
+      },
+      {
+        "t": 145000,
+        "episode": 1450,
+        "reward": -106821.8,
+        "ma": -104230,
+        "loss": 0.0758,
+        "gradNorm": 1.1281,
+        "qTaken": -0.5035,
+        "targetMean": -0.0203
+      },
+      {
+        "t": 150000,
+        "episode": 1500,
+        "reward": -104807.7,
+        "ma": -104974.2,
+        "loss": 0.0642,
+        "gradNorm": 2.6182,
+        "qTaken": -0.5056,
+        "targetMean": -0.0104
+      },
+      {
+        "t": 155000,
+        "episode": 1550,
+        "reward": -99894.1,
+        "ma": -104199.2,
+        "loss": 0.0667,
+        "gradNorm": 1.6181,
+        "qTaken": -0.5003,
+        "targetMean": -0.0194
+      },
+      {
+        "t": 160000,
+        "episode": 1600,
+        "reward": -107296.9,
+        "ma": -104393.5,
+        "loss": 0.0633,
+        "gradNorm": 0.4905,
+        "qTaken": -0.5026,
+        "targetMean": -0.0295
+      },
+      {
+        "t": 165000,
+        "episode": 1650,
+        "reward": -105974.7,
+        "ma": -104778.2,
+        "loss": 0.0693,
+        "gradNorm": 3.8947,
+        "qTaken": -0.4994,
+        "targetMean": -0.0343
+      },
+      {
+        "t": 170000,
+        "episode": 1700,
+        "reward": -104061.9,
+        "ma": -104710.1,
+        "loss": 0.06,
+        "gradNorm": 3.5862,
+        "qTaken": -0.4996,
+        "targetMean": 0.0733
+      },
+      {
+        "t": 175000,
+        "episode": 1750,
+        "reward": -101539.7,
+        "ma": -104753.3,
+        "loss": 0.0572,
+        "gradNorm": 0.5803,
+        "qTaken": -0.4926,
+        "targetMean": 0.0341
+      },
+      {
+        "t": 180000,
+        "episode": 1800,
+        "reward": -106548.5,
+        "ma": -104870,
+        "loss": 0.0532,
+        "gradNorm": 0.8496,
+        "qTaken": -0.4925,
+        "targetMean": 0.0383
+      },
+      {
+        "t": 185000,
+        "episode": 1850,
+        "reward": -107442.1,
+        "ma": -104999.1,
+        "loss": 0.06,
+        "gradNorm": 1.9676,
+        "qTaken": -0.4883,
+        "targetMean": 0.0535
+      },
+      {
+        "t": 190000,
+        "episode": 1900,
+        "reward": -104250.3,
+        "ma": -104863.8,
+        "loss": 0.06,
+        "gradNorm": 2.4066,
+        "qTaken": -0.4859,
+        "targetMean": -0.0006
+      },
+      {
+        "t": 195000,
+        "episode": 1950,
+        "reward": -103511.1,
+        "ma": -104532.7,
+        "loss": 0.0585,
+        "gradNorm": 1.9361,
+        "qTaken": -0.4859,
+        "targetMean": 0.0235
+      },
+      {
+        "t": 200000,
+        "episode": 2000,
+        "reward": -96128.9,
+        "ma": -103664.8,
+        "loss": 0.0562,
+        "gradNorm": 2.2222,
+        "qTaken": -0.4834,
+        "targetMean": -0.117
+      },
+      {
+        "t": 205000,
+        "episode": 2050,
+        "reward": -107359.7,
+        "ma": -104411.4,
+        "loss": 0.0604,
+        "gradNorm": 0.7793,
+        "qTaken": -0.4763,
+        "targetMean": -0.0251
+      },
+      {
+        "t": 210000,
+        "episode": 2100,
+        "reward": -104392.7,
+        "ma": -104121,
+        "loss": 0.0582,
+        "gradNorm": 4.511,
+        "qTaken": -0.4773,
+        "targetMean": 0.0056
+      },
+      {
+        "t": 215000,
+        "episode": 2150,
+        "reward": -104202,
+        "ma": -103943.7,
+        "loss": 0.0487,
+        "gradNorm": 0.5014,
+        "qTaken": -0.4719,
+        "targetMean": 0.0382
+      },
+      {
+        "t": 220000,
+        "episode": 2200,
+        "reward": -100768.5,
+        "ma": -103614.4,
+        "loss": 0.0521,
+        "gradNorm": 6.749,
+        "qTaken": -0.4754,
+        "targetMean": 0.0309
+      },
+      {
+        "t": 225000,
+        "episode": 2250,
+        "reward": -107548.1,
+        "ma": -104215.2,
+        "loss": 0.0525,
+        "gradNorm": 1.1201,
+        "qTaken": -0.4753,
+        "targetMean": -0.1047
+      },
+      {
+        "t": 230000,
+        "episode": 2300,
+        "reward": -105633.9,
+        "ma": -104123.7,
+        "loss": 0.0494,
+        "gradNorm": 1.9152,
+        "qTaken": -0.4716,
+        "targetMean": 0.0843
+      },
+      {
+        "t": 235000,
+        "episode": 2350,
+        "reward": -97658.9,
+        "ma": -103145.4,
+        "loss": 0.0498,
+        "gradNorm": 6.7999,
+        "qTaken": -0.4705,
+        "targetMean": 0.0027
+      },
+      {
+        "t": 240000,
+        "episode": 2400,
+        "reward": -104717,
+        "ma": -103192.1,
+        "loss": 0.048,
+        "gradNorm": 3.8353,
+        "qTaken": -0.4686,
+        "targetMean": -0.0396
+      },
+      {
+        "t": 245000,
+        "episode": 2450,
+        "reward": -97892.7,
+        "ma": -102630.2,
+        "loss": 0.0508,
+        "gradNorm": 3.2455,
+        "qTaken": -0.4616,
+        "targetMean": -0.0759
+      },
+      {
+        "t": 250000,
+        "episode": 2500,
+        "reward": -108844.5,
+        "ma": -103901.8,
+        "loss": 0.0481,
+        "gradNorm": 9.1665,
+        "qTaken": -0.4702,
+        "targetMean": -0.0096
+      },
+      {
+        "t": 255000,
+        "episode": 2550,
+        "reward": -100099,
+        "ma": -103175.7,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 260000,
+        "episode": 2600,
+        "reward": -105333.8,
+        "ma": -103269.8,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 265000,
+        "episode": 2650,
+        "reward": -97035.2,
+        "ma": -102553.2,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 270000,
+        "episode": 2700,
+        "reward": -108491,
+        "ma": -103325.4,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 275000,
+        "episode": 2750,
+        "reward": -104956.9,
+        "ma": -103066.3,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 280000,
+        "episode": 2800,
+        "reward": -105952,
+        "ma": -103098.1,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 285000,
+        "episode": 2850,
+        "reward": -106585.8,
+        "ma": -103990.8,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 290000,
+        "episode": 2900,
+        "reward": -104196.9,
+        "ma": -103938.8,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 295000,
+        "episode": 2950,
+        "reward": -106211.4,
+        "ma": -104770.6,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 300000,
+        "episode": 3000,
+        "reward": -109219.9,
+        "ma": -104808.2,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 305000,
+        "episode": 3050,
+        "reward": -107224.4,
+        "ma": -105520.7,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 310000,
+        "episode": 3100,
+        "reward": -104889.4,
+        "ma": -105476.3,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 315000,
+        "episode": 3150,
+        "reward": -107657.7,
+        "ma": -106538.5,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 320000,
+        "episode": 3200,
+        "reward": -107670.2,
+        "ma": -106456.4,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 325000,
+        "episode": 3250,
+        "reward": -97121.6,
+        "ma": -105672.9,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 330000,
+        "episode": 3300,
+        "reward": -106939.1,
+        "ma": -105771.6,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 335000,
+        "episode": 3350,
+        "reward": -103195.1,
+        "ma": -105432.6,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 340000,
+        "episode": 3400,
+        "reward": -105924.6,
+        "ma": -105605.3,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 345000,
+        "episode": 3450,
+        "reward": -98795.2,
+        "ma": -104863.7,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 955000,
+        "episode": 9550,
+        "reward": -101158.1,
+        "ma": -104057.5,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 960000,
+        "episode": 9600,
+        "reward": -112221.7,
+        "ma": -104557.3,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 965000,
+        "episode": 9650,
+        "reward": -111041.3,
+        "ma": -105172.5,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 970000,
+        "episode": 9700,
+        "reward": -105521.6,
+        "ma": -104958.9,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 975000,
+        "episode": 9750,
+        "reward": -103318.9,
+        "ma": -104523.7,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 980000,
+        "episode": 9800,
+        "reward": -105844.5,
+        "ma": -105396,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 985000,
+        "episode": 9850,
+        "reward": -107013,
+        "ma": -105403.4,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 990000,
+        "episode": 9900,
+        "reward": -106720.2,
+        "ma": -105755.9,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 995000,
+        "episode": 9950,
+        "reward": -107578,
+        "ma": -105921.3,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      },
+      {
+        "t": 1000000,
+        "episode": 10000,
+        "reward": -107118.6,
+        "ma": -106753.6,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null
+      }
+    ]
+  },
+  "testCurve": [
+    {
+      "t": 100,
+      "episode": 1,
+      "return": -103207.7,
+      "returnMean": -105370.6,
+      "meanTravelTime": 129.9
+    },
+    {
+      "t": 10100,
+      "episode": 101,
+      "return": -107943.7,
+      "returnMean": -107167.8,
+      "meanTravelTime": 130.155
+    },
+    {
+      "t": 20100,
+      "episode": 201,
+      "return": -106388.9,
+      "returnMean": -105772,
+      "meanTravelTime": 140.379
+    },
+    {
+      "t": 30100,
+      "episode": 301,
+      "return": -107104.4,
+      "returnMean": -105766.1,
+      "meanTravelTime": 104.99
+    },
+    {
+      "t": 40100,
+      "episode": 401,
+      "return": -104129.3,
+      "returnMean": -106927.7,
+      "meanTravelTime": 107.855
+    },
+    {
+      "t": 50100,
+      "episode": 501,
+      "return": -105701.3,
+      "returnMean": -106401.5,
+      "meanTravelTime": 102.879
+    },
+    {
+      "t": 60100,
+      "episode": 601,
+      "return": -103657.1,
+      "returnMean": -104986.4,
+      "meanTravelTime": 156.677
+    },
+    {
+      "t": 70100,
+      "episode": 701,
+      "return": -100524.2,
+      "returnMean": -106252.5,
+      "meanTravelTime": 108.42
+    },
+    {
+      "t": 80100,
+      "episode": 801,
+      "return": -101915.4,
+      "returnMean": -105301.6,
+      "meanTravelTime": 118.911
+    },
+    {
+      "t": 90100,
+      "episode": 901,
+      "return": -106596.4,
+      "returnMean": -106110.9,
+      "meanTravelTime": 155.053
+    },
+    {
+      "t": 100100,
+      "episode": 1001,
+      "return": -103408.6,
+      "returnMean": -104403.8,
+      "meanTravelTime": 111.609
+    },
+    {
+      "t": 110100,
+      "episode": 1101,
+      "return": -107607.2,
+      "returnMean": -106814.6,
+      "meanTravelTime": 125.712
+    },
+    {
+      "t": 120100,
+      "episode": 1201,
+      "return": -103975.3,
+      "returnMean": -104949.3,
+      "meanTravelTime": 119.686
+    },
+    {
+      "t": 130100,
+      "episode": 1301,
+      "return": -107189.9,
+      "returnMean": -105302.7,
+      "meanTravelTime": 157.178
+    },
+    {
+      "t": 140100,
+      "episode": 1401,
+      "return": -108761.1,
+      "returnMean": -106814.4,
+      "meanTravelTime": 154.366
+    },
+    {
+      "t": 150100,
+      "episode": 1501,
+      "return": -104468.1,
+      "returnMean": -106014.5,
+      "meanTravelTime": 159.05
+    },
+    {
+      "t": 160100,
+      "episode": 1601,
+      "return": -106583.2,
+      "returnMean": -107304.4,
+      "meanTravelTime": 160.347
+    },
+    {
+      "t": 170100,
+      "episode": 1701,
+      "return": -104362.7,
+      "returnMean": -105201.4,
+      "meanTravelTime": 115.371
+    },
+    {
+      "t": 180100,
+      "episode": 1801,
+      "return": -106996.9,
+      "returnMean": -105324.1,
+      "meanTravelTime": 107.049
+    },
+    {
+      "t": 190100,
+      "episode": 1901,
+      "return": -105703.6,
+      "returnMean": -107973,
+      "meanTravelTime": 108.593
+    },
+    {
+      "t": 200100,
+      "episode": 2001,
+      "return": -104856.7,
+      "returnMean": -104745.2,
+      "meanTravelTime": 158.03
+    },
+    {
+      "t": 210100,
+      "episode": 2101,
+      "return": -105791,
+      "returnMean": -106371.8,
+      "meanTravelTime": 116.887
+    },
+    {
+      "t": 220100,
+      "episode": 2201,
+      "return": -106827.4,
+      "returnMean": -105931.1,
+      "meanTravelTime": 104.858
+    },
+    {
+      "t": 230100,
+      "episode": 2301,
+      "return": -106092.5,
+      "returnMean": -106255.9,
+      "meanTravelTime": 105.573
+    },
+    {
+      "t": 240100,
+      "episode": 2401,
+      "return": -108521.6,
+      "returnMean": -105777,
+      "meanTravelTime": 141.466
+    },
+    {
+      "t": 250100,
+      "episode": 2501,
+      "return": -100821.6,
+      "returnMean": -105897.9,
+      "meanTravelTime": 119.443
+    },
+    {
+      "t": 260100,
+      "episode": 2601,
+      "return": -105980,
+      "returnMean": -105958.3,
+      "meanTravelTime": 130.69
+    },
+    {
+      "t": 270100,
+      "episode": 2701,
+      "return": -106516.4,
+      "returnMean": -104522,
+      "meanTravelTime": 116.178
+    },
+    {
+      "t": 280100,
+      "episode": 2801,
+      "return": -106446,
+      "returnMean": -106621.7,
+      "meanTravelTime": 146.9
+    },
+    {
+      "t": 290100,
+      "episode": 2901,
+      "return": -107391.7,
+      "returnMean": -105607.7,
+      "meanTravelTime": 154.923
+    },
+    {
+      "t": 300100,
+      "episode": 3001,
+      "return": -106656.3,
+      "returnMean": -106024.6,
+      "meanTravelTime": 109.029
+    },
+    {
+      "t": 310100,
+      "episode": 3101,
+      "return": -106691.3,
+      "returnMean": -108194.8,
+      "meanTravelTime": 116.143
+    },
+    {
+      "t": 320100,
+      "episode": 3201,
+      "return": -105866.2,
+      "returnMean": -107856.6,
+      "meanTravelTime": 124.233
+    },
+    {
+      "t": 330100,
+      "episode": 3301,
+      "return": -106516.2,
+      "returnMean": -105107.4,
+      "meanTravelTime": 113.228
+    },
+    {
+      "t": 340100,
+      "episode": 3401,
+      "return": -107914.8,
+      "returnMean": -107067.7,
+      "meanTravelTime": 157.477
+    },
+    {
+      "t": 950100,
+      "episode": 9501,
+      "return": -107919.4,
+      "returnMean": -105796.9,
+      "meanTravelTime": 99.705
+    },
+    {
+      "t": 960100,
+      "episode": 9601,
+      "return": -107572.1,
+      "returnMean": -106464.3,
+      "meanTravelTime": 110.697
+    },
+    {
+      "t": 970100,
+      "episode": 9701,
+      "return": -107982.1,
+      "returnMean": -106338.6,
+      "meanTravelTime": 115.623
+    },
+    {
+      "t": 980100,
+      "episode": 9801,
+      "return": -107029.7,
+      "returnMean": -107320,
+      "meanTravelTime": 106.8
+    },
+    {
+      "t": 990100,
+      "episode": 9901,
+      "return": -104357.8,
+      "returnMean": -105167.8,
+      "meanTravelTime": 121.01
+    }
+  ]
+}
