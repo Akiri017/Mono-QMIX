@@ -123,11 +123,7 @@ class GlobalQMixer(nn.Module):
 
         # First layer
         # Generate weights: (batch, max_rsus * embed_dim)
-        # Floor at 1e-2 ensures the gradient path rsu_qtots → hidden is never
-        # fully severed. Without it, the optimizer collapses w1 toward zero
-        # (GlobalQMixer fits loss through b1/V/w_final alone, ignoring local_qtots),
-        # killing agent and local_mixer gradients even with LayerNorm on the input.
-        w1 = torch.abs(self.hyper_w_1(global_states)).clamp(min=1e-2)
+        w1 = torch.abs(self.hyper_w_1(global_states))  # Non-negative for monotonicity
         w1 = w1.view(batch_size, self.max_rsus, self.embed_dim)
 
         # Generate bias: (batch, embed_dim)
@@ -140,9 +136,7 @@ class GlobalQMixer(nn.Module):
 
         # Second layer
         # Generate weights: (batch, embed_dim)
-        # Same floor on w_final — if it collapses, hidden @ w_final → 0 and
-        # no gradient reaches local_qtots either.
-        w_final = torch.abs(self.hyper_w_final(global_states)).clamp(min=1e-2)
+        w_final = torch.abs(self.hyper_w_final(global_states))  # Non-negative
         w_final = w_final.view(batch_size, self.embed_dim, 1)
 
         # Generate state-dependent bias V(s)
