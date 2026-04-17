@@ -348,34 +348,43 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     marl:       makeMarlMetrics(2.8, -55, 95, 2.1, -200, 1250, 200, 24),
   },
   qmix: {
+    // ── Real PyMARL data — BGC Full (2 km²), LOS A, seed 1801, 30 eval episodes ──
+    // Source: results/mono-qmix-los-a/experiment_summary_losA.json + qmix_exp_1801.json
+    // Detail page fetches training curve & MARL diagnostics dynamically via /api/qmix
     id: 'qmix', label: 'Monolithic QMIX', sublabel: 'Baseline RL', rank: 2,
     color: '#A78BFA', colorDim: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)',
-    travelTime: 5.8, waitTime: 26.3, throughput: 1720, speed: 1.11,
-    co2: 178, fuel: 31, computeTime: 18.20, convergence: 200, reward: 980, efficiency: 71,
+    // LOS A eval defaults (seed 1801, 30 episodes) — overridden by useQmixRealData
+    travelTime: 2.08, waitTime: 7.96, throughput: 981, speed: 53.97,
+    co2: 498.2, fuel: 21.5, computeTime: 18.20, convergence: 9001, reward: -45791, efficiency: 71,
     description: 'Monolithic QMIX applies centralized multi-agent reinforcement learning where all agents share a joint action-value function. While effective at coordination, the monolithic architecture faces scalability limitations as network size grows, requiring more training episodes and compute to converge on larger topologies.',
     strengths: ['Fastest compute time per decision step', 'Good coordination at small scale', 'Solid baseline RL performance', 'Well-established QMIX framework'],
     scores: [0.80, 0.70, 0.70, 0.90, 0.72, 0.72, 0.75],
+    // Flat sparklines at eval measurement (single post-training evaluation)
     sparklines: {
-      travelTime:  [10.2, 9.5, 8.9, 8.3, 7.8, 7.3, 6.9, 6.5, 6.1, 5.8],
-      waitTime:    [42, 39, 36, 34, 32, 30, 29, 28, 27, 26.3],
-      throughput:  [1280, 1360, 1430, 1500, 1560, 1610, 1650, 1685, 1705, 1720],
-      speed:       [0.74, 0.80, 0.85, 0.89, 0.94, 0.98, 1.01, 1.05, 1.09, 1.11],
+      travelTime: [2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08],
+      waitTime:   [7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96],
+      throughput: [981,  981,  981,  981,  981,  981,  981,  981,  981,  981],
+      speed:      [53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97],
     },
-    changes: { travelTime: -43.1, waitTime: -37.4, throughput: 34.4, speed: 33.7 },
+    // vs noop baseline (LOS A): QMIX underperforms noop signal-free in low-traffic scenario
+    changes: { travelTime: +4.5, waitTime: +12.1, throughput: -12.3, speed: 0 },
     episodes: {
-      travelTime:  makeSeries(10.2, 5.8,  0.7, 0.5,  200, 5),
-      waitTime:    makeSeries(42,   26.3, 2.2, 1.7,  200, 6),
-      throughput:  makeSeries(1280, 1720, 45,  35,   200, 7),
-      speed:       makeSeries(0.74, 1.11,  0.07, 0.05, 200, 8),
+      travelTime:  makeSeries(2.66, 2.08, 0.20, 0.12, 200, 5),
+      waitTime:    makeSeries(9.8,  7.96, 0.35, 0.22, 200, 6),
+      throughput:  makeSeries(920,  981,  55,   35,   200, 7),
+      speed:       makeSeries(50,   53.97, 2.5, 1.5,  200, 8),
     },
     system: {
-      training: makeTraining(-180, 980, 140, 200, 16),
-      cpu:      makeCpu(22, 58, 5, 120, 18),
+      // Placeholder training curve — replaced by useQmixRealData hook on detail page
+      training: makeTraining(-48700, -45791, 800, 200, 16),
+      cpu:      makeCpu(65, 95, 8, 120, 18),
     },
     queue:      makeQueue([4.5, 5.8, 5.1, 3.9], 1.3, 120, 25),
     density:    makeDensity(22, 42, 6, 120, 26),
     congestion: makeCongestion(0.19, 0.38, 0.06, 120, 27),
-    marl:       makeMarlMetrics(3.2, -50, 72, 2.5, -180, 980, 200, 28),
+    // Placeholder MARL diagnostics — replaced by useQmixRealData hook on detail page
+    // Seed values match real log: tdStart=0.19 (loss@t=330k), qStart=-1.34, gradStart=8
+    marl:       makeMarlMetrics(0.19, -1.34, -1.25, 8, -48700, -45791, 200, 28),
   },
   selfish: {
     // ── Real PyMARL data — bgc_full map (2 km²), forced_flow (LOS E), seed 5, 30 episodes ──
@@ -1617,13 +1626,23 @@ const MapPlayer = ({ algo, mapSize }: { algo: AlgoData; mapSize: string }) => {
 }
 
 // ─── Congestion Heatmap ───────────────────────────────────────────────────────
-// Maps each algo to its representative heatmap image.
-// civiq / qmix (better performing) → heatmap_low  |  selfish → heatmap_high
-// Replace src values with real per-run images when backend is connected.
-const HEATMAP_IMG: Record<AlgoKey, string> = {
-  civiq:   '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
-  qmix:    '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
-  selfish: '/heatmap_output/bgc_full_intersection_based/heatmap_high.png',
+// Maps learning-based algos to their representative heatmap image.
+const HEATMAP_IMG: Record<'civiq' | 'qmix', string> = {
+  civiq: '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+  qmix:  '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+}
+
+// Real selfish routing heatmaps keyed by traffic level
+const SELFISH_HEATMAP: Record<string, string> = {
+  free_flow:   '/heatmap_output/bgc_full_actual/heatmap_low.png',
+  stable_flow: '/heatmap_output/bgc_full_actual/heatmap_med.png',
+  forced_flow: '/heatmap_output/bgc_full_actual/heatmap_high.png',
+}
+
+const SELFISH_CONGESTION_LABEL: Record<string, string> = {
+  free_flow:   'Low Congestion',
+  stable_flow: 'Moderate Congestion',
+  forced_flow: 'High Congestion',
 }
 
 const INT_KEYS = ['int1','int2','int3','int4'] as const
@@ -1879,17 +1898,23 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
 
 // ─── Congestion Heatmap card (simple — View Detail opens the modal) ────────────
 
-function CongestionHeatmap({ algo, onViewDetail }: { algo: AlgoData; onViewDetail: () => void }) {
+function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: {
+  algo: AlgoData
+  onViewDetail: () => void
+  heatmapSrc?: string
+  congestionLabel?: string
+}) {
+  const src = heatmapSrc ?? (algo.id !== 'selfish' ? HEATMAP_IMG[algo.id as 'civiq' | 'qmix'] : SELFISH_HEATMAP.forced_flow)
+  const label = congestionLabel ?? (algo.id === 'selfish' ? 'High Congestion' : 'Low Congestion')
+  const labelColor = label === 'Low Congestion' ? '#4ADE80' : label === 'Moderate Congestion' ? '#FACC15' : '#F87171'
+
   return (
     <GlassCard className="p-4 flex flex-col gap-2">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-baseline gap-2">
           <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Congestion Heatmap</h3>
-          <span className="text-[11px] font-semibold"
-            style={{ color: algo.id === 'selfish' ? '#F87171' : '#4ADE80' }}>
-            {algo.id === 'selfish' ? 'High Congestion' : 'Low Congestion'}
-          </span>
+          <span className="text-[11px] font-semibold" style={{ color: labelColor }}>{label}</span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -1907,7 +1932,7 @@ function CongestionHeatmap({ algo, onViewDetail }: { algo: AlgoData; onViewDetai
       {/* Heatmap image */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <div className="rounded-xl overflow-hidden flex-1" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(3,7,18,0.75)' }}>
-        <img src={HEATMAP_IMG[algo.id]} alt={`${algo.label} congestion heatmap`}
+        <img src={src} alt={`${algo.label} congestion heatmap`}
           style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
       </div>
 
@@ -2641,6 +2666,142 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
   return { kpis, timeseries, loading }
 }
 
+// ─── Monolithic QMIX real-data overlay ────────────────────────────────────────
+
+interface QmixTrainingEntry {
+  t: number
+  episode: number
+  reward: number
+  ma: number
+  loss: number | null
+  gradNorm: number | null
+  qTaken: number | null
+  targetMean: number | null
+}
+
+interface QmixBaselineKpis {
+  travelTime_s: number
+  waitTime_s: number
+  throughput: number
+  co2_g_per_km: number
+  fuel_l_per_100km: number
+  returnMean: number
+}
+
+interface QmixRealData {
+  kpis: {
+    travelTime_s: number
+    travelTime_min: number
+    travelTime_std: number
+    waitTime_s: number
+    waitTime_std: number
+    throughput: number
+    throughput_std: number
+    co2: number
+    fuel: number
+    cpuMean: number
+    cpuPeak: number
+    returnMean: number
+    realTimeFactor: number | null
+  }
+  baselines?: { noop?: QmixBaselineKpis; greedy_shortest?: QmixBaselineKpis }
+  evalReturns: number[]
+  evalTravelTimes: number[]
+  evalWaitingTimes: number[]
+  evalThroughputs: number[]
+  training: { note: string; curve: QmixTrainingEntry[] }
+  testCurve: { t: number; episode: number; returnMean: number | null }[]
+}
+
+// Maps frontend trafficScale → API scenario param
+const TRAFFIC_TO_QMIX_SCENARIO: Record<string, string> = {
+  free_flow:   'los_a',
+  forced_flow: 'los_e',
+  // stable_flow (LOS C) not yet available
+}
+
+function useQmixRealData(enabled: boolean, trafficScale: string) {
+  const [data, setData] = useState<QmixRealData | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const scenario = TRAFFIC_TO_QMIX_SCENARIO[trafficScale]
+    if (!enabled || !scenario) { setData(null); return }
+    setData(null)
+    setLoading(true)
+    fetch(`/api/qmix?scenario=${scenario}`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setData(d) })
+      .catch(() => {/* fall back to static placeholder */})
+      .finally(() => setLoading(false))
+  }, [enabled, trafficScale])
+
+  return { data, loading }
+}
+
+/** Convert API training curve → TrainingPoint[] with estimated confidence bands */
+function qmixToTrainingPoints(curve: QmixTrainingEntry[]): TrainingPoint[] {
+  if (!curve.length) return []
+  const W = 20
+  const rewards = curve.map(p => p.reward)
+  return curve.map((p, i) => {
+    const win = rewards.slice(Math.max(0, i - W), i + 1)
+    const std = win.length > 1
+      ? Math.sqrt(win.reduce((s, v) => s + (v - p.ma) ** 2, 0) / win.length)
+      : 500
+    return { episode: p.episode, reward: p.reward, lo: p.reward - std, hi: p.reward + std, ma: p.ma }
+  })
+}
+
+/** Convert API training curve → MarlPoint[] */
+function qmixToMarlPoints(curve: QmixTrainingEntry[]): MarlPoint[] {
+  if (!curve.length) return []
+  const W = 10
+  const rewards = curve.map(p => p.reward)
+  const qStd = 1.07  // q_taken_std mean from log
+  return curve.map((p, i) => {
+    const win = rewards.slice(Math.max(0, i - W), i + 1)
+    const band = win.length > 1
+      ? Math.sqrt(win.reduce((s, v) => s + (v - p.ma) ** 2, 0) / win.length)
+      : 500
+    return {
+      episode:    p.episode,
+      reward:     p.reward,
+      rewardLo:   p.reward - band,
+      rewardHi:   p.reward + band,
+      rewardMa:   p.ma,
+      tdLoss:     p.loss    ?? 0,
+      gradNorm:   p.gradNorm ?? 0,
+      qTakenMean: p.qTaken  ?? 0,
+      qTakenLo:   (p.qTaken ?? 0) - qStd,
+      qTakenHi:   (p.qTaken ?? 0) + qStd,
+      targetMean: p.targetMean ?? 0,
+    }
+  })
+}
+
+/** Convert 30 eval episodes → EpisodeSeries for detail modal */
+function qmixToEpisodeSeries(data: QmixRealData): EpisodeSeries {
+  const W = 5
+  function toPoints(raw: number[], scale = 1): EpisodePoint[] {
+    const vals = raw.map(v => v * scale)
+    return vals.map((v, i) => {
+      const win = vals.slice(Math.max(0, i - W), i + 1)
+      const ma = win.reduce((a, b) => a + b, 0) / win.length
+      const std = win.length > 1
+        ? Math.sqrt(win.reduce((s, x) => s + (x - ma) ** 2, 0) / win.length)
+        : 0
+      return { episode: i + 1, value: parseFloat(v.toFixed(3)), lo: parseFloat((v - std).toFixed(3)), hi: parseFloat((v + std).toFixed(3)), ma: parseFloat(ma.toFixed(3)) }
+    })
+  }
+  return {
+    travelTime: toPoints(data.evalTravelTimes, 1 / 60),  // s → min
+    waitTime:   toPoints(data.evalWaitingTimes),
+    throughput: toPoints(data.evalThroughputs),
+    speed:      toPoints(data.evalReturns.map(() => 53.97)),  // real_time_factor constant across eval
+  }
+}
+
 // ─── Algorithm Detail Page ────────────────────────────────────────────────────
 
 const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
@@ -2653,22 +2814,63 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   const isSelfish = algo.id === 'selfish'
   const { kpis: realKpis, timeseries: realTimeseries, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale, mapSize)
 
-  const displayAlgo: AlgoData = isSelfish && realKpis ? {
-    ...algo,
-    travelTime: realKpis.travelTime,
-    waitTime:   realKpis.waitTime,
-    throughput: realKpis.throughput,
-    speed:      realKpis.speed,
-    co2:        realKpis.co2,
-    fuel:       realKpis.fuel,
-    // Update sparklines to reflect real value (flat line at actual measurement)
-    sparklines: {
-      travelTime: algo.sparklines.travelTime.map(() => realKpis.travelTime),
-      waitTime:   algo.sparklines.waitTime.map(()   => realKpis.waitTime),
-      throughput: algo.sparklines.throughput.map(() => realKpis.throughput),
-      speed:      algo.sparklines.speed.map(()      => realKpis.speed),
-    },
-  } : algo
+  // For monolithic QMIX, fetch real training curve and eval data (scenario selected by trafficScale)
+  const isQmix = algo.id === 'qmix'
+  const { data: qmixData, loading: qmixLoading } = useQmixRealData(isQmix, trafficScale)
+
+  const displayAlgo: AlgoData = (() => {
+    if (isSelfish && realKpis) return {
+      ...algo,
+      travelTime: realKpis.travelTime,
+      waitTime:   realKpis.waitTime,
+      throughput: realKpis.throughput,
+      speed:      realKpis.speed,
+      co2:        realKpis.co2,
+      fuel:       realKpis.fuel,
+      sparklines: {
+        travelTime: algo.sparklines.travelTime.map(() => realKpis.travelTime),
+        waitTime:   algo.sparklines.waitTime.map(()   => realKpis.waitTime),
+        throughput: algo.sparklines.throughput.map(() => realKpis.throughput),
+        speed:      algo.sparklines.speed.map(()      => realKpis.speed),
+      },
+    }
+    if (isQmix && qmixData) {
+      const k = qmixData.kpis
+      const noop = qmixData.baselines?.noop
+      const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
+      return {
+        ...algo,
+        // Override KPIs with scenario-specific real values
+        travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
+        waitTime:   k.waitTime_s,
+        throughput: k.throughput,
+        speed:      k.realTimeFactor ?? algo.speed,
+        co2:        k.co2,
+        fuel:       k.fuel,
+        reward:     k.returnMean,
+        sparklines: {
+          travelTime: algo.sparklines.travelTime.map(() => parseFloat((k.travelTime_s / 60).toFixed(3))),
+          waitTime:   algo.sparklines.waitTime.map(()   => k.waitTime_s),
+          throughput: algo.sparklines.throughput.map(() => k.throughput),
+          speed:      algo.sparklines.speed.map(()      => k.realTimeFactor ?? algo.speed),
+        },
+        changes: noop ? {
+          travelTime: changePct(k.travelTime_s, noop.travelTime_s),
+          waitTime:   changePct(k.waitTime_s,   noop.waitTime_s),
+          throughput: changePct(k.throughput,   noop.throughput),
+          speed: 0,
+        } : algo.changes,
+        system: {
+          ...algo.system,
+          training: qmixToTrainingPoints(qmixData.training.curve),
+          cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak, 120), 8, 120, 18),
+        },
+        marl:    qmixToMarlPoints(qmixData.training.curve),
+        episodes: qmixToEpisodeSeries(qmixData),
+      }
+    }
+    return algo
+  })()
 
   return (
   <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
@@ -2708,6 +2910,17 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
               color: kpisLoading ? 'rgba(255,255,255,0.3)' : realKpis ? '#34D399' : 'rgba(255,255,255,0.3)',
             }}>
             {kpisLoading ? 'Loading data…' : realKpis ? 'Live SUMO Data' : 'Static Data'}
+          </span>
+        )}
+        {/* Real-data badge for monolithic QMIX */}
+        {isQmix && (
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+            style={{
+              background: qmixLoading ? 'rgba(255,255,255,0.06)' : qmixData ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.06)',
+              border: qmixLoading ? '1px solid rgba(255,255,255,0.1)' : qmixData ? '1px solid rgba(167,139,250,0.4)' : '1px solid rgba(255,255,255,0.1)',
+              color: qmixLoading ? 'rgba(255,255,255,0.3)' : qmixData ? '#A78BFA' : 'rgba(255,255,255,0.3)',
+            }}>
+            {qmixLoading ? 'Loading data…' : qmixData ? 'Real PyMARL Data · LOS A' : 'Static Data'}
           </span>
         )}
       </div>
@@ -2766,7 +2979,12 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           )}
         </GlassCard>
 
-        <CongestionHeatmap algo={displayAlgo} onViewDetail={() => setCongestionDetail(true)} />
+        <CongestionHeatmap
+          algo={displayAlgo}
+          onViewDetail={() => setCongestionDetail(true)}
+          heatmapSrc={isSelfish ? SELFISH_HEATMAP[trafficScale] : undefined}
+          congestionLabel={isSelfish ? SELFISH_CONGESTION_LABEL[trafficScale] : undefined}
+        />
       </div>
 
       {/* Map Player (col 2–3) */}
