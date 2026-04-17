@@ -89,6 +89,9 @@ env_args:
   sumo_seed: null
   sumo_warnings: false
 
+  # CPU monitoring
+  enable_cpu_monitoring: true
+
   # Debugging
   verbose: false
   render_mode: null
