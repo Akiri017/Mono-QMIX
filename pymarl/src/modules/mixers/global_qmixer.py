@@ -41,6 +41,14 @@ class GlobalQMixer(nn.Module):
         self.hypernet_layers = args.get("hypernet_layers", 2)
         self.hypernet_embed = args.get("hypernet_embed", 64)
 
+        # Normalize the global state before it enters any hypernetwork.
+        # Without this, raw SUMO obs (dim=24032, large magnitudes) cause
+        # hyper_w_1 to produce near-zero w1 weights via cancellation across
+        # the 64 hidden units, severing the gradient path to LocalQMixer and MAC.
+        # LayerNorm is per-sample (no warm-up, no running stats to checkpoint),
+        # and elementwise_affine=True lets the network learn the right scale.
+        self.state_norm = nn.LayerNorm(self.global_state_dim)
+
         # Hypernetwork for first layer weights
         # Output: (max_rsus, embed_dim) mixing weights
         if self.hypernet_layers == 1:
@@ -102,6 +110,10 @@ class GlobalQMixer(nn.Module):
             global_qtot:   (batch_size, 1)
         """
         batch_size = rsu_qtots.size(0)
+
+        # Normalize per-sample before entering the hypernetwork.
+        # Prevents w1 collapse caused by large-magnitude raw SUMO states.
+        global_states = self.state_norm(global_states)
 
         # Zero out padded RSU Q_tots so they don't contribute to mixing
         rsu_qtots = rsu_qtots * rsu_mask
