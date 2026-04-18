@@ -132,7 +132,7 @@ class GlobalQMixer(nn.Module):
 
         # First mixing layer: Q_rsus @ W1 + b1
         # (batch, 1, max_rsus) @ (batch, max_rsus, embed_dim) = (batch, 1, embed_dim)
-        hidden = F.elu(torch.bmm(rsu_qtots, w1) + b1)
+        hidden = F.softplus(torch.bmm(rsu_qtots, w1) + b1)
 
         # Second layer
         # Generate weights: (batch, embed_dim)

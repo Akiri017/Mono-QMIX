@@ -281,16 +281,6 @@ class HierarchicalQLearner:
         local_mixer_grad_norm = _grad_norm(self.local_mixer.parameters())
         global_mixer_grad_norm = _grad_norm(self.global_mixer.parameters())
 
-        # Precision diagnostic — remove once grad scale is confirmed stable.
-        local_has_grad = any(p.grad is not None for p in self.local_mixer.parameters())
-        agent_has_grad = any(p.grad is not None for p in self.mac.parameters())
-        print(
-            f"[GRAD DIAG t={t_env}] "
-            f"local_has_grad={local_has_grad} local_norm={local_mixer_grad_norm:.6e} | "
-            f"agent_has_grad={agent_has_grad} agent_norm={agent_grad_norm:.6e} | "
-            f"global_norm={global_mixer_grad_norm:.6e}"
-        )
-
         # Per-component gradient clipping — each group gets its own budget.
         # Joint clipping lets a global_mixer spike (e.g. 7000+) consume the
         # entire clip budget, leaving local and agent with effectively zero update.
