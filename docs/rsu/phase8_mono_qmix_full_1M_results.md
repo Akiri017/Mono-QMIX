@@ -136,8 +136,8 @@ The policy plateaued completely at t=500k — the second 500k steps produced
 zero improvement (final = best). Throughput collapsed: 1,675 veh/h vs
 2,187 veh/h for noop (23% lower). Stops increased 62% over noop.
 
-The single global mixer cannot coordinate 32 agents effectively at high
-density — rerouting decisions by one agent cascade into congestion for
+The single global mixer cannot coordinate 32 agents effectively at highdensity — rerouting decisions by one agent cascade into congestion for
+
 others. This is the central motivation for CiViQ's zone-partitioned
 hierarchical architecture.
 
