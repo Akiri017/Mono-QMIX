@@ -2716,8 +2716,8 @@ interface QmixRealData {
 // Maps frontend trafficScale → API scenario param
 const TRAFFIC_TO_QMIX_SCENARIO: Record<string, string> = {
   free_flow:   'los_a',
+  stable_flow: 'los_c',
   forced_flow: 'los_e',
-  // stable_flow (LOS C) not yet available
 }
 
 function useQmixRealData(enabled: boolean, trafficScale: string) {
@@ -2920,7 +2920,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
               border: qmixLoading ? '1px solid rgba(255,255,255,0.1)' : qmixData ? '1px solid rgba(167,139,250,0.4)' : '1px solid rgba(255,255,255,0.1)',
               color: qmixLoading ? 'rgba(255,255,255,0.3)' : qmixData ? '#A78BFA' : 'rgba(255,255,255,0.3)',
             }}>
-            {qmixLoading ? 'Loading data…' : qmixData ? 'Real PyMARL Data · LOS A' : 'Static Data'}
+            {qmixLoading ? 'Loading data…' : qmixData ? `Real PyMARL Data · ${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
           </span>
         )}
       </div>

@@ -1,8 +1,9 @@
 /**
- * GET /api/qmix?scenario=los_a|los_e
+ * GET /api/qmix?scenario=los_a|los_c|los_e
  *
  * Returns real KPIs and training curve data for Monolithic QMIX.
  * LOS A: results/mono-qmix-los-a/ (seed 1801, 1M timesteps, 30 eval episodes)
+ * LOS C: results/mono-qmix/mono-qmix-los-c/ (seed 1802, 1M timesteps, 30 eval episodes)
  * LOS E: results/mono-qmix-los-e/ (seed 1803, 1M timesteps, 30 eval episodes)
  */
 import { NextRequest, NextResponse } from 'next/server'
@@ -13,6 +14,7 @@ const DATA_DIR = path.join(process.cwd(), 'data', 'mono_qmix')
 
 const SCENARIO_FILES: Record<string, string> = {
   los_a: 'metrics_los_a.json',
+  los_c: 'metrics_los_c.json',
   los_e: 'metrics_los_e.json',
 }
 
