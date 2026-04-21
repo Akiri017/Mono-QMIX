@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {
   ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine,
+  ResponsiveContainer, ReferenceLine, Bar, Cell,
 } from 'recharts'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { SimulationControls } from '@/components/SimulationControls'
@@ -407,10 +407,10 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     },
     changes: { travelTime: 0, waitTime: 0, throughput: 0, speed: 0 },
     episodes: {
-      travelTime:  makeSeries(2.12, 2.12, 0.15, 0.10, 200, 9),
-      waitTime:    makeSeries(20.8, 20.8, 1.5,  1.0,  200, 10),
-      throughput:  makeSeries(2178, 2178, 60,   45,   200, 11),
-      speed:       makeSeries(248.84, 248.84, 8, 5,   200, 12),
+      travelTime:  makeSeries(2.12, 2.12, 0.15, 0.10, 10000, 9),
+      waitTime:    makeSeries(20.8, 20.8, 1.5,  1.0,  10000, 10),
+      throughput:  makeSeries(2178, 2178, 60,   45,   10000, 11),
+      speed:       makeSeries(248.84, 248.84, 8, 5,   10000, 12),
     },
     system: {
       training: [],  // Selfish Routing has no training phase
@@ -1272,19 +1272,21 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 // Wraps react-gauge-chart. To plug in real data, pass the live `value` and
 // `max` from your API response — the `percent` is computed here automatically.
 
-const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentColor, description }: {
+const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentColor, description, onClick }: {
   value: number
   max: number
   label: string
   unit: string
   accentColor: string
   description?: string
+  onClick?: () => void
 }) {
   const percent = Math.min(1, Math.max(0, value / max))
 
   return (
     <GlassCard className="group relative z-0 hover:z-20 flex-1 flex flex-col items-center justify-center py-2 px-2 gap-1"
-      style={{ background: 'rgba(255,255,255,0.045)', minWidth: 0 }}>
+      style={{ background: 'rgba(255,255,255,0.045)', minWidth: 0, cursor: onClick ? 'pointer' : undefined }}
+      onClick={onClick}>
       {description && (
         <div className="group/info absolute top-2 right-2 z-20">
           <div
@@ -1333,13 +1335,23 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
         <span className="text-[9px] font-bold uppercase tracking-wider mt-1.5 text-center"
           style={{ color: 'rgba(255,255,255,0.65)' }}>{label}</span>
       </div>
+      {/* View detail badge — only when onClick provided */}
+      {onClick && (
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none"
+          style={{ whiteSpace: 'nowrap' }}>
+          <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.7)' }}>
+            View detail ↗
+          </span>
+        </div>
+      )}
     </GlassCard>
   )
 })
 
 // ─── Map Player ───────────────────────────────────────────────────────────────
 
-const MapPlayer = ({ algo, mapSize }: { algo: AlgoData; mapSize: string }) => {
+const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData; mapSize: string; onCo2Click?: () => void; onFuelClick?: () => void }) => {
   // Playback
   const videoRef = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(false)
@@ -1619,6 +1631,7 @@ const MapPlayer = ({ algo, mapSize }: { algo: AlgoData; mapSize: string }) => {
           unit="g/km"
           accentColor={algo.color}
           description="The mean carbon dioxide output per vehicle during the simulation, as measured by SUMO's emissions model. Lower values reflect more efficient routing."
+          onClick={onCo2Click}
         />
         <GaugeChart
           value={algo.fuel}
@@ -1627,6 +1640,7 @@ const MapPlayer = ({ algo, mapSize }: { algo: AlgoData; mapSize: string }) => {
           unit="L/100km"
           accentColor={algo.color}
           description="The mean fuel used per vehicle throughout the simulation, as calculated by SUMO. Reflects the environmental cost of routing behavior."
+          onClick={onFuelClick}
         />
       </div>
     </GlassCard>
@@ -1953,6 +1967,16 @@ function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: 
     </GlassCard>
   )
 }
+
+// ─── Selfish Detail Modal types & constants ───────────────────────────────────
+
+type SelfishMetricKey = 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'
+
+const CIVIQ_LOS_REF = {
+  free_flow:   { travelTime: 2.013, waitTime: 7.4794,  throughput: 1140.18, co2: 461.511, fuel: 19.917 },
+  stable_flow: { travelTime: 1.965, waitTime: 10.2765, throughput: 1223.017, co2: 488.249, fuel: 21.057 },
+  forced_flow: { travelTime: 1.885, waitTime: 19.3433, throughput: 2243.68,  co2: 525.807, fuel: 22.617 },
+} as const
 
 // ─── Episode Detail Modal ─────────────────────────────────────────────────────
 
@@ -2685,6 +2709,44 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
   return { kpis, timeseries, civiq, loading }
 }
 
+// ─── Selfish All-Levels hook ───────────────────────────────────────────────────
+
+interface SelfishLevelKpis {
+  travelTime: number  // min
+  waitTime: number    // sec
+  throughput: number  // veh/hr
+  co2: number         // g/km
+  fuel: number        // L/100km
+}
+
+function useSelfishAllLevels(enabled: boolean, mapSize: string) {
+  const [levels, setLevels] = useState<Record<string, SelfishLevelKpis> | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!enabled) return
+    setLoading(true)
+    Promise.all([
+      fetch(`/api/selfish?trafficLevel=free_flow&map=${mapSize}`).then(r => r.json()),
+      fetch(`/api/selfish?trafficLevel=stable_flow&map=${mapSize}`).then(r => r.json()),
+      fetch(`/api/selfish?trafficLevel=forced_flow&map=${mapSize}`).then(r => r.json()),
+    ])
+      .then(([a, c, e]) => {
+        if (a.success && c.success && e.success) {
+          setLevels({
+            free_flow:   { travelTime: a.kpis.travelTime, waitTime: a.kpis.waitTime, throughput: a.kpis.throughput, co2: a.kpis.co2, fuel: a.kpis.fuel },
+            stable_flow: { travelTime: c.kpis.travelTime, waitTime: c.kpis.waitTime, throughput: c.kpis.throughput, co2: c.kpis.co2, fuel: c.kpis.fuel },
+            forced_flow: { travelTime: e.kpis.travelTime, waitTime: e.kpis.waitTime, throughput: e.kpis.throughput, co2: e.kpis.co2, fuel: e.kpis.fuel },
+          })
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [enabled, mapSize])
+
+  return { levels, loading }
+}
+
 // ─── Monolithic QMIX real-data overlay ────────────────────────────────────────
 
 interface QmixTrainingEntry {
@@ -2891,6 +2953,141 @@ function qmixToEpisodeSeries(data: QmixRealData): EpisodeSeries {
   }
 }
 
+// ─── Selfish Detail Modal ─────────────────────────────────────────────────────
+
+const LOS_LABELS: Record<string, string> = {
+  free_flow: 'LOS A',
+  stable_flow: 'LOS C',
+  forced_flow: 'LOS E',
+}
+
+const SELFISH_METRIC_META: Record<SelfishMetricKey, { label: string; unit: string; lowerBetter: boolean }> = {
+  travelTime: { label: 'Avg. Travel Time',      unit: 'min',     lowerBetter: true  },
+  waitTime:   { label: 'Avg. Waiting Time',     unit: 'sec',     lowerBetter: true  },
+  throughput: { label: 'Network Throughput',    unit: 'veh/hr',  lowerBetter: false },
+  co2:        { label: 'Avg. CO₂ Emissions',    unit: 'g/km',    lowerBetter: true  },
+  fuel:       { label: 'Avg. Fuel Consumption', unit: 'L/100km', lowerBetter: true  },
+}
+
+const SELFISH_CO2_EPISODES  = makeSeries(485.6, 485.6, 15,  10,  10000, 13)
+const SELFISH_FUEL_EPISODES = makeSeries(20.89, 20.89, 0.8, 0.5, 10000, 14)
+
+const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
+  metricKey: SelfishMetricKey
+  algoColor: string
+  data: EpisodePoint[]
+  onClose: () => void
+}) => {
+  const meta = SELFISH_METRIC_META[metricKey]
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null
+    const byKey = Object.fromEntries(payload.map((p: any) => [p.dataKey, p.value]))
+    return (
+      <div style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', fontSize: 11 }}>
+        <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Episode {label}</p>
+        {byKey.value !== undefined && <p style={{ color: algoColor }}>Value: <b>{byKey.value.toFixed(2)}</b> {meta.unit}</p>}
+        {byKey.ma    !== undefined && <p style={{ color: 'rgba(255,255,255,0.7)' }}>MA-10: <b>{byKey.ma.toFixed(2)}</b> {meta.unit}</p>}
+        {byKey.hi    !== undefined && byKey.lo !== undefined && (
+          <p style={{ color: 'rgba(255,255,255,0.35)' }}>Band: {byKey.lo.toFixed(2)} – {byKey.hi.toFixed(2)}</p>
+        )}
+      </div>
+    )
+  }
+
+  const step = Math.max(1, Math.floor(data.length / 200))
+  const sampled = data.filter((_, i) => i % step === 0)
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      onClick={onClose}>
+      <div className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
+        style={{ maxWidth: '780px', background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.13)', boxShadow: '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)' }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-[17px] font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
+              {meta.label} <span style={{ color: algoColor }}>· Selfish Routing</span>
+            </h3>
+            <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Per-episode trend · Selfish Routing · {data.length.toLocaleString()} episodes
+            </p>
+          </div>
+          <button onClick={onClose}
+            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-5 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-[2px] rounded" style={{ background: algoColor }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Per-episode value</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-[2px] rounded" style={{ background: 'rgba(255,255,255,0.65)', borderTop: '2px dashed rgba(255,255,255,0.65)' }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>10-ep. moving avg.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-3.5 rounded-sm" style={{ background: algoColor, opacity: 0.18 }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Confidence band</span>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart data={sampled} margin={{ top: 8, right: 12, left: 0, bottom: 20 }}>
+            <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 4" />
+            <XAxis dataKey="episode"
+              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
+              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+              interval={Math.floor(sampled.length / 10)}
+            />
+            <YAxis tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
+              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+              tickFormatter={v => `${v}`} width={52} />
+            <Tooltip content={<CustomTooltip />} />
+            <Area type="monotone" dataKey="hi" stroke="none"
+              fill={algoColor} fillOpacity={0.12} legendType="none" isAnimationActive={false} />
+            <Area type="monotone" dataKey="lo" stroke="none"
+              fill="rgba(4,9,22,1)" fillOpacity={1} legendType="none" isAnimationActive={false} />
+            <Line type="monotone" dataKey="value" stroke={algoColor} strokeWidth={1.5}
+              dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
+            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.65)" strokeWidth={1.5}
+              dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+
+        {/* Summary stats */}
+        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          {[
+            { label: 'First ep.', value: data[0]?.value.toFixed(2) },
+            { label: 'Last ep.',  value: data[data.length - 1]?.value.toFixed(2) },
+            { label: 'Min',       value: Math.min(...sampled.map(d => d.value)).toFixed(2) },
+            { label: 'Max',       value: Math.max(...sampled.map(d => d.value)).toFixed(2) },
+          ].map(({ label, value }) => (
+            <div key={label} className="text-center">
+              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</div>
+              <div className="text-[15px] font-bold tabular-nums" style={{ color: algoColor }}>{value}</div>
+              <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>{meta.unit}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Algorithm Detail Page ────────────────────────────────────────────────────
 
 const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
@@ -2898,10 +3095,12 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 }) => {
   const [openModal, setOpenModal] = useState<EpisodeMetricKey | null>(null)
   const [congestionDetail, setCongestionDetail] = useState(false)
+  const [selfishModal, setSelfishModal] = useState<SelfishMetricKey | null>(null)
 
   // For selfish routing, fetch real simulation data and overlay onto static algo object
   const isSelfish = algo.id === 'selfish'
   const { kpis: realKpis, timeseries: realTimeseries, civiq: selfishCiviq, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale, mapSize)
+  const { levels: selfishAllLevels } = useSelfishAllLevels(isSelfish, mapSize)
 
   // For monolithic QMIX, fetch real training curve and eval data (scenario selected by trafficScale)
   const isQmix = algo.id === 'qmix'
@@ -2910,6 +3109,22 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   // For CiViQ, fetch real eval data (same schema as QMIX)
   const isCiviq = algo.id === 'civiq'
   const { data: civiqData, loading: civiqLoading } = useCiviqRealData(isCiviq, trafficScale)
+
+  // Build a 10-point sparkline interpolated across all 3 LOS levels for selfish
+  function selfishSparkline(key: SelfishMetricKey): number[] {
+    if (!selfishAllLevels) return algo.sparklines[key as keyof typeof algo.sparklines] as number[]
+    const a = selfishAllLevels.free_flow[key]
+    const c = selfishAllLevels.stable_flow[key]
+    const e = selfishAllLevels.forced_flow[key]
+    const lerp = (x: number, y: number, t: number) => x + (y - x) * t
+    return [
+      a, a,
+      lerp(a, c, 0.33), lerp(a, c, 0.67),
+      c, c,
+      lerp(c, e, 0.33), lerp(c, e, 0.67),
+      e, e,
+    ].map(v => parseFloat(v.toFixed(3)))
+  }
 
   const displayAlgo: AlgoData = (() => {
     if (isSelfish && realKpis) {
@@ -2924,10 +3139,10 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         co2:        realKpis.co2,
         fuel:       realKpis.fuel,
         sparklines: {
-          travelTime: algo.sparklines.travelTime.map(() => realKpis.travelTime),
-          waitTime:   algo.sparklines.waitTime.map(()   => realKpis.waitTime),
-          throughput: algo.sparklines.throughput.map(() => realKpis.throughput),
-          speed:      algo.sparklines.speed.map(()      => realKpis.speed),
+          travelTime: selfishSparkline('travelTime'),
+          waitTime:   selfishSparkline('waitTime'),
+          throughput: selfishSparkline('throughput'),
+          speed:      algo.sparklines.speed.map(() => realKpis.speed),
         },
         changes: selfishCiviq ? {
           travelTime: changePct(travelTime_s,        selfishCiviq.travelTime_s),
@@ -3019,6 +3234,20 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     {openModal && (
       <EpisodeDetailModal algo={displayAlgo} metricKey={openModal} onClose={() => setOpenModal(null)} />
     )}
+    {/* Selfish detail modal */}
+    {isSelfish && selfishModal && (() => {
+      const data = selfishModal === 'co2'  ? SELFISH_CO2_EPISODES
+                 : selfishModal === 'fuel' ? SELFISH_FUEL_EPISODES
+                 : displayAlgo.episodes[selfishModal as EpisodeMetricKey]
+      return (
+        <SelfishDetailModal
+          metricKey={selfishModal}
+          algoColor={displayAlgo.color}
+          data={data}
+          onClose={() => setSelfishModal(null)}
+        />
+      )
+    })()}
     {/* Congestion detail modal */}
     {congestionDetail && (
       <CongestionDetailModal algo={displayAlgo} onClose={() => setCongestionDetail(false)} />
@@ -3083,25 +3312,25 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       </div>
     </div>
 
-    {/* KPI Row — no episode modal for selfish (single-run, no training episodes) */}
+    {/* KPI Row */}
     <div className="grid grid-cols-4 gap-4">
       <KpiCard label="Avg. Travel Time" abbr="ATT" value={displayAlgo.travelTime} unit="min"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.travelTime} lowerBetter sparkData={displayAlgo.sparklines.travelTime}
         changeLabel={isSelfish && selfishCiviq ? 'vs. CiViQ' : undefined}
-        onClick={isSelfish ? undefined : () => setOpenModal('travelTime')}
+        onClick={isSelfish ? () => setSelfishModal('travelTime') : () => setOpenModal('travelTime')}
         description="The mean time it takes for a vehicle to complete its route from entry to exit, across all vehicles in the simulation." />
       <KpiCard label="Avg. Wait Time" abbr="AWT" value={displayAlgo.waitTime} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.waitTime} lowerBetter sparkData={displayAlgo.sparklines.waitTime}
         changeLabel={isSelfish && selfishCiviq ? 'vs. CiViQ' : undefined}
-        onClick={isSelfish ? undefined : () => setOpenModal('waitTime')}
+        onClick={isSelfish ? () => setSelfishModal('waitTime') : () => setOpenModal('waitTime')}
         description="The mean time vehicles spent fully stopped in traffic. High values indicate congestion or poor routing decisions." />
       <KpiCard label="Throughput" abbr="TPT" value={displayAlgo.throughput.toLocaleString()} unit="veh/hr"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.throughput} sparkData={displayAlgo.sparklines.throughput}
         changeLabel={isSelfish && selfishCiviq ? 'vs. CiViQ' : undefined}
-        onClick={isSelfish ? undefined : () => setOpenModal('throughput')}
+        onClick={isSelfish ? () => setSelfishModal('throughput') : () => setOpenModal('throughput')}
         description="The number of vehicles that successfully completed their routes per minute. Higher values indicate better overall traffic flow." />
       <KpiCard label="Real-time Factor" abbr="RTF" value={displayAlgo.speed.toFixed(2)} unit="x"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
@@ -3143,7 +3372,10 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       </div>
 
       {/* Map Player (col 2–3) */}
-      <MapPlayer algo={displayAlgo} mapSize={mapSize} />
+      <MapPlayer algo={displayAlgo} mapSize={mapSize}
+        onCo2Click={isSelfish ? () => setSelfishModal('co2') : undefined}
+        onFuelClick={isSelfish ? () => setSelfishModal('fuel') : undefined}
+      />
     </div>
 
     {/* Analytics row */}
