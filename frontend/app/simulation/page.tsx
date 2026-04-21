@@ -2688,6 +2688,21 @@ interface QmixBaselineKpis {
   returnMean: number
 }
 
+interface QmixTrainPoint {
+  t: number
+  return: number
+  travelTime_s: number | null
+  waitTime_s: number | null
+  arrivalRate: number | null
+  speedMs: number | null
+  totalStops: number | null
+  loss: number | null
+  gradNorm: number | null
+  qTaken: number | null
+  qTakenStd: number | null
+  targetMean: number | null
+}
+
 interface QmixRealData {
   kpis: {
     travelTime_s: number
@@ -2703,6 +2718,7 @@ interface QmixRealData {
     cpuPeak: number
     returnMean: number
     realTimeFactor: number | null
+    arrivalRate: number
   }
   baselines?: { noop?: QmixBaselineKpis; greedy_shortest?: QmixBaselineKpis }
   evalReturns: number[]
@@ -2710,6 +2726,7 @@ interface QmixRealData {
   evalWaitingTimes: number[]
   evalThroughputs: number[]
   training: { note: string; curve: QmixTrainingEntry[] }
+  trainMetrics?: { note: string; curve: QmixTrainPoint[] }
   testCurve: { t: number; episode: number; returnMean: number | null }[]
 }
 
@@ -2739,40 +2756,67 @@ function useQmixRealData(enabled: boolean, trafficScale: string) {
   return { data, loading }
 }
 
-/** Convert API training curve → TrainingPoint[] with estimated confidence bands */
-function qmixToTrainingPoints(curve: QmixTrainingEntry[]): TrainingPoint[] {
+function useCiviqRealData(enabled: boolean, trafficScale: string) {
+  const [data, setData] = useState<QmixRealData | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const scenario = TRAFFIC_TO_QMIX_SCENARIO[trafficScale]
+    if (!enabled || !scenario) { setData(null); return }
+    setData(null)
+    setLoading(true)
+    fetch(`/api/civiq?scenario=${scenario}`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setData(d) })
+      .catch(() => {/* fall back to static placeholder */})
+      .finally(() => setLoading(false))
+  }, [enabled, trafficScale])
+
+  return { data, loading }
+}
+
+/** Convert trainMetrics curve → TrainingPoint[] with moving-average confidence bands */
+function qmixToTrainingPoints(curve: QmixTrainPoint[]): TrainingPoint[] {
   if (!curve.length) return []
   const W = 20
-  const rewards = curve.map(p => p.reward)
+  const rewards = curve.map(p => p.return)
+  const ma = rewards.map((_, i) => {
+    const win = rewards.slice(Math.max(0, i - W), i + 1)
+    return win.reduce((a, b) => a + b, 0) / win.length
+  })
   return curve.map((p, i) => {
     const win = rewards.slice(Math.max(0, i - W), i + 1)
     const std = win.length > 1
-      ? Math.sqrt(win.reduce((s, v) => s + (v - p.ma) ** 2, 0) / win.length)
+      ? Math.sqrt(win.reduce((s, v) => s + (v - ma[i]) ** 2, 0) / win.length)
       : 500
-    return { episode: p.episode, reward: p.reward, lo: p.reward - std, hi: p.reward + std, ma: p.ma }
+    return { episode: Math.round(p.t / 100), reward: p.return, lo: p.return - std, hi: p.return + std, ma: ma[i] }
   })
 }
 
-/** Convert API training curve → MarlPoint[] */
-function qmixToMarlPoints(curve: QmixTrainingEntry[]): MarlPoint[] {
+/** Convert trainMetrics curve → MarlPoint[] using real loss/gradNorm/qTaken values */
+function qmixToMarlPoints(curve: QmixTrainPoint[]): MarlPoint[] {
   if (!curve.length) return []
   const W = 10
-  const rewards = curve.map(p => p.reward)
-  const qStd = 1.07  // q_taken_std mean from log
+  const rewards = curve.map(p => p.return)
+  const ma = rewards.map((_, i) => {
+    const win = rewards.slice(Math.max(0, i - W), i + 1)
+    return win.reduce((a, b) => a + b, 0) / win.length
+  })
   return curve.map((p, i) => {
     const win = rewards.slice(Math.max(0, i - W), i + 1)
     const band = win.length > 1
-      ? Math.sqrt(win.reduce((s, v) => s + (v - p.ma) ** 2, 0) / win.length)
+      ? Math.sqrt(win.reduce((s, v) => s + (v - ma[i]) ** 2, 0) / win.length)
       : 500
+    const qStd = p.qTakenStd ?? 1.07
     return {
-      episode:    p.episode,
-      reward:     p.reward,
-      rewardLo:   p.reward - band,
-      rewardHi:   p.reward + band,
-      rewardMa:   p.ma,
-      tdLoss:     p.loss    ?? 0,
-      gradNorm:   p.gradNorm ?? 0,
-      qTakenMean: p.qTaken  ?? 0,
+      episode:    Math.round(p.t / 100),
+      reward:     p.return,
+      rewardLo:   p.return - band,
+      rewardHi:   p.return + band,
+      rewardMa:   ma[i],
+      tdLoss:     p.loss      ?? 0,
+      gradNorm:   p.gradNorm  ?? 0,
+      qTakenMean: p.qTaken    ?? 0,
       qTakenLo:   (p.qTaken ?? 0) - qStd,
       qTakenHi:   (p.qTaken ?? 0) + qStd,
       targetMean: p.targetMean ?? 0,
@@ -2780,25 +2824,51 @@ function qmixToMarlPoints(curve: QmixTrainingEntry[]): MarlPoint[] {
   })
 }
 
-/** Convert 30 eval episodes → EpisodeSeries for detail modal */
+/** Convert trainMetrics training-progress curve → EpisodeSeries for detail modal */
 function qmixToEpisodeSeries(data: QmixRealData): EpisodeSeries {
+  const curve = data.trainMetrics?.curve
+  if (curve && curve.length > 0) {
+    const W = 10
+    const throughputScale = data.kpis.arrivalRate > 0
+      ? data.kpis.throughput / data.kpis.arrivalRate
+      : 1
+    function trainPoints(vals: (number | null)[], scale = 1): EpisodePoint[] {
+      const nonNull = vals.reduce<{ v: number; ep: number }[]>((acc, v, i) => {
+        if (v !== null) acc.push({ v: v * scale, ep: Math.round(curve![i].t / 100) })
+        return acc
+      }, [])
+      return nonNull.map(({ v, ep }, j) => {
+        const win = nonNull.slice(Math.max(0, j - W), j + 1).map(x => x.v)
+        const avg = win.reduce((a, b) => a + b, 0) / win.length
+        const std = win.length > 1
+          ? Math.sqrt(win.reduce((s, x) => s + (x - avg) ** 2, 0) / win.length)
+          : 0
+        return { episode: ep, value: parseFloat(v.toFixed(3)), lo: parseFloat((v - std).toFixed(3)), hi: parseFloat((v + std).toFixed(3)), ma: parseFloat(avg.toFixed(3)) }
+      })
+    }
+    return {
+      travelTime: trainPoints(curve.map(p => p.travelTime_s), 1 / 60),
+      waitTime:   trainPoints(curve.map(p => p.waitTime_s)),
+      throughput: trainPoints(curve.map(p => p.arrivalRate !== null ? p.arrivalRate * throughputScale : null)),
+      speed:      trainPoints(curve.map(p => p.speedMs !== null ? p.speedMs * 3.6 : null)),
+    }
+  }
+  // Fallback: 30 post-training eval episodes
   const W = 5
-  function toPoints(raw: number[], scale = 1): EpisodePoint[] {
+  function evalPoints(raw: number[], scale = 1): EpisodePoint[] {
     const vals = raw.map(v => v * scale)
     return vals.map((v, i) => {
       const win = vals.slice(Math.max(0, i - W), i + 1)
-      const ma = win.reduce((a, b) => a + b, 0) / win.length
-      const std = win.length > 1
-        ? Math.sqrt(win.reduce((s, x) => s + (x - ma) ** 2, 0) / win.length)
-        : 0
-      return { episode: i + 1, value: parseFloat(v.toFixed(3)), lo: parseFloat((v - std).toFixed(3)), hi: parseFloat((v + std).toFixed(3)), ma: parseFloat(ma.toFixed(3)) }
+      const avg = win.reduce((a, b) => a + b, 0) / win.length
+      const std = win.length > 1 ? Math.sqrt(win.reduce((s, x) => s + (x - avg) ** 2, 0) / win.length) : 0
+      return { episode: i + 1, value: parseFloat(v.toFixed(3)), lo: parseFloat((v - std).toFixed(3)), hi: parseFloat((v + std).toFixed(3)), ma: parseFloat(avg.toFixed(3)) }
     })
   }
   return {
-    travelTime: toPoints(data.evalTravelTimes, 1 / 60),  // s → min
-    waitTime:   toPoints(data.evalWaitingTimes),
-    throughput: toPoints(data.evalThroughputs),
-    speed:      toPoints(data.evalReturns.map(() => 53.97)),  // real_time_factor constant across eval
+    travelTime: evalPoints(data.evalTravelTimes, 1 / 60),
+    waitTime:   evalPoints(data.evalWaitingTimes),
+    throughput: evalPoints(data.evalThroughputs),
+    speed:      evalPoints(data.evalReturns.map(() => data.kpis.realTimeFactor ?? 53.97)),
   }
 }
 
@@ -2817,6 +2887,10 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   // For monolithic QMIX, fetch real training curve and eval data (scenario selected by trafficScale)
   const isQmix = algo.id === 'qmix'
   const { data: qmixData, loading: qmixLoading } = useQmixRealData(isQmix, trafficScale)
+
+  // For CiViQ, fetch real eval data (same schema as QMIX)
+  const isCiviq = algo.id === 'civiq'
+  const { data: civiqData, loading: civiqLoading } = useCiviqRealData(isCiviq, trafficScale)
 
   const displayAlgo: AlgoData = (() => {
     if (isSelfish && realKpis) return {
@@ -2862,11 +2936,45 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         } : algo.changes,
         system: {
           ...algo.system,
-          training: qmixToTrainingPoints(qmixData.training.curve),
+          training: qmixToTrainingPoints(qmixData.trainMetrics?.curve ?? []),
           cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak, 120), 8, 120, 18),
         },
-        marl:    qmixToMarlPoints(qmixData.training.curve),
+        marl:     qmixToMarlPoints(qmixData.trainMetrics?.curve ?? []),
         episodes: qmixToEpisodeSeries(qmixData),
+      }
+    }
+    if (isCiviq && civiqData) {
+      const k = civiqData.kpis
+      const noop = civiqData.baselines?.noop
+      const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
+      return {
+        ...algo,
+        travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
+        waitTime:   k.waitTime_s,
+        throughput: k.throughput,
+        speed:      k.realTimeFactor ?? algo.speed,
+        co2:        k.co2,
+        fuel:       k.fuel,
+        reward:     k.returnMean,
+        sparklines: {
+          travelTime: algo.sparklines.travelTime.map(() => parseFloat((k.travelTime_s / 60).toFixed(3))),
+          waitTime:   algo.sparklines.waitTime.map(()   => k.waitTime_s),
+          throughput: algo.sparklines.throughput.map(() => k.throughput),
+          speed:      algo.sparklines.speed.map(()      => k.realTimeFactor ?? algo.speed),
+        },
+        changes: noop ? {
+          travelTime: changePct(k.travelTime_s, noop.travelTime_s),
+          waitTime:   changePct(k.waitTime_s,   noop.waitTime_s),
+          throughput: changePct(k.throughput,   noop.throughput),
+          speed: 0,
+        } : algo.changes,
+        system: {
+          ...algo.system,
+          training: qmixToTrainingPoints(civiqData.trainMetrics?.curve ?? []),
+          cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak / 100, 120), 8, 120, 15),
+        },
+        marl:     qmixToMarlPoints(civiqData.trainMetrics?.curve ?? []),
+        episodes: qmixToEpisodeSeries(civiqData),
       }
     }
     return algo
@@ -2921,6 +3029,17 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
               color: qmixLoading ? 'rgba(255,255,255,0.3)' : qmixData ? '#A78BFA' : 'rgba(255,255,255,0.3)',
             }}>
             {qmixLoading ? 'Loading data…' : qmixData ? `Real PyMARL Data · ${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
+          </span>
+        )}
+        {/* Real-data badge for CiViQ */}
+        {isCiviq && (
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+            style={{
+              background: civiqLoading ? 'rgba(255,255,255,0.06)' : civiqData ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)',
+              border: civiqLoading ? '1px solid rgba(255,255,255,0.1)' : civiqData ? '1px solid rgba(56,189,248,0.4)' : '1px solid rgba(255,255,255,0.1)',
+              color: civiqLoading ? 'rgba(255,255,255,0.3)' : civiqData ? '#38BDF8' : 'rgba(255,255,255,0.3)',
+            }}>
+            {civiqLoading ? 'Loading data…' : civiqData ? `Real PyMARL Data · ${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
           </span>
         )}
       </div>
