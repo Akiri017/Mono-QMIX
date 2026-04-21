@@ -89,6 +89,7 @@ export async function GET(request: NextRequest) {
       trafficLevel,
       map: mapParam,
       vehicles,
+      baselines: levelData.baselines ?? null,
       kpis: {
         // Primary display KPIs (matching AlgoData fields)
         travelTime: parseFloat(kpis.avg_travel_time_min.toFixed(2)),             // min

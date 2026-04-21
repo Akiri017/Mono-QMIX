@@ -479,10 +479,11 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
-const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right' }: {
+const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right', changeLabel }: {
   label: string; abbr?: string; value: string | number; unit: string
   color: string; colorDim?: string; borderColor?: string
   change?: number; lowerBetter?: boolean; sparkData?: number[]; onClick?: () => void; description?: string; descriptionSide?: 'left' | 'right'
+  changeLabel?: string
 }) => {
   // Green = good outcome, regardless of direction
   const isGood = change === undefined ? true : lowerBetter ? change <= 0 : change >= 0
@@ -573,7 +574,7 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
       </div>
 
       {/* Value + sparkline row */}
-      <div className="flex items-end justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col gap-0.5">
           {/* Value + unit */}
           <div className="flex items-baseline gap-1.5">
@@ -582,10 +583,17 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
           </div>
           {/* Change badge below value */}
           {change !== undefined && (
-            <span className="text-[11px] font-bold tabular-nums"
-              style={{ color: changeColor }}>
-              {changeArrow} {Math.abs(change).toFixed(1)}%
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold tabular-nums"
+                style={{ color: changeColor }}>
+                {changeArrow} {Math.abs(change).toFixed(1)}%
+              </span>
+              {changeLabel && (
+                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.32)' }}>
+                  {changeLabel}
+                </span>
+              )}
+            </div>
           )}
         </div>
         {sparkData && <SparkLine data={sparkData} color={color} />}
@@ -2636,6 +2644,12 @@ interface SelfishApiKpis {
   avgSpeedKmh: number
 }
 
+interface SelfishCiviqBaseline {
+  travelTime_s: number
+  waitTime_s: number
+  throughput: number
+}
+
 interface SelfishTimeseries {
   steps: number[]
   activeVehicles: number[]
@@ -2645,12 +2659,14 @@ interface SelfishTimeseries {
 function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: string) {
   const [kpis, setKpis] = useState<SelfishApiKpis | null>(null)
   const [timeseries, setTimeseries] = useState<SelfishTimeseries | null>(null)
+  const [civiq, setCiviq] = useState<SelfishCiviqBaseline | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!enabled || !trafficLevel || !mapSize) return
     setKpis(null)
     setTimeseries(null)
+    setCiviq(null)
     setLoading(true)
     fetch(`/api/selfish?trafficLevel=${trafficLevel}&map=${mapSize}`)
       .then(r => r.json())
@@ -2658,6 +2674,7 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
         if (data.success) {
           setKpis(data.kpis)
           setTimeseries(data.timeseries)
+          setCiviq(data.baselines?.civiq ?? null)
         }
         // On error (e.g. 4x4 map, missing forced_flow for bgc_core) silently fall back to static data
       })
@@ -2665,7 +2682,7 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
       .finally(() => setLoading(false))
   }, [enabled, trafficLevel, mapSize])
 
-  return { kpis, timeseries, loading }
+  return { kpis, timeseries, civiq, loading }
 }
 
 // ─── Monolithic QMIX real-data overlay ────────────────────────────────────────
@@ -2884,7 +2901,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 
   // For selfish routing, fetch real simulation data and overlay onto static algo object
   const isSelfish = algo.id === 'selfish'
-  const { kpis: realKpis, timeseries: realTimeseries, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale, mapSize)
+  const { kpis: realKpis, timeseries: realTimeseries, civiq: selfishCiviq, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale, mapSize)
 
   // For monolithic QMIX, fetch real training curve and eval data (scenario selected by trafficScale)
   const isQmix = algo.id === 'qmix'
@@ -2895,20 +2912,30 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   const { data: civiqData, loading: civiqLoading } = useCiviqRealData(isCiviq, trafficScale)
 
   const displayAlgo: AlgoData = (() => {
-    if (isSelfish && realKpis) return {
-      ...algo,
-      travelTime: realKpis.travelTime,
-      waitTime:   realKpis.waitTime,
-      throughput: realKpis.throughput,
-      speed:      realKpis.speed,
-      co2:        realKpis.co2,
-      fuel:       realKpis.fuel,
-      sparklines: {
-        travelTime: algo.sparklines.travelTime.map(() => realKpis.travelTime),
-        waitTime:   algo.sparklines.waitTime.map(()   => realKpis.waitTime),
-        throughput: algo.sparklines.throughput.map(() => realKpis.throughput),
-        speed:      algo.sparklines.speed.map(()      => realKpis.speed),
-      },
+    if (isSelfish && realKpis) {
+      const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
+      const travelTime_s = realKpis.travelTime * 60
+      return {
+        ...algo,
+        travelTime: realKpis.travelTime,
+        waitTime:   realKpis.waitTime,
+        throughput: realKpis.throughput,
+        speed:      realKpis.speed,
+        co2:        realKpis.co2,
+        fuel:       realKpis.fuel,
+        sparklines: {
+          travelTime: algo.sparklines.travelTime.map(() => realKpis.travelTime),
+          waitTime:   algo.sparklines.waitTime.map(()   => realKpis.waitTime),
+          throughput: algo.sparklines.throughput.map(() => realKpis.throughput),
+          speed:      algo.sparklines.speed.map(()      => realKpis.speed),
+        },
+        changes: selfishCiviq ? {
+          travelTime: changePct(travelTime_s,        selfishCiviq.travelTime_s),
+          waitTime:   changePct(realKpis.waitTime,   selfishCiviq.waitTime_s),
+          throughput: changePct(realKpis.throughput, selfishCiviq.throughput),
+          speed: 0,
+        } : algo.changes,
+      }
     }
     if (isQmix && qmixData) {
       const k = qmixData.kpis
@@ -3061,21 +3088,24 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       <KpiCard label="Avg. Travel Time" abbr="ATT" value={displayAlgo.travelTime} unit="min"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.travelTime} lowerBetter sparkData={displayAlgo.sparklines.travelTime}
+        changeLabel={isSelfish && selfishCiviq ? 'vs. CiViQ' : undefined}
         onClick={isSelfish ? undefined : () => setOpenModal('travelTime')}
         description="The mean time it takes for a vehicle to complete its route from entry to exit, across all vehicles in the simulation." />
       <KpiCard label="Avg. Wait Time" abbr="AWT" value={displayAlgo.waitTime} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.waitTime} lowerBetter sparkData={displayAlgo.sparklines.waitTime}
+        changeLabel={isSelfish && selfishCiviq ? 'vs. CiViQ' : undefined}
         onClick={isSelfish ? undefined : () => setOpenModal('waitTime')}
         description="The mean time vehicles spent fully stopped in traffic. High values indicate congestion or poor routing decisions." />
       <KpiCard label="Throughput" abbr="TPT" value={displayAlgo.throughput.toLocaleString()} unit="veh/hr"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.throughput} sparkData={displayAlgo.sparklines.throughput}
+        changeLabel={isSelfish && selfishCiviq ? 'vs. CiViQ' : undefined}
         onClick={isSelfish ? undefined : () => setOpenModal('throughput')}
         description="The number of vehicles that successfully completed their routes per minute. Higher values indicate better overall traffic flow." />
       <KpiCard label="Real-time Factor" abbr="RTF" value={displayAlgo.speed.toFixed(2)} unit="x"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
-        change={displayAlgo.changes.speed} sparkData={displayAlgo.sparklines.speed}
+        sparkData={displayAlgo.sparklines.speed}
         onClick={isSelfish ? undefined : () => setOpenModal('speed')}
         descriptionSide="left"
         description="The ratio of simulation time to actual wall-clock time. A value of 1.0 means the simulation runs in real time; higher values indicate faster-than-real-time execution." />
