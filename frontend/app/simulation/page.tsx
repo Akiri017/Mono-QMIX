@@ -479,11 +479,12 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
-const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right', changeLabel }: {
+const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right', changeLabel, valueAlign = 'left' }: {
   label: string; abbr?: string; value: string | number; unit: string
   color: string; colorDim?: string; borderColor?: string
   change?: number; lowerBetter?: boolean; sparkData?: number[]; onClick?: () => void; description?: string; descriptionSide?: 'left' | 'right'
   changeLabel?: string
+  valueAlign?: 'left' | 'center'
 }) => {
   // Green = good outcome, regardless of direction
   const isGood = change === undefined ? true : lowerBetter ? change <= 0 : change >= 0
@@ -511,71 +512,60 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
         transition: 'border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease',
       }}>
       {/* Title */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2 min-w-0 pr-8">
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="text-[11px] font-semibold uppercase tracking-wider leading-none truncate"
             style={{ color: 'rgba(255,255,255,0.5)' }}>
             {label}
           </span>
-          {description && (
-            <div className="group/info relative z-20 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-              <div
-                className="w-[18px] h-[18px] rounded-full flex items-center justify-center"
-                style={{
-                  background: 'rgba(6,182,212,0.2)',
-                  border: '1px solid rgba(6,182,212,0.65)',
-                  color: 'rgba(217,249,255,0.95)',
-                  boxShadow: '0 0 0 1px rgba(0,0,0,0.2) inset',
-                }}
-              >
-                <span className="text-[10px] font-bold leading-none">!</span>
-              </div>
-              <div
-                className="pointer-events-none absolute top-[calc(100%+8px)] w-[280px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/info:opacity-100 group-hover/info:translate-y-0"
-                style={{
-                  ...(descriptionSide === 'left' ? { right: 0 } : { left: 0 }),
-                  background: 'rgba(4,9,22,0.97)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: 'rgba(255,255,255,0.88)',
-                  boxShadow: '0 12px 24px rgba(0,0,0,0.45)',
-                  zIndex: 90,
-                }}
-              >
-                {description}
-              </div>
-            </div>
+          {onClick && (
+            <span
+              className="flex-shrink-0 text-[9px] font-semibold px-2 py-0.5 rounded-full transition-all duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-[1px]"
+              style={{
+                background: 'rgba(56,189,248,0.1)',
+                color: 'rgba(186,230,253,0.7)',
+                border: '1px solid rgba(56,189,248,0.22)',
+              }}
+            >
+              View detail ↗
+            </span>
           )}
         </div>
-        {onClick && (
-          <span
-            className="flex-shrink-0 text-[9px] font-semibold px-2 py-0.5 rounded-full"
-            style={{
-              background: 'rgba(56,189,248,0.1)',
-              color: 'rgba(186,230,253,0.65)',
-              border: '1px solid rgba(56,189,248,0.22)',
-              transition: 'background 0.12s ease, color 0.12s ease, border-color 0.12s ease',
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement
-              el.style.background = 'rgba(56,189,248,0.2)'
-              el.style.color = 'rgba(186,230,253,1)'
-              el.style.borderColor = 'rgba(56,189,248,0.5)'
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement
-              el.style.background = 'rgba(56,189,248,0.1)'
-              el.style.color = 'rgba(186,230,253,0.65)'
-              el.style.borderColor = 'rgba(56,189,248,0.22)'
-            }}
-          >
-            View detail ↗
-          </span>
-        )}
       </div>
 
+      {/* Top-right tooltip */}
+      {description && (
+        <div className="group/info absolute top-4 right-4 z-20 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="w-[18px] h-[18px] rounded-full flex items-center justify-center"
+            style={{
+              background: 'rgba(6,182,212,0.2)',
+              border: '1px solid rgba(6,182,212,0.65)',
+              color: 'rgba(217,249,255,0.95)',
+              boxShadow: '0 0 0 1px rgba(0,0,0,0.2) inset',
+            }}
+          >
+            <span className="text-[10px] font-bold leading-none">!</span>
+          </div>
+          <div
+            className="pointer-events-none absolute top-[calc(100%+8px)] w-[280px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/info:opacity-100 group-hover/info:translate-y-0"
+            style={{
+              ...(descriptionSide === 'left' ? { right: 0 } : { right: 0 }),
+              background: 'rgba(4,9,22,0.97)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: 'rgba(255,255,255,0.88)',
+              boxShadow: '0 12px 24px rgba(0,0,0,0.45)',
+              zIndex: 90,
+            }}
+          >
+            {description}
+          </div>
+        </div>
+      )}
+
       {/* Value + sparkline row */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex flex-col gap-0.5">
+      <div className={`mt-1 flex items-center gap-3 ${valueAlign === 'center' ? 'justify-center flex-1' : 'justify-between'}`}>
+        <div className={`flex flex-col gap-0.5 ${valueAlign === 'center' ? 'items-center text-center' : ''}`}>
           {/* Value + unit */}
           <div className="flex items-baseline gap-1.5">
             <span className="text-[26px] font-bold tabular-nums leading-none" style={{ color }}>{value}</span>
@@ -1287,31 +1277,40 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
     <GlassCard className="group relative z-0 hover:z-20 flex-1 flex flex-col items-center justify-center py-2 px-2 gap-1"
       style={{ background: 'rgba(255,255,255,0.045)', minWidth: 0, cursor: onClick ? 'pointer' : undefined }}
       onClick={onClick}>
-      {description && (
-        <div className="group/info absolute top-2 right-2 z-20">
-          <div
-            className="w-5 h-5 rounded-full flex items-center justify-center"
-            style={{
-              background: 'rgba(6,182,212,0.2)',
-              border: '1px solid rgba(6,182,212,0.65)',
-              color: 'rgba(217,249,255,0.95)',
-              boxShadow: '0 0 0 1px rgba(0,0,0,0.2) inset',
-            }}
-          >
-            <span className="text-[11px] font-bold leading-none">!</span>
+      {/* Top-right: View detail badge + tooltip, side by side */}
+      <div className="absolute top-2 right-2 z-20 flex items-center gap-1">
+        {onClick && (
+          <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full transition-all duration-200 group-hover:-translate-y-[1px] group-hover:translate-x-0.5 group-hover:scale-[1.03]"
+            style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.22)', color: 'rgba(186,230,253,0.65)', whiteSpace: 'nowrap' }}>
+            View detail ↗
+          </span>
+        )}
+        {description && (
+          <div className="group/info relative">
+            <div
+              className="w-5 h-5 rounded-full flex items-center justify-center"
+              style={{
+                background: 'rgba(6,182,212,0.2)',
+                border: '1px solid rgba(6,182,212,0.65)',
+                color: 'rgba(217,249,255,0.95)',
+                boxShadow: '0 0 0 1px rgba(0,0,0,0.2) inset',
+              }}
+            >
+              <span className="text-[11px] font-bold leading-none">!</span>
+            </div>
+            <div className="pointer-events-none absolute right-0 top-[calc(100%+8px)] w-[280px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/info:opacity-100 group-hover/info:translate-y-0"
+              style={{
+                background: 'rgba(4,9,22,0.97)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.88)',
+                boxShadow: '0 12px 24px rgba(0,0,0,0.45)',
+                zIndex: 85,
+              }}>
+              {description}
+            </div>
           </div>
-          <div className="pointer-events-none absolute right-0 top-[calc(100%+8px)] w-[280px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/info:opacity-100 group-hover/info:translate-y-0"
-            style={{
-              background: 'rgba(4,9,22,0.97)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: 'rgba(255,255,255,0.88)',
-              boxShadow: '0 12px 24px rgba(0,0,0,0.45)',
-              zIndex: 85,
-            }}>
-            {description}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <GaugeComponent
         id={`gauge-${label.replace(/\W/g, '')}`}
@@ -1329,22 +1328,12 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
       {/* Value + unit centred below arc */}
       <div className="flex flex-col items-center mt-0.5">
         <span className="text-[20px] font-extrabold tabular-nums leading-none" style={{ color: '#ffffff' }}>
-          {value}
+          {typeof value === 'number' ? parseFloat(value.toFixed(3)) : value}
         </span>
         <span className="text-[10px] font-semibold mt-0.5" style={{ color: 'rgba(255,255,255,0.75)' }}>{unit}</span>
         <span className="text-[9px] font-bold uppercase tracking-wider mt-1.5 text-center"
           style={{ color: 'rgba(255,255,255,0.65)' }}>{label}</span>
       </div>
-      {/* View detail badge — only when onClick provided */}
-      {onClick && (
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none"
-          style={{ whiteSpace: 'nowrap' }}>
-          <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.7)' }}>
-            View detail ↗
-          </span>
-        </div>
-      )}
     </GlassCard>
   )
 })
@@ -3144,12 +3133,15 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           throughput: selfishSparkline('throughput'),
           speed:      algo.sparklines.speed.map(() => realKpis.speed),
         },
-        changes: selfishCiviq ? {
-          travelTime: changePct(travelTime_s,        selfishCiviq.travelTime_s),
-          waitTime:   changePct(realKpis.waitTime,   selfishCiviq.waitTime_s),
-          throughput: changePct(realKpis.throughput, selfishCiviq.throughput),
-          speed: 0,
-        } : algo.changes,
+        changes: (() => {
+          const civiqRef = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
+          return civiqRef ? {
+            travelTime: changePct(travelTime_s,        civiqRef.travelTime * 60),
+            waitTime:   changePct(realKpis.waitTime,   civiqRef.waitTime),
+            throughput: changePct(realKpis.throughput, civiqRef.throughput),
+            speed: 0,
+          } : algo.changes
+        })(),
       }
     }
     if (isQmix && qmixData) {
@@ -3271,15 +3263,15 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
             {TRAFFIC_LABELS[trafficScale] || trafficScale}
           </span>
         )}
-        {/* Real-data badge for selfish routing */}
-        {isSelfish && (
+        {/* Loading indicator for selfish routing */}
+        {isSelfish && kpisLoading && (
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
             style={{
-              background: kpisLoading ? 'rgba(255,255,255,0.06)' : realKpis ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.06)',
-              border: kpisLoading ? '1px solid rgba(255,255,255,0.1)' : realKpis ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(255,255,255,0.1)',
-              color: kpisLoading ? 'rgba(255,255,255,0.3)' : realKpis ? '#34D399' : 'rgba(255,255,255,0.3)',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.3)',
             }}>
-            {kpisLoading ? 'Loading data…' : realKpis ? 'Live SUMO Data' : 'Static Data'}
+            Loading data…
           </span>
         )}
         {/* Real-data badge for monolithic QMIX */}
@@ -3317,24 +3309,24 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       <KpiCard label="Avg. Travel Time" abbr="ATT" value={displayAlgo.travelTime} unit="min"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.travelTime} lowerBetter sparkData={displayAlgo.sparklines.travelTime}
-        changeLabel={isSelfish && selfishCiviq ? 'vs. CiViQ' : undefined}
+        changeLabel={isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined}
         onClick={isSelfish ? () => setSelfishModal('travelTime') : () => setOpenModal('travelTime')}
         description="The mean time it takes for a vehicle to complete its route from entry to exit, across all vehicles in the simulation." />
       <KpiCard label="Avg. Wait Time" abbr="AWT" value={displayAlgo.waitTime} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.waitTime} lowerBetter sparkData={displayAlgo.sparklines.waitTime}
-        changeLabel={isSelfish && selfishCiviq ? 'vs. CiViQ' : undefined}
+        changeLabel={isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined}
         onClick={isSelfish ? () => setSelfishModal('waitTime') : () => setOpenModal('waitTime')}
         description="The mean time vehicles spent fully stopped in traffic. High values indicate congestion or poor routing decisions." />
       <KpiCard label="Throughput" abbr="TPT" value={displayAlgo.throughput.toLocaleString()} unit="veh/hr"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.throughput} sparkData={displayAlgo.sparklines.throughput}
-        changeLabel={isSelfish && selfishCiviq ? 'vs. CiViQ' : undefined}
+        changeLabel={isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined}
         onClick={isSelfish ? () => setSelfishModal('throughput') : () => setOpenModal('throughput')}
         description="The number of vehicles that successfully completed their routes per minute. Higher values indicate better overall traffic flow." />
       <KpiCard label="Real-time Factor" abbr="RTF" value={displayAlgo.speed.toFixed(2)} unit="x"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
-        sparkData={displayAlgo.sparklines.speed}
+        valueAlign="center"
         onClick={isSelfish ? undefined : () => setOpenModal('speed')}
         descriptionSide="left"
         description="The ratio of simulation time to actual wall-clock time. A value of 1.0 means the simulation runs in real time; higher values indicate faster-than-real-time execution." />
