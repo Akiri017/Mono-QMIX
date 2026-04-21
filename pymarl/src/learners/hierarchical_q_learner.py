@@ -21,6 +21,7 @@ from modules.mixers.global_qmixer import GlobalQMixer
 from components.rsu_zone_manager import RSUZoneManager
 
 
+
 class HierarchicalQLearner:
     """
     Civiq hierarchical learner with two mixing levels.
@@ -83,12 +84,22 @@ class HierarchicalQLearner:
             rsu_config_dict = yaml.safe_load(f)
         self.zone_manager = RSUZoneManager(rsu_config_dict)
 
-        # Single optimizer over MAC + both mixers — identical Adam settings to QLearner
-        self.params = list(self.mac.parameters())
-        self.params += list(self.local_mixer.parameters())
-        self.params += list(self.global_mixer.parameters())
-        self.optimizer = optim.Adam(self.params, lr=args.get("lr", 0.0005),
-                                    eps=args.get("optim_eps", 1e-5))
+        # Separate param groups for per-component gradient clipping (Option A).
+        # Joint clipping lets a global_mixer spike consume the entire clip budget,
+        # starving local and agent of effective updates. Independent clip budgets
+        # give each group a fair share regardless of the other's gradient scale.
+        base_lr = args.get("lr", 0.0005)
+        self.local_params = (
+            list(self.mac.parameters())
+            + list(self.local_mixer.parameters())
+        )
+        self.global_params = list(self.global_mixer.parameters())
+        self.params = self.local_params + self.global_params
+        self.optimizer = optim.Adam(
+            self.params,
+            lr=base_lr,
+            eps=args.get("optim_eps", 1e-5),
+        )
 
         # Running reward normalisation — EMA over per-batch mean and variance.
         # Keeps TD targets in a stable range regardless of how vehicle density
@@ -207,7 +218,9 @@ class HierarchicalQLearner:
             agent_masks.reshape(BT * R, max_agents_per_rsu)
         ).view(BT, R)                                                          # (BT, R)
 
-        # Level 3: GlobalQMixer — RSU Q_tots → global Q_tot
+        # Level 3: GlobalQMixer — RSU Q_tots → global Q_tot.
+        # GlobalQMixer applies LayerNorm internally before the hypernetwork,
+        # so raw global_states are passed directly (no EMA pre-normalization).
         global_qtot = self.global_mixer(
             local_qtots,
             global_states.reshape(BT, -1),
@@ -268,8 +281,11 @@ class HierarchicalQLearner:
         local_mixer_grad_norm = _grad_norm(self.local_mixer.parameters())
         global_mixer_grad_norm = _grad_norm(self.global_mixer.parameters())
 
-        # Clip all params together
-        torch.nn.utils.clip_grad_norm_(self.params, self.grad_norm_clip)
+        # Per-component gradient clipping — each group gets its own budget.
+        # Joint clipping lets a global_mixer spike (e.g. 7000+) consume the
+        # entire clip budget, leaving local and agent with effectively zero update.
+        torch.nn.utils.clip_grad_norm_(self.local_params, self.grad_norm_clip)
+        torch.nn.utils.clip_grad_norm_(self.global_params, self.grad_norm_clip)
         self.optimizer.step()
 
         # Target network update
@@ -315,12 +331,20 @@ class HierarchicalQLearner:
             0, max_agents_per_rsu - 1
         )                                                                       # (B, T, A, R)
 
-        out = torch.zeros(batch_size, max_t, max_rsus, max_agents_per_rsu,
-                          device=self.device)
+        # Use out-of-place scatter_add so the gradient path from src (derived from
+        # chosen_action_qvals) is preserved through to rsu_agent_qs.
+        # scatter_add_ on a zeros leaf tensor with requires_grad=False silently
+        # severs the autograd graph — the in-place op does not make the tensor a
+        # non-leaf, so no gradient flows back to MAC params (agent_grad_norm = 0).
+        out_list = []
         for r in range(max_rsus):
             src = qvals * in_rsu_all[..., r].float()                           # (B, T, A)
-            out[:, :, r, :].scatter_add_(dim=-1, index=slot_idx_all[..., r], src=src)
-        return out
+            base = torch.zeros(batch_size, max_t, max_agents_per_rsu,
+                               device=self.device)
+            out_list.append(base.scatter_add(dim=-1,
+                                             index=slot_idx_all[..., r],
+                                             src=src))                         # (B, T, A_rsu)
+        return torch.stack(out_list, dim=2)                                    # (B, T, R, A_rsu)
 
     def _build_local_states(self, obs, zone_assignments, batch_size, max_t):
         """Compute padded local observation tensor on-the-fly from obs and zone_assignments.
@@ -410,11 +434,20 @@ class HierarchicalQLearner:
         self.mac.save_models(path)
         torch.save(self.local_mixer.state_dict(), f"{path}/local_mixer.th")
         torch.save(self.global_mixer.state_dict(), f"{path}/global_mixer.th")
+        # Target mixer weights — saved separately so resume preserves the lag
+        # accumulated since the last hard sync, keeping TD targets stable
+        torch.save(self.target_local_mixer.state_dict(), f"{path}/target_local_mixer.th")
+        torch.save(self.target_global_mixer.state_dict(), f"{path}/target_global_mixer.th")
         torch.save(self.optimizer.state_dict(), f"{path}/optimizer.pth")
-        # Reward normalisation state — must be restored on resume so the scale
-        # doesn't reset mid-training and destabilise the TD targets
+        # Reward normalisation state + target update counter — must be restored
+        # on resume so the scale doesn't reset and the target sync interval
+        # isn't immediately re-triggered
         torch.save(
-            {"running_mean": self.reward_running_mean, "running_var": self.reward_running_var},
+            {
+                "running_mean": self.reward_running_mean,
+                "running_var": self.reward_running_var,
+                "last_target_update_episode": self.last_target_update_episode,
+            },
             f"{path}/reward_stats.pth"
         )
 
@@ -427,7 +460,22 @@ class HierarchicalQLearner:
         self.global_mixer.load_state_dict(
             torch.load(f"{path}/global_mixer.th", map_location=self.device)
         )
-        self._update_targets()
+        # Restore target mixers from saved weights if available so the lag
+        # accumulated before the checkpoint is preserved. Fall back to syncing
+        # from online weights (old behaviour) for checkpoints that predate this.
+        target_local_path = f"{path}/target_local_mixer.th"
+        target_global_path = f"{path}/target_global_mixer.th"
+        if os.path.exists(target_local_path) and os.path.exists(target_global_path):
+            self.target_local_mixer.load_state_dict(
+                torch.load(target_local_path, map_location=self.device)
+            )
+            self.target_global_mixer.load_state_dict(
+                torch.load(target_global_path, map_location=self.device)
+            )
+            # Sync only the target MAC since we have no separate saved file for it
+            self.target_mac.load_state(self.mac)
+        else:
+            self._update_targets()
         opt_path = f"{path}/optimizer.pth"
         if os.path.exists(opt_path):
             self.optimizer.load_state_dict(
@@ -438,3 +486,4 @@ class HierarchicalQLearner:
             stats = torch.load(stats_path, map_location="cpu")
             self.reward_running_mean = stats["running_mean"]
             self.reward_running_var = stats["running_var"]
+            self.last_target_update_episode = stats.get("last_target_update_episode", 0)
