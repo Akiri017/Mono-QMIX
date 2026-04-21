@@ -36,7 +36,8 @@
         "avg_fuel_l_per_100km_std": 0.7,
         "controlled_mean_travel_time_s": 111.366,
         "total_stops_mean": 14751.8,
-        "time_loss_s": null
+        "time_loss_s": null,
+        "returnMean": -45167.61
       },
       "timeseries_file": null,
       "data_quality_note": "co2_g_per_km and fuel_l_per_100km may be inflated: few vehicles complete routes in low demand, making the per-km denominator small relative to total episode emissions."
@@ -70,7 +71,8 @@
         "avg_fuel_l_per_100km_std": 0.396,
         "controlled_mean_travel_time_s": 112.627,
         "total_stops_mean": 16857.8,
-        "time_loss_s": null
+        "time_loss_s": null,
+        "returnMean": -53838.66
       },
       "timeseries_file": null,
       "data_quality_note": "co2_g_per_km and fuel_l_per_100km may be inflated for the same reason as free_flow."
@@ -104,7 +106,8 @@
         "avg_fuel_l_per_100km_std": 0.165,
         "controlled_mean_travel_time_s": 102.27,
         "total_stops_mean": 29814.4,
-        "time_loss_s": null
+        "time_loss_s": null,
+        "returnMean": -97242.83
       },
       "timeseries_file": null
     }

@@ -101,6 +101,7 @@ export async function GET(request: NextRequest) {
         avgSpeedKmh: kpis.avg_speed_kmh,
         avgRouteLengthM: kpis.avg_route_length_m,
         timeLossS: kpis.time_loss_s,
+        returnMean: kpis.returnMean ?? null,
       },
       timeseries: {
         steps: timeseries.map(r => r.step),

@@ -1962,9 +1962,9 @@ function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: 
 type SelfishMetricKey = 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'
 
 const CIVIQ_LOS_REF = {
-  free_flow:   { travelTime: 2.013, waitTime: 7.4794,  throughput: 1140.18, co2: 461.511, fuel: 19.917 },
-  stable_flow: { travelTime: 1.965, waitTime: 10.2765, throughput: 1223.017, co2: 488.249, fuel: 21.057 },
-  forced_flow: { travelTime: 1.885, waitTime: 19.3433, throughput: 2243.68,  co2: 525.807, fuel: 22.617 },
+  free_flow:   { travelTime: 2.013, waitTime: 7.4794,  throughput: 1140.18, co2: 461.511, fuel: 19.917, returnMean: -46630.30 },
+  stable_flow: { travelTime: 1.965, waitTime: 10.2765, throughput: 1223.017, co2: 488.249, fuel: 21.057, returnMean: -52824.61 },
+  forced_flow: { travelTime: 1.885, waitTime: 19.3433, throughput: 2243.68,  co2: 525.807, fuel: 22.617, returnMean: -97827.74 },
 } as const
 
 // ─── Episode Detail Modal ─────────────────────────────────────────────────────
@@ -2655,6 +2655,7 @@ interface SelfishApiKpis {
   co2: number
   fuel: number
   avgSpeedKmh: number
+  returnMean: number | null
 }
 
 interface SelfishCiviqBaseline {
@@ -3127,6 +3128,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         speed:      realKpis.speed,
         co2:        realKpis.co2,
         fuel:       realKpis.fuel,
+        reward:     realKpis.returnMean,
         sparklines: {
           travelTime: selfishSparkline('travelTime'),
           waitTime:   selfishSparkline('waitTime'),
@@ -3341,16 +3343,56 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.52)' }}>
             {displayAlgo.description}
           </p>
-          {displayAlgo.convergence !== null && (
+          {(displayAlgo.convergence !== null || (isSelfish && displayAlgo.reward !== null)) && (
             <div className="pt-3 grid grid-cols-2 gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Convergence</div>
-                <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>Ep. {displayAlgo.convergence}</div>
-              </div>
-              <div>
-                <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Cumulative Reward</div>
-                <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>{displayAlgo.reward}</div>
-              </div>
+              {displayAlgo.convergence !== null && (
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Convergence</div>
+                  <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>Ep. {displayAlgo.convergence}</div>
+                </div>
+              )}
+              {displayAlgo.reward !== null && (
+                <div className={displayAlgo.convergence === null ? 'col-span-2' : ''}>
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.28)' }}>Episode Return</span>
+                    <div className="group/tip relative flex-shrink-0">
+                      <div className="w-[14px] h-[14px] rounded-full flex items-center justify-center cursor-default"
+                        style={{ background: 'rgba(6,182,212,0.18)', border: '1px solid rgba(6,182,212,0.5)', color: 'rgba(217,249,255,0.9)' }}>
+                        <span className="text-[9px] font-bold leading-none">!</span>
+                      </div>
+                      <div className="pointer-events-none absolute left-0 bottom-[calc(100%+6px)] w-[260px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/tip:opacity-100 group-hover/tip:translate-y-0"
+                        style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.88)', boxShadow: '0 12px 24px rgba(0,0,0,0.45)', zIndex: 90 }}>
+                        {isSelfish
+                          ? 'Mean cumulative reward per evaluation episode, derived from greedy shortest-path routing (Nash Equilibrium). Negative values reflect the penalty-based reward signal used across all SUMO-MARL experiments — lower (more negative) indicates worse overall traffic performance.'
+                          : 'Mean cumulative reward per evaluation episode across all seeds. Negative values reflect the penalty-based reward signal — lower (more negative) indicates worse traffic performance.'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>
+                      {typeof displayAlgo.reward === 'number' ? displayAlgo.reward.toLocaleString(undefined, { maximumFractionDigits: 0 }) : displayAlgo.reward}
+                    </div>
+                    {(() => {
+                      if (!isSelfish || typeof displayAlgo.reward !== 'number') return null
+                      const civiqRef = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
+                      if (!civiqRef) return null
+                      // Higher reward = better; use abs(ref) as denominator to avoid sign flip
+                      const pct = (displayAlgo.reward - civiqRef.returnMean) / Math.abs(civiqRef.returnMean) * 100
+                      const isBetter = pct > 0
+                      const color = isBetter ? '#4ADE80' : '#F87171'
+                      const arrow = isBetter ? '▲' : '▼'
+                      return (
+                        <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                          <span className="text-[11px] font-bold tabular-nums leading-none" style={{ color }}>
+                            {arrow} {Math.abs(pct).toFixed(1)}%
+                          </span>
+                          <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.32)' }}>vs. CiViQ</span>
+                        </div>
+                      )
+                    })()}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </GlassCard>
