@@ -2130,7 +2130,9 @@ const TrainingCurveChart = ({ algo }: { algo: AlgoData }) => {
         <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(248,113,113,0.12)', color: '#F87171', border: '1px solid rgba(248,113,113,0.25)' }}>No training phase</span>
       </div>
       <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
-        Selfish Routing is a rule-based baseline — it requires no training and has no reward curve.
+        {algo.id === 'selfish'
+          ? 'Selfish Routing is a rule-based baseline — it requires no training and has no reward curve.'
+          : 'Training curve data is not available for this scenario.'}
       </p>
     </GlassCard>
   )
@@ -2970,10 +2972,14 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         } : algo.changes,
         system: {
           ...algo.system,
-          training: qmixToTrainingPoints(civiqData.trainMetrics?.curve ?? []),
+          training: civiqData.trainMetrics?.curve?.length
+            ? qmixToTrainingPoints(civiqData.trainMetrics.curve)
+            : algo.system.training,
           cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak / 100, 120), 8, 120, 15),
         },
-        marl:     qmixToMarlPoints(civiqData.trainMetrics?.curve ?? []),
+        marl:     civiqData.trainMetrics?.curve?.length
+          ? qmixToMarlPoints(civiqData.trainMetrics.curve)
+          : algo.marl,
         episodes: qmixToEpisodeSeries(civiqData),
       }
     }
