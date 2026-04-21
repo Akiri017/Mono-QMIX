@@ -92,6 +92,7 @@ env_args:
   # Debugging
   verbose: false
   render_mode: null
+  enable_cpu_monitoring: true
 
 # buffer_size kept at 100. With episode_limit=100:
 # 100 * 100 * 32 * 751 * 4B ≈ 960 MB — well within both CPU RAM and GPU VRAM.
