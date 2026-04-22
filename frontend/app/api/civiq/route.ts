@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
       evalTravelTimes:  data.evalTravelTimes,
       evalWaitingTimes: data.evalWaitingTimes,
       evalThroughputs:  data.evalThroughputs,
+      evalCpuMeans:     data.evalCpuMeans ?? null,
 
       // No training curve available (tfevents not yet parsed)
       training: data.training,

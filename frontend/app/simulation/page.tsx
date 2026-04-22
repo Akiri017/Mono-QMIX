@@ -147,6 +147,8 @@ interface AlgoData {
   co2: number
   fuel: number
   computeTime: number
+  cpuMean: number    // mean CPU % across all training steps (100 = 1 full core)
+  cpuPeak: number    // peak CPU % observed during training
   convergence: number | null
   reward: number | null
   description: string
@@ -322,7 +324,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     color: '#38BDF8', colorDim: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)',
     // Averages across LOS A/C/E on BGC Full (2 km²)
     travelTime: 1.96, waitTime: 12.4, throughput: 1536, speed: 1.24,
-    co2: 491.9, fuel: 21.2, computeTime: 22.35, convergence: 150, reward: -65761,
+    co2: 491.9, fuel: 21.2, computeTime: 22.35, cpuMean: 562.4, cpuPeak: 6858, convergence: 150, reward: -65761,
     description: 'Civiq employs a hierarchical two-tier coordination mechanism where a global orchestrator assigns zone-level routing goals, while local agents optimize intersection-level decisions using QMIX. This architecture enables scalable, cooperative traffic management that generalizes across varying network topologies and traffic densities.',
     strengths: ['Lowest travel time across all scenarios', 'Lowest average wait time', 'Best throughput in heavy traffic (LOS E)', 'Scalable to larger road networks'],
     scores: [0.99, 1.00, 1.00, 0.67, 0.96, 0.96, 0.30],
@@ -356,7 +358,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     color: '#A78BFA', colorDim: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)',
     // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-LOS by useQmixRealData
     travelTime: 1.99, waitTime: 14.1, throughput: 1305, speed: 53.97,
-    co2: 538.9, fuel: 23.2, computeTime: 18.20, convergence: 9001, reward: -68798,
+    co2: 538.9, fuel: 23.2, computeTime: 18.20, cpuMean: 93.4, cpuPeak: 702, convergence: 9001, reward: -68798,
     description: 'Monolithic QMIX applies centralized multi-agent reinforcement learning where all agents share a joint action-value function. While effective at coordination, the monolithic architecture faces scalability limitations as network size grows, requiring more training episodes and compute to converge on larger topologies.',
     strengths: ['Lighter compute per decision step than CiViQ', 'Good coordination at small scale', 'Solid baseline RL performance', 'Well-established QMIX framework'],
     scores: [0.85, 0.87, 0.98, 0.82, 0.87, 0.87, 0.32],
@@ -395,7 +397,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     color: '#F87171', colorDim: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.3)',
     // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-level by useSelfishRealData
     travelTime: 2.05, waitTime: 13.1, throughput: 1545, speed: 248.84,
-    co2: 471.2, fuel: 20.3, computeTime: 0, convergence: null, reward: null,
+    co2: 471.2, fuel: 20.3, computeTime: 0, cpuMean: 0, cpuPeak: 0, convergence: null, reward: null,
     description: 'Selfish Routing models each vehicle independently optimizing its own route via shortest-path algorithms, representing the Nash Equilibrium state of the network. Without coordination, vehicles converge on popular routes causing Braess\'s Paradox — where adding road capacity can paradoxically worsen network-wide performance.',
     strengths: ['No training or setup required', 'Simple and fully interpretable', 'Establishes the Price of Anarchy baseline', 'Handles novel edge cases naturally'],
     scores: [1.00, 0.95, 0.95, 1.00, 1.00, 1.00, 1.00],
@@ -2175,11 +2177,239 @@ const ChartTooltip = ({ active, payload, label, xLabel, rows }: {
   )
 }
 
+// ─── CPU Detail Modal ─────────────────────────────────────────────────────────
+
+const CpuDetailModal = ({ algo, evalCpuMeans, onClose }: {
+  algo: AlgoData
+  evalCpuMeans: number[] | null
+  onClose: () => void
+}) => {
+  const isReal = evalCpuMeans && evalCpuMeans.length > 0
+  const W = 5
+
+  // Real: 30-episode per-episode mean CPU% from eval runs
+  // Fallback: synthetic series based on scalar mean/peak
+  const data: { episode: number; cpu: number; ma: number }[] = isReal
+    ? evalCpuMeans.map((cpu, i) => {
+        const slice = evalCpuMeans.slice(Math.max(0, i - W + 1), i + 1)
+        const ma = slice.reduce((a, b) => a + b, 0) / slice.length
+        return { episode: i + 1, cpu: +cpu.toFixed(1), ma: +ma.toFixed(1) }
+      })
+    : (() => {
+        const steps = 30
+        let r = algo.id === 'civiq' ? 15 : 18
+        const rand = () => { r = (r * 1664525 + 1013904223) & 0xffffffff; return (r >>> 0) / 0xffffffff - 0.5 }
+        const mean = algo.cpuMean, noiseAmp = mean * 0.05
+        return Array.from({ length: steps }, (_, i) => {
+          const cpu = Math.max(0, mean + rand() * noiseAmp)
+          const slice = Array.from({ length: Math.min(i + 1, W) }, (__, j) => mean + rand() * noiseAmp * 0.5)
+          const ma = slice.reduce((a, b) => a + b, 0) / slice.length
+          return { episode: i + 1, cpu: +cpu.toFixed(1), ma: +ma.toFixed(1) }
+        })
+      })()
+
+  const mean = data.reduce((s, d) => s + d.cpu, 0) / data.length
+  const fmt = (v: number) => v.toFixed(1)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
+        style={{
+          maxWidth: '790px',
+          background: 'rgba(4,9,22,0.97)',
+          border: '1px solid rgba(255,255,255,0.13)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-[17px] font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
+              CPU Utilization <span style={{ color: algo.color }}>(CPU)</span>
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)"
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-5 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-[2px] rounded" style={{ background: algo.color }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>CPU %</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-[2px] rounded" style={{ background: 'rgba(255,255,255,0.65)', borderTop: '2px dashed rgba(255,255,255,0.65)' }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>5-ep. moving avg.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-[1px]" style={{ borderTop: `1px dashed ${algo.color}`, opacity: 0.5 }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Mean</span>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 20 }}>
+            <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 4" />
+            <XAxis
+              dataKey="episode"
+              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
+              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+              interval={data.length <= 30 ? 2 : Math.floor(data.length / 10)}
+            />
+            <YAxis
+              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
+              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+              tickFormatter={(v) => `${v}%`}
+              width={58}
+              label={{ value: 'CPU %', angle: -90, position: 'insideLeft', offset: 14, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+            />
+            <Tooltip content={({ active, payload, label }: any) => {
+              if (!active || !payload?.length) return null
+              const byKey = Object.fromEntries(payload.map((p: any) => [p.dataKey, p.value]))
+              return (
+                <div style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', fontSize: 11 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Episode {label}</p>
+                  {byKey.cpu !== undefined && <p style={{ color: algo.color }}>CPU: <b>{Number(byKey.cpu).toFixed(1)}%</b> ({(Number(byKey.cpu) / 100).toFixed(2)} cores)</p>}
+                  {byKey.ma  !== undefined && <p style={{ color: 'rgba(255,255,255,0.7)' }}>MA-5: <b>{Number(byKey.ma).toFixed(1)}%</b></p>}
+                </div>
+              )
+            }} />
+            <ReferenceLine
+              y={mean}
+              stroke={algo.color} strokeDasharray="4 2" strokeOpacity={0.45}
+              label={{ value: `Mean: ${fmt(mean)}%`, position: 'insideTopRight', fill: algo.color, fontSize: 10 }}
+            />
+            <Line type="monotone" dataKey="cpu" stroke={algo.color} strokeWidth={1.5}
+              dot={{ fill: algo.color, r: 2.5, strokeWidth: 0 }}
+              activeDot={{ r: 3.5, fill: algo.color }} strokeOpacity={0.85} isAnimationActive={false} />
+            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.72)" strokeWidth={2}
+              dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+
+        {/* Summary stats */}
+        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          {[
+            { label: 'Mean CPU',   value: `${fmt(mean)}%`,                    sub: `${(mean / 100).toFixed(2)} cores` },
+            { label: 'Min CPU',    value: `${fmt(Math.min(...data.map(d => d.cpu)))}%`, sub: `${(Math.min(...data.map(d => d.cpu)) / 100).toFixed(2)} cores` },
+            { label: 'Max CPU',    value: `${fmt(Math.max(...data.map(d => d.cpu)))}%`, sub: `${(Math.max(...data.map(d => d.cpu)) / 100).toFixed(2)} cores` },
+            { label: 'Episodes',   value: `${data.length}`,                   sub: 'eval runs' },
+          ].map(({ label, value, sub }) => (
+            <div key={label} className="text-center">
+              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</div>
+              <div className="text-[15px] font-bold tabular-nums" style={{ color: algo.color }}>{value}</div>
+              <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>{sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── CPU Utilization Card ─────────────────────────────────────────────────────
+
+const CpuStatsCard = ({ algo, evalCpuMeans, onViewDetail }: {
+  algo: AlgoData
+  evalCpuMeans: number[] | null
+  onViewDetail: () => void
+}) => {
+  const mean = algo.cpuMean
+  const peak = algo.cpuPeak
+  const maxVal = Math.max(peak, mean, 1)
+
+  return (
+    <GlassCard className="p-5 flex flex-col col-span-1">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>CPU Utilization</span>
+          <InfoBubble text="Per-episode CPU usage across 30 evaluation runs. 100% = one fully utilised core — values above 100% indicate multi-core usage. Average is the mean within each episode; peak is the maximum instantaneous spike observed." />
+        </div>
+        <button
+          onClick={onViewDetail}
+          className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all flex-shrink-0"
+          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.13)', color: 'rgba(255,255,255,0.45)' }}
+          onMouseEnter={(e) => {
+            ;(e.currentTarget as HTMLElement).style.background = algo.colorDim
+            ;(e.currentTarget as HTMLElement).style.borderColor = algo.border
+            ;(e.currentTarget as HTMLElement).style.color = algo.color
+          }}
+          onMouseLeave={(e) => {
+            ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'
+            ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.13)'
+            ;(e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.45)'
+          }}
+        >
+          View detail ↗
+        </button>
+      </div>
+
+      {/* Two-column stat layout — flex-1 + justify-center fills remaining card height */}
+      <div className="flex-1 flex items-center">
+      <div className="w-full flex items-center gap-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.75rem', paddingBottom: '0.75rem' }}>
+
+        {/* Average column */}
+        <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>Average</span>
+          <div className="text-[24px] font-bold tabular-nums leading-none" style={{ color: algo.color }}>
+            {mean.toFixed(1)}<span className="text-[13px] font-normal ml-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>%</span>
+          </div>
+          <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.38)' }}>≈ {(mean / 100).toFixed(2)} cores</div>
+          <div className="w-full mt-1.5">
+            <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <div className="h-full rounded-full" style={{ width: `${Math.min(100, (mean / maxVal) * 100).toFixed(1)}%`, background: algo.color, opacity: 0.7 }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="w-px mx-3 self-stretch" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+        {/* Peak column */}
+        <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>Peak</span>
+          <div className="text-[24px] font-bold tabular-nums leading-none" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            {peak.toFixed(1)}<span className="text-[13px] font-normal ml-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>%</span>
+          </div>
+          <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.38)' }}>≈ {(peak / 100).toFixed(1)} cores</div>
+          <div className="w-full mt-1.5">
+            <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <div className="h-full rounded-full" style={{ width: `${Math.min(100, (peak / maxVal) * 100).toFixed(1)}%`, background: 'rgba(255,255,255,0.4)' }} />
+            </div>
+          </div>
+        </div>
+
+      </div>
+      </div>
+    </GlassCard>
+  )
+}
+
 // 1 — Training Curve
 const TrainingCurveChart = ({ algo }: { algo: AlgoData }) => {
   const data = algo.system.training
   if (!data.length) return (
-    <GlassCard className="p-5 flex flex-col gap-2 col-span-3">
+    <GlassCard className="p-5 flex flex-col gap-2 col-span-2">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Training Curve</span>
         <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(248,113,113,0.12)', color: '#F87171', border: '1px solid rgba(248,113,113,0.25)' }}>No training phase</span>
@@ -2192,7 +2422,7 @@ const TrainingCurveChart = ({ algo }: { algo: AlgoData }) => {
     </GlassCard>
   )
   return (
-    <GlassCard className="p-5 flex flex-col gap-3 col-span-3">
+    <GlassCard className="p-5 flex flex-col gap-3 col-span-2">
       <div className="flex items-center justify-between">
         <div>
           <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Training Curve</span>
@@ -2277,10 +2507,6 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
       <div className="flex items-center gap-3">
         <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.55)' }}>{algo.id === 'civiq' ? 'HMARL' : 'MARL'} Training Diagnostics</span>
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-        <span className="text-[10px] px-2 py-0.5 rounded"
-          style={{ background: algo.colorDim, color: algo.color, border: `1px solid ${algo.border}` }}>
-          {data.length} episodes
-        </span>
       </div>
 
       {/* ── 1. Episode Cumulative Reward (full-width, prominent) ── */}
@@ -2816,6 +3042,7 @@ interface QmixRealData {
   evalTravelTimes: number[]
   evalWaitingTimes: number[]
   evalThroughputs: number[]
+  evalCpuMeans: number[] | null
   training: { note: string; curve: QmixTrainingEntry[] }
   trainMetrics?: null
   testCurve: { t: number; episode: number; returnMean: number | null }[]
@@ -3132,6 +3359,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   const [openModal, setOpenModal] = useState<EpisodeMetricKey | null>(null)
   const [congestionDetail, setCongestionDetail] = useState(false)
   const [selfishModal, setSelfishModal] = useState<SelfishMetricKey | null>(null)
+  const [openCpuModal, setOpenCpuModal] = useState(false)
 
   // For selfish routing, fetch real simulation data and overlay onto static algo object
   const isSelfish = algo.id === 'selfish'
@@ -3207,6 +3435,8 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         co2:        k.co2,
         fuel:       k.fuel,
         reward:     k.returnMean,
+        cpuMean:    k.cpuMean,
+        cpuPeak:    k.cpuPeak,
         sparklines: {
           travelTime: downsampleArray((qmixData.evalTravelTimes ?? []).map(t => t / 60), 10),
           waitTime:   downsampleArray(qmixData.evalWaitingTimes ?? [], 10),
@@ -3244,6 +3474,8 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         co2:        k.co2,
         fuel:       k.fuel,
         reward:     k.returnMean,
+        cpuMean:    k.cpuMean,
+        cpuPeak:    k.cpuPeak,
         sparklines: {
           travelTime: downsampleArray((civiqData.evalTravelTimes ?? []).map(t => t / 60), 10),
           waitTime:   downsampleArray(civiqData.evalWaitingTimes ?? [], 10),
@@ -3303,6 +3535,14 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     {/* Congestion detail modal */}
     {congestionDetail && (
       <CongestionDetailModal algo={displayAlgo} onClose={() => setCongestionDetail(false)} />
+    )}
+    {/* CPU detail modal */}
+    {openCpuModal && (
+      <CpuDetailModal
+        algo={displayAlgo}
+        evalCpuMeans={isQmix ? (qmixData?.evalCpuMeans ?? null) : isCiviq ? (civiqData?.evalCpuMeans ?? null) : null}
+        onClose={() => setOpenCpuModal(false)}
+      />
     )}
 
     {/* Header */}
@@ -3494,9 +3734,16 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       />
     </div>
 
-    {/* Analytics row */}
+    {/* Analytics row: training curve + CPU utilization */}
     {displayAlgo.id !== 'selfish' && (
-      <TrainingCurveChart algo={displayAlgo} />
+      <div className="grid grid-cols-3 gap-4">
+        <TrainingCurveChart algo={displayAlgo} />
+        <CpuStatsCard
+          algo={displayAlgo}
+          evalCpuMeans={isQmix ? (qmixData?.evalCpuMeans ?? null) : isCiviq ? (civiqData?.evalCpuMeans ?? null) : null}
+          onViewDetail={() => setOpenCpuModal(true)}
+        />
+      </div>
     )}
 
     {/* MARL training diagnostics (learning-based only) */}

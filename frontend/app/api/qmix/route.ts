@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
       evalTravelTimes:  data.evalTravelTimes,
       evalWaitingTimes: data.evalWaitingTimes,
       evalThroughputs:  data.evalThroughputs,
+      evalCpuMeans:     data.evalCpuMeans ?? null,
 
       // Training curve (points depend on log coverage — see meta.training_note)
       training: data.training,
