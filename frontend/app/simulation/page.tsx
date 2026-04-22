@@ -156,6 +156,7 @@ interface AlgoData {
   // Pluggable time-series — replace with real API data when backend is ready
   sparklines: KpiSeries
   changes: KpiChanges
+  changes2?: KpiChanges
   episodes: EpisodeSeries
   system: SystemSeries
   queue: QueuePoint[]
@@ -479,17 +480,21 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
-const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right', changeLabel, valueAlign = 'left' }: {
+const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right', changeLabel, change2, changeLabel2, valueAlign = 'left' }: {
   label: string; abbr?: string; value: string | number; unit: string
   color: string; colorDim?: string; borderColor?: string
   change?: number; lowerBetter?: boolean; sparkData?: number[]; onClick?: () => void; description?: string; descriptionSide?: 'left' | 'right'
   changeLabel?: string
+  change2?: number; changeLabel2?: string
   valueAlign?: 'left' | 'center'
 }) => {
   // Green = good outcome, regardless of direction
-  const isGood = change === undefined ? true : lowerBetter ? change <= 0 : change >= 0
-  const changeColor = isGood ? '#4ADE80' : '#F87171'
-  const changeArrow = (change ?? 0) >= 0 ? '▲' : '▼'
+  const isGood  = change  === undefined ? true : lowerBetter ? change  <= 0 : change  >= 0
+  const isGood2 = change2 === undefined ? true : lowerBetter ? change2 <= 0 : change2 >= 0
+  const changeColor  = isGood  ? '#4ADE80' : '#F87171'
+  const changeColor2 = isGood2 ? '#4ADE80' : '#F87171'
+  const changeArrow  = (change  ?? 0) >= 0 ? '▲' : '▼'
+  const changeArrow2 = (change2 ?? 0) >= 0 ? '▲' : '▼'
   return (
     <GlassCard className="group relative z-0 hover:z-30 p-4 flex flex-col gap-2 transition-all duration-200"
       onClick={onClick}
@@ -571,17 +576,24 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
             <span className="text-[26px] font-bold tabular-nums leading-none" style={{ color }}>{value}</span>
             <span className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.38)' }}>{unit}</span>
           </div>
-          {/* Change badge below value */}
+          {/* Change badges below value */}
           {change !== undefined && (
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold tabular-nums"
-                style={{ color: changeColor }}>
+              <span className="text-[11px] font-bold tabular-nums" style={{ color: changeColor }}>
                 {changeArrow} {Math.abs(change).toFixed(1)}%
               </span>
               {changeLabel && (
-                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.32)' }}>
-                  {changeLabel}
-                </span>
+                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{changeLabel}</span>
+              )}
+            </div>
+          )}
+          {change2 !== undefined && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold tabular-nums" style={{ color: changeColor2 }}>
+                {changeArrow2} {Math.abs(change2).toFixed(1)}%
+              </span>
+              {changeLabel2 && (
+                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{changeLabel2}</span>
               )}
             </div>
           )}
@@ -1967,6 +1979,18 @@ const CIVIQ_LOS_REF = {
   forced_flow: { travelTime: 1.885, waitTime: 19.3433, throughput: 2243.68,  co2: 525.807, fuel: 22.617, returnMean: -97827.74 },
 } as const
 
+const QMIX_LOS_REF = {
+  free_flow:   { travelTime_s: 125.003, waitTime_s: 7.9577,  throughput: 981.2,  returnMean: -45791.033 },
+  stable_flow: { travelTime_s: 108.316, waitTime_s: 10.4217, throughput: 1259.1, returnMean: -54641.307 },
+  forced_flow: { travelTime_s: 124.792, waitTime_s: 24.0477, throughput: 1674.7, returnMean: -105961.277 },
+} as const
+
+const SELFISH_LOS_REF = {
+  free_flow:   { travelTime_s: 120.345, waitTime_s: 7.736,  throughput: 1174.83, returnMean: -45167.61 },
+  stable_flow: { travelTime_s: 122.105, waitTime_s: 10.679, throughput: 1281.64, returnMean: -53838.66 },
+  forced_flow: { travelTime_s: 126.995, waitTime_s: 20.758, throughput: 2177.86, returnMean: -97242.83 },
+} as const
+
 // ─── Episode Detail Modal ─────────────────────────────────────────────────────
 
 type EpisodeMetricKey = keyof EpisodeSeries
@@ -3118,8 +3142,8 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     }
     if (isQmix && qmixData) {
       const k = qmixData.kpis
-      const noop = qmixData.baselines?.noop
       const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
+      const civiqRef  = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
       return {
         ...algo,
         // Override KPIs with scenario-specific real values
@@ -3136,10 +3160,10 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           throughput: algo.sparklines.throughput.map(() => k.throughput),
           speed:      algo.sparklines.speed.map(()      => k.realTimeFactor ?? algo.speed),
         },
-        changes: noop ? {
-          travelTime: changePct(k.travelTime_s, noop.travelTime_s),
-          waitTime:   changePct(k.waitTime_s,   noop.waitTime_s),
-          throughput: changePct(k.throughput,   noop.throughput),
+        changes: civiqRef ? {
+          travelTime: changePct(k.travelTime_s, civiqRef.travelTime * 60),
+          waitTime:   changePct(k.waitTime_s,   civiqRef.waitTime),
+          throughput: changePct(k.throughput,   civiqRef.throughput),
           speed: 0,
         } : algo.changes,
         system: {
@@ -3152,9 +3176,10 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       }
     }
     if (isCiviq && civiqData) {
-      const k = civiqData.kpis
-      const noop = civiqData.baselines?.noop
+      const k       = civiqData.kpis
       const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
+      const qmixRef   = QMIX_LOS_REF[trafficScale as keyof typeof QMIX_LOS_REF]
+      const selfishRef = SELFISH_LOS_REF[trafficScale as keyof typeof SELFISH_LOS_REF]
       return {
         ...algo,
         travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
@@ -3170,12 +3195,18 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           throughput: algo.sparklines.throughput.map(() => k.throughput),
           speed:      algo.sparklines.speed.map(()      => k.realTimeFactor ?? algo.speed),
         },
-        changes: noop ? {
-          travelTime: changePct(k.travelTime_s, noop.travelTime_s),
-          waitTime:   changePct(k.waitTime_s,   noop.waitTime_s),
-          throughput: changePct(k.throughput,   noop.throughput),
+        changes: qmixRef ? {
+          travelTime: changePct(k.travelTime_s, qmixRef.travelTime_s),
+          waitTime:   changePct(k.waitTime_s,   qmixRef.waitTime_s),
+          throughput: changePct(k.throughput,   qmixRef.throughput),
           speed: 0,
         } : algo.changes,
+        changes2: selfishRef ? {
+          travelTime: changePct(k.travelTime_s, selfishRef.travelTime_s),
+          waitTime:   changePct(k.waitTime_s,   selfishRef.waitTime_s),
+          throughput: changePct(k.throughput,   selfishRef.throughput),
+          speed: 0,
+        } : undefined,
         system: {
           ...algo.system,
           training: civiqData.training?.curve?.length
@@ -3281,19 +3312,25 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       <KpiCard label="Avg. Travel Time" abbr="ATT" value={displayAlgo.travelTime} unit="min"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.travelTime} lowerBetter sparkData={displayAlgo.sparklines.travelTime}
-        changeLabel={isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined}
+        changeLabel={isQmix ? 'vs. CiViQ' : isCiviq ? 'vs. QMIX' : (isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined)}
+        change2={isCiviq ? displayAlgo.changes2?.travelTime : undefined}
+        changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('travelTime') : () => setOpenModal('travelTime')}
         description="The mean time it takes for a vehicle to complete its route from entry to exit, across all vehicles in the simulation." />
       <KpiCard label="Avg. Wait Time" abbr="AWT" value={displayAlgo.waitTime} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.waitTime} lowerBetter sparkData={displayAlgo.sparklines.waitTime}
-        changeLabel={isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined}
+        changeLabel={isQmix ? 'vs. CiViQ' : isCiviq ? 'vs. QMIX' : (isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined)}
+        change2={isCiviq ? displayAlgo.changes2?.waitTime : undefined}
+        changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('waitTime') : () => setOpenModal('waitTime')}
         description="The mean time vehicles spent fully stopped in traffic. High values indicate congestion or poor routing decisions." />
       <KpiCard label="Throughput" abbr="TPT" value={displayAlgo.throughput.toLocaleString()} unit="veh/hr"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.throughput} sparkData={displayAlgo.sparklines.throughput}
-        changeLabel={isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined}
+        changeLabel={isQmix ? 'vs. CiViQ' : isCiviq ? 'vs. QMIX' : (isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined)}
+        change2={isCiviq ? displayAlgo.changes2?.throughput : undefined}
+        changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('throughput') : () => setOpenModal('throughput')}
         description="The number of vehicles that successfully completed their routes per minute. Higher values indicate better overall traffic flow." />
       <KpiCard label="Real-time Factor" abbr="RTF" value={displayAlgo.speed.toFixed(2)} unit="x"
@@ -3313,11 +3350,11 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.52)' }}>
             {displayAlgo.description}
           </p>
-          {(displayAlgo.convergence !== null || (isSelfish && displayAlgo.reward !== null)) && (
+          {(displayAlgo.convergence !== null || displayAlgo.reward !== null) && (
             <div className="pt-3 grid grid-cols-2 gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
               {displayAlgo.convergence !== null && (
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Convergence</div>
+                  <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Best Episode</div>
                   <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>Ep. {displayAlgo.convergence}</div>
                 </div>
               )}
@@ -3338,27 +3375,49 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-baseline gap-2 flex-wrap">
                     <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>
                       {typeof displayAlgo.reward === 'number' ? displayAlgo.reward.toLocaleString(undefined, { maximumFractionDigits: 0 }) : displayAlgo.reward}
                     </div>
                     {(() => {
-                      if (!isSelfish || typeof displayAlgo.reward !== 'number') return null
-                      const civiqRef = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
-                      if (!civiqRef) return null
-                      // Higher reward = better; use abs(ref) as denominator to avoid sign flip
-                      const pct = (displayAlgo.reward - civiqRef.returnMean) / Math.abs(civiqRef.returnMean) * 100
-                      const isBetter = pct > 0
-                      const color = isBetter ? '#4ADE80' : '#F87171'
-                      const arrow = isBetter ? '▲' : '▼'
-                      return (
-                        <div className="flex items-baseline gap-1.5 whitespace-nowrap">
-                          <span className="text-[11px] font-bold tabular-nums leading-none" style={{ color }}>
-                            {arrow} {Math.abs(pct).toFixed(1)}%
-                          </span>
-                          <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.32)' }}>vs. CiViQ</span>
-                        </div>
-                      )
+                      if (typeof displayAlgo.reward !== 'number') return null
+                      const reward = displayAlgo.reward
+                      const mkBadge = (pct: number, label: string) => {
+                        const isBetter = pct > 0
+                        const color = isBetter ? '#4ADE80' : '#F87171'
+                        const arrow = isBetter ? '▲' : '▼'
+                        return (
+                          <div key={label} className="flex items-baseline gap-1.5 whitespace-nowrap">
+                            <span className="text-[11px] font-bold tabular-nums leading-none" style={{ color }}>
+                              {arrow} {Math.abs(pct).toFixed(1)}%
+                            </span>
+                            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{label}</span>
+                          </div>
+                        )
+                      }
+                      if (isSelfish) {
+                        const ref = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
+                        if (!ref) return null
+                        const pct = (reward - ref.returnMean) / Math.abs(ref.returnMean) * 100
+                        return mkBadge(pct, 'vs. CiViQ')
+                      }
+                      if (isQmix) {
+                        const ref = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
+                        if (!ref) return null
+                        const pct = (reward - ref.returnMean) / Math.abs(ref.returnMean) * 100
+                        return mkBadge(pct, 'vs. CiViQ')
+                      }
+                      if (isCiviq) {
+                        const qRef = QMIX_LOS_REF[trafficScale as keyof typeof QMIX_LOS_REF]
+                        const sRef = SELFISH_LOS_REF[trafficScale as keyof typeof SELFISH_LOS_REF]
+                        return (
+                          <>
+                            {qRef && mkBadge((reward - qRef.returnMean) / Math.abs(qRef.returnMean) * 100, 'vs. QMIX')}
+                            {sRef && mkBadge((reward - sRef.returnMean) / Math.abs(sRef.returnMean) * 100, 'vs. Selfish')}
+                          </>
+                        )
+                      }
+                      return null
                     })()}
                   </div>
                 </div>
