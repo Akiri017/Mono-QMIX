@@ -1175,12 +1175,6 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     {/* Header */}
     <div>
       <h2 className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>Algorithm Comparison</h2>
-      <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
-        Aggregate performance · Civiq, Monolithic QMIX, and Selfish Routing
-      </p>
-      <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
-        Averages across LOS A · LOS C · LOS E — BGC Full (2 km²) map
-      </p>
       <div className="flex items-center gap-4 mt-2">
         {ALGO_LIST.map((a) => (
           <div key={a.id} className="flex items-center gap-1.5">
@@ -1217,10 +1211,6 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             </div>
             <div className="flex items-center gap-2 mb-4">
               <h3 className="text-[15px] font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>{a.label}</h3>
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                style={{ background: a.colorDim, color: a.color, border: `1px solid ${a.border}` }}>
-                {a.sublabel}
-              </span>
             </div>
             <div className="space-y-2">
               {RANK_META.map((m, mi) => {
@@ -1252,7 +1242,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       ))}
     </div>
 
-    {/* Performance Profile + Per-LOS Performance */}
+    {/* Performance Profile + Key Findings */}
     <div className="grid grid-cols-5 gap-4">
       <GlassCard className="col-span-2 p-5">
         <h3 className="text-[13px] font-bold mb-3" style={{ color: 'rgba(255,255,255,0.78)' }}>Performance Profile</h3>
@@ -1261,31 +1251,56 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           {ALGO_LIST.map((a) => (
             <div key={a.id} className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: a.color }} />
-              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.sublabel}</span>
+              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.label}</span>
             </div>
           ))}
         </div>
       </GlassCard>
 
-      <GlassCard className="col-span-3 p-5 flex flex-col">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Per-LOS Performance</h3>
-          <div className="flex gap-1 p-0.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-            {LOS_TABS.map(t => (
-              <button key={t.key} onClick={() => setLosTab(t.key)}
-                className="px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all duration-150"
-                style={{
-                  background: losTab === t.key ? 'rgba(255,255,255,0.12)' : 'transparent',
-                  color:      losTab === t.key ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.38)',
-                  border:     losTab === t.key ? '1px solid rgba(255,255,255,0.16)' : '1px solid transparent',
-                }}>
-                {t.sub}
-              </button>
-            ))}
-          </div>
+      <GlassCard className="col-span-3 p-5">
+        <h3 className="text-[13px] font-bold mb-4" style={{ color: 'rgba(255,255,255,0.78)' }}>Key Findings</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {KEY_FINDINGS.map((f) => (
+            <div key={f.headline} className="p-4 rounded-xl"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-2"
+                style={{ background: `${f.tagColor}1a`, color: f.tagColor, border: `1px solid ${f.tagColor}33` }}>
+                {f.tag}
+              </span>
+              <p className="text-[12px] font-semibold mb-1.5 leading-snug" style={{ color: 'rgba(255,255,255,0.82)' }}>
+                {f.headline}
+              </p>
+              <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                {f.body}
+              </p>
+            </div>
+          ))}
         </div>
-        <div className="space-y-3 flex-1">
-          {LOS_METRICS.map(m => {
+      </GlassCard>
+    </div>
+
+    {/* Per-LOS Performance */}
+    <GlassCard className="p-5 flex flex-col">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Per-LOS Performance</h3>
+        <div className="flex gap-1 p-0.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+          {LOS_TABS.map(t => (
+            <button key={t.key} onClick={() => setLosTab(t.key)}
+              className="px-5 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150"
+              style={{
+                background: losTab === t.key ? 'rgba(255,255,255,0.12)' : 'transparent',
+                color:      losTab === t.key ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.38)',
+                border:     losTab === t.key ? '1px solid rgba(255,255,255,0.16)' : '1px solid transparent',
+              }}>
+              {t.sub}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-4 flex-1">
+        {/* Row 1: Travel Time · Wait Time · Throughput */}
+        <div className="grid grid-cols-3 gap-5">
+          {LOS_METRICS.slice(0, 3).map(m => {
             const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
             const vals  = rows.map(r => r.val)
             const best  = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
@@ -1308,16 +1323,15 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                     return (
                       <div key={a.id} className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
-                        <span className="text-[9px] w-[52px] flex-shrink-0" style={{ color: a.color }}>{a.sublabel}</span>
                         <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
                           <div className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
                         </div>
-                        <span className="text-[10px] w-16 text-right tabular-nums font-semibold"
+                        <span className="text-[10px] w-14 text-right tabular-nums font-semibold"
                           style={{ color: isWinner ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.42)' }}>
                           {m.fmt(val)}
                         </span>
-                        <div className="w-[46px] text-right flex-shrink-0">
+                        <div className="w-[42px] text-right flex-shrink-0">
                           {isWinner
                             ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
                                 style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>{winLabel}</span>
@@ -1332,28 +1346,58 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             )
           })}
         </div>
-      </GlassCard>
-    </div>
 
-    {/* Key Findings */}
-    <GlassCard className="p-5">
-      <h3 className="text-[13px] font-bold mb-4" style={{ color: 'rgba(255,255,255,0.78)' }}>Key Findings</h3>
-      <div className="grid grid-cols-2 gap-3">
-        {KEY_FINDINGS.map((f) => (
-          <div key={f.headline} className="p-4 rounded-xl"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-2"
-              style={{ background: `${f.tagColor}1a`, color: f.tagColor, border: `1px solid ${f.tagColor}33` }}>
-              {f.tag}
-            </span>
-            <p className="text-[12px] font-semibold mb-1.5 leading-snug" style={{ color: 'rgba(255,255,255,0.82)' }}>
-              {f.headline}
-            </p>
-            <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              {f.body}
-            </p>
-          </div>
-        ))}
+        {/* Divider */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
+
+        {/* Row 2: CO₂ Emissions · Fuel Consumption */}
+        <div className="grid grid-cols-2 gap-5">
+          {LOS_METRICS.slice(3).map(m => {
+            const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
+            const vals  = rows.map(r => r.val)
+            const best  = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
+            const worst = m.lowerBetter ? Math.max(...vals) : Math.min(...vals)
+            const range = worst - best
+            const winLabel = m.lowerBetter ? 'Lowest' : 'Highest'
+            return (
+              <div key={m.key}>
+                <div className="flex justify-between items-baseline mb-1.5">
+                  <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>{m.label}</span>
+                  <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
+                </div>
+                <div className="space-y-1.5">
+                  {rows.map(({ a, val }) => {
+                    const isWinner = val === best
+                    const barPct = range > 0
+                      ? (m.lowerBetter ? 50 + 50 * (worst - val) / range : 50 + 50 * (val - worst) / range)
+                      : 75
+                    const delta = !isWinner && best !== 0 ? Math.abs((val - best) / best * 100) : 0
+                    return (
+                      <div key={a.id} className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
+                        <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <div className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
+                        </div>
+                        <span className="text-[10px] w-14 text-right tabular-nums font-semibold"
+                          style={{ color: isWinner ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.42)' }}>
+                          {m.fmt(val)}
+                        </span>
+                        <div className="w-[42px] text-right flex-shrink-0">
+                          {isWinner
+                            ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                                style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>{winLabel}</span>
+                            : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
+                          }
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </GlassCard>
   </div>
