@@ -3425,7 +3425,6 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
       const civiqRef  = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
       const trainCurve = qmixData.training?.curve ?? []
-      const trainPts   = trainingCurveToEpisodePoints(trainCurve)
       return {
         ...algo,
         travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
@@ -3455,7 +3454,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak, 120), 8, 120, 18),
         },
         marl:     qmixToMarlPoints(trainCurve),
-        episodes: { travelTime: trainPts, waitTime: trainPts, throughput: trainPts, speed: trainPts },
+        episodes: qmixToEpisodeSeries(qmixData),
       }
     }
     if (isCiviq && civiqData) {
@@ -3464,7 +3463,6 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       const qmixRef    = QMIX_LOS_REF[trafficScale as keyof typeof QMIX_LOS_REF]
       const selfishRef = SELFISH_LOS_REF[trafficScale as keyof typeof SELFISH_LOS_REF]
       const trainCurve = civiqData.training?.curve ?? []
-      const trainPts   = trainingCurveToEpisodePoints(trainCurve)
       return {
         ...algo,
         travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
@@ -3500,7 +3498,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak / 100, 120), 8, 120, 15),
         },
         marl: trainCurve.length ? qmixToMarlPoints(trainCurve) : algo.marl,
-        episodes: { travelTime: trainPts, waitTime: trainPts, throughput: trainPts, speed: trainPts },
+        episodes: qmixToEpisodeSeries(civiqData),
       }
     }
     return algo
@@ -3513,8 +3511,6 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       <EpisodeDetailModal
         algo={displayAlgo}
         metricKey={openModal}
-        labelOverride={(isQmix || isCiviq) ? 'Episode Return (Training Curve)' : undefined}
-        unitOverride={(isQmix || isCiviq) ? '' : undefined}
         onClose={() => setOpenModal(null)}
       />
     )}
