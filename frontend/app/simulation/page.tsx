@@ -320,7 +320,7 @@ function makeMarlMetrics(tdStart: number, qStart: number, qEnd: number, gradStar
 
 const ALGO: Record<AlgoKey, AlgoData> = {
   civiq: {
-    id: 'civiq', label: 'Hierarchical QMIX', sublabel: 'Civiq', rank: 1,
+    id: 'civiq', label: 'Civiq', sublabel: 'HMARL', rank: 1,
     color: '#38BDF8', colorDim: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)',
     // Averages across LOS A/C/E on BGC Full (2 km²)
     travelTime: 1.96, waitTime: 12.4, throughput: 1536, speed: 1.24,
@@ -1092,66 +1092,119 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
 // ─── Summary Page (stateful) ──────────────────────────────────────────────────
 
 function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
-  const [compareOpen, setCompareOpen]         = useState(false)
-  const [compareConfig, setCompareConfig]     = useState<CompareConfig | null>(null)
+  const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('stable_flow')
 
-  if (compareConfig) {
-    return <ComparePage config={compareConfig} onBack={() => setCompareConfig(null)} />
+  type LosKey = 'free_flow' | 'stable_flow' | 'forced_flow'
+  const LOS_TABS: { key: LosKey; label: string; sub: string }[] = [
+    { key: 'free_flow',   label: 'Free Flow',   sub: 'LOS A' },
+    { key: 'stable_flow', label: 'Stable Flow', sub: 'LOS C' },
+    { key: 'forced_flow', label: 'Forced Flow', sub: 'LOS E' },
+  ]
+
+  function perLos(id: AlgoKey, k: LosKey) {
+    const algo = ALGO_LIST.find(a => a.id === id)!
+    if (id === 'civiq') return {
+      travelTime: CIVIQ_LOS_REF[k].travelTime * 60,
+      waitTime:   CIVIQ_LOS_REF[k].waitTime,
+      throughput: CIVIQ_LOS_REF[k].throughput,
+      co2:        CIVIQ_LOS_REF[k].co2,
+      fuel:       CIVIQ_LOS_REF[k].fuel,
+    }
+    if (id === 'qmix') return {
+      travelTime: QMIX_LOS_REF[k].travelTime_s,
+      waitTime:   QMIX_LOS_REF[k].waitTime_s,
+      throughput: QMIX_LOS_REF[k].throughput,
+      co2:        algo.co2,
+      fuel:       algo.fuel,
+    }
+    return {
+      travelTime: SELFISH_LOS_REF[k].travelTime_s,
+      waitTime:   SELFISH_LOS_REF[k].waitTime_s,
+      throughput: SELFISH_LOS_REF[k].throughput,
+      co2:        algo.co2,
+      fuel:       algo.fuel,
+    }
   }
+
+  type LosMetricKey = 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'
+  const LOS_METRICS: { key: LosMetricKey; label: string; unit: string; lowerBetter: boolean; fmt: (v: number) => string }[] = [
+    { key: 'travelTime', label: 'Travel Time',    unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'waitTime',   label: 'Wait Time',      unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'throughput', label: 'Throughput',      unit: 'veh/hr',  lowerBetter: false, fmt: v => Math.round(v).toLocaleString() },
+    { key: 'co2',        label: 'CO₂ Emissions',  unit: 'g/km',    lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'fuel',       label: 'Fuel',            unit: 'L/100km', lowerBetter: true,  fmt: v => v.toFixed(2) },
+  ]
+
+  const RANK_META: { label: string; key: 'travelTime' | 'waitTime' | 'throughput' | 'co2'; fmt: (v: number) => string; lowerBetter: boolean }[] = [
+    { label: 'Travel Time', key: 'travelTime', fmt: v => `${(v * 60).toFixed(2)} sec`,               lowerBetter: true  },
+    { label: 'Wait Time',   key: 'waitTime',   fmt: v => `${v.toFixed(2)} sec`,                       lowerBetter: true  },
+    { label: 'Throughput',  key: 'throughput', fmt: v => `${Math.round(v).toLocaleString()} veh/hr`,  lowerBetter: false },
+    { label: 'CO₂',         key: 'co2',        fmt: v => `${v.toFixed(2)} g/km`,                      lowerBetter: true  },
+  ]
+  const rankNorm = RANK_META.map(m => {
+    const vals  = ALGO_LIST.map(a => a[m.key] as number)
+    const best  = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
+    const worst = m.lowerBetter ? Math.max(...vals) : Math.min(...vals)
+    return { best, worst, range: worst - best }
+  })
+
+  const KEY_FINDINGS = [
+    { tag: 'Throughput',   tagColor: '#22C55E',
+      headline: 'CiViQ delivers 34% more throughput under congestion',
+      body: 'At forced-flow (LOS E), CiViQ achieves 2,244 veh/hr vs QMIX\'s 1,675 — a 34.0% lead. The gap grows from 16.2% at free-flow, showing how hierarchical coordination compounds its benefit as demand rises.' },
+    { tag: 'Travel Time',  tagColor: '#38BDF8',
+      headline: 'QMIX edges CiViQ at stable flow by 8.1%',
+      body: 'At LOS C, QMIX records 108.32 sec vs CiViQ\'s 117.90 sec. Monolithic coordination can outperform hierarchical control under moderate, non-saturated traffic where hierarchy overhead exceeds its benefit.' },
+    { tag: 'Wait Time',    tagColor: '#F59E0B',
+      headline: 'Congestion reveals QMIX\'s coordination ceiling',
+      body: 'At LOS E, QMIX wait time hits 24.05 sec — 24.4% worse than CiViQ\'s 19.34 sec. The joint action-value function struggles to resolve intersection conflicts as demand approaches saturation.' },
+    { tag: 'Baseline',     tagColor: '#F87171',
+      headline: 'Selfish Routing matches CiViQ at free flow',
+      body: 'At LOS A, Selfish records 120.35 sec vs CiViQ\'s 120.78 sec — within 0.3%. It also beats QMIX (125.00 sec). Under low demand, RL coordination overhead costs more than the benefit it provides.' },
+    { tag: 'Scalability',  tagColor: '#A78BFA',
+      headline: 'Hierarchical architecture scales; monolithic does not',
+      body: 'CiViQ\'s two-tier hierarchy keeps per-decision complexity constant as traffic grows. QMIX\'s joint-action-value network scales quadratically with agent count, explaining its degradation at LOS E.' },
+    { tag: 'Coordination', tagColor: '#34D399',
+      headline: 'Coordination premium grows with congestion',
+      body: 'CiViQ vs Selfish wait-time gap is 3.4% at LOS A (7.48 vs 7.74 sec) but grows to 7.3% at LOS E (19.34 vs 20.76 sec). Multi-agent coordination only fully earns its cost when intersections are congested.' },
+  ]
 
   return (
   <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
-    {compareOpen && (
-      <CompareModal
-        onClose={() => setCompareOpen(false)}
-        onConfirm={(cfg) => { setCompareOpen(false); setCompareConfig(cfg) }}
-      />
-    )}
+
     {/* Header */}
-    <div className="flex items-center justify-between">
-      <div>
-        <h2 className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>Algorithm Comparison</h2>
-        <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
-          Aggregate performance across Civiq, Monolithic QMIX, and Selfish Routing
-        </p>
-        <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
-          KPIs averaged across LOS A · LOS C · LOS E — BGC Full (2 km²) map
-        </p>
-        <div className="flex items-center gap-4 mt-2">
-          {ALGO_LIST.map((a) => (
-            <div key={a.id} className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: a.color }} />
-              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.sublabel}</span>
-            </div>
-          ))}
-        </div>
+    <div>
+      <h2 className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>Algorithm Comparison</h2>
+      <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
+        Aggregate performance · Civiq, Monolithic QMIX, and Selfish Routing
+      </p>
+      <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        Averages across LOS A · LOS C · LOS E — BGC Full (2 km²) map
+      </p>
+      <div className="flex items-center gap-4 mt-2">
+        {ALGO_LIST.map((a) => (
+          <div key={a.id} className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: a.color }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.label}</span>
+          </div>
+        ))}
       </div>
-      <button
-        onClick={() => setCompareOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold transition-all duration-200"
-        style={{
-          background: 'linear-gradient(135deg, rgba(6,182,212,0.22) 0%, rgba(99,102,241,0.18) 100%)',
-          border: '1px solid rgba(6,182,212,0.45)',
-          color: '#06B6D4',
-          boxShadow: '0 0 18px rgba(6,182,212,0.18)',
-        }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 28px rgba(6,182,212,0.35)' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 18px rgba(6,182,212,0.18)' }}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="7" height="18" rx="1" /><rect x="14" y="3" width="7" height="18" rx="1" />
-        </svg>
-        Compare Side-by-Side
-      </button>
     </div>
 
-    {/* Rank cards */}
+    {/* Rank cards — click to navigate */}
     <div className="grid grid-cols-3 gap-4">
       {ALGO_LIST.map((a, i) => (
-        <GlassCard key={a.id} className="p-5 relative overflow-hidden"
-          style={{ border: `1px solid ${a.border}`, transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px ${a.border}` }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)' }}>
+        <GlassCard key={a.id} className="p-5 relative overflow-hidden cursor-pointer"
+          style={{ border: `1px solid ${a.border}`, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }}
+          onClick={() => onNavigate(a.id)}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'
+            ;(e.currentTarget as HTMLElement).style.boxShadow = `0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px ${a.border}`
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
+            ;(e.currentTarget as HTMLElement).style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)'
+          }}>
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: `radial-gradient(ellipse at 80% 0%, ${a.colorDim}, transparent 65%)` }} />
           <div className="relative">
@@ -1160,42 +1213,46 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 style={{ background: rankMeta[i].bg, color: rankMeta[i].color }}>
                 {rankMeta[i].label}
               </span>
-              <button
-                onClick={() => onNavigate(a.id)}
-                className="text-[10px] font-semibold px-2.5 py-1 rounded-full transition-all duration-150"
-                style={{ color: a.color, background: a.colorDim, border: `1px solid ${a.border}` }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.3)'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)' }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
-              >
-                View Detail →
-              </button>
+              <span className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>View Detail →</span>
             </div>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <h3 className="text-[15px] font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>{a.label}</h3>
               <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
                 style={{ background: a.colorDim, color: a.color, border: `1px solid ${a.border}` }}>
                 {a.sublabel}
               </span>
             </div>
-            <div className="space-y-2 text-[12px]">
-              {[
-                { k: 'Avg. Travel Time', v: `${a.travelTime} min` },
-                { k: 'Avg. Wait Time', v: `${a.waitTime} sec` },
-                { k: 'Throughput', v: `${a.throughput.toLocaleString()} veh/hr` },
-                { k: 'CO₂ Emissions', v: `${a.co2} g/km` },
-              ].map(({ k, v }) => (
-                <div key={k} className="flex justify-between">
-                  <span style={{ color: 'rgba(255,255,255,0.42)' }}>{k}</span>
-                  <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.82)' }}>{v}</span>
-                </div>
-              ))}
+            <div className="space-y-2">
+              {RANK_META.map((m, mi) => {
+                const val = a[m.key] as number
+                const { best, worst, range } = rankNorm[mi]
+                const isBest = val === best
+                const barPct = range > 0
+                  ? (m.lowerBetter ? 50 + 50 * (worst - val) / range : 50 + 50 * (val - worst) / range)
+                  : 75
+                return (
+                  <div key={m.label}>
+                    <div className="flex justify-between mb-0.5">
+                      <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.38)' }}>{m.label}</span>
+                      <span className="text-[10px] font-semibold tabular-nums"
+                        style={{ color: isBest ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.55)' }}>
+                        {m.fmt(val)}
+                      </span>
+                    </div>
+                    <div className="w-full h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isBest ? 0.85 : 0.3 }} />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </GlassCard>
       ))}
     </div>
 
-    {/* Radar + Breakdown */}
+    {/* Performance Profile + Per-LOS Performance */}
     <div className="grid grid-cols-5 gap-4">
       <GlassCard className="col-span-2 p-5">
         <h3 className="text-[13px] font-bold mb-3" style={{ color: 'rgba(255,255,255,0.78)' }}>Performance Profile</h3>
@@ -1210,34 +1267,62 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         </div>
       </GlassCard>
 
-      <GlassCard className="col-span-3 p-5">
-        <h3 className="text-[13px] font-bold mb-4" style={{ color: 'rgba(255,255,255,0.78)' }}>Metrics Breakdown</h3>
-        <div className="space-y-4">
-          {COMPARE_METRICS.map((m) => {
-            const vals = ALGO_LIST.map((a) => a[m.key] as number)
-            const best = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
+      <GlassCard className="col-span-3 p-5 flex flex-col">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Per-LOS Performance</h3>
+          <div className="flex gap-1 p-0.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+            {LOS_TABS.map(t => (
+              <button key={t.key} onClick={() => setLosTab(t.key)}
+                className="px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all duration-150"
+                style={{
+                  background: losTab === t.key ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  color:      losTab === t.key ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.38)',
+                  border:     losTab === t.key ? '1px solid rgba(255,255,255,0.16)' : '1px solid transparent',
+                }}>
+                {t.sub}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-3 flex-1">
+          {LOS_METRICS.map(m => {
+            const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
+            const vals  = rows.map(r => r.val)
+            const best  = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
+            const worst = m.lowerBetter ? Math.max(...vals) : Math.min(...vals)
+            const range = worst - best
+            const winLabel = m.lowerBetter ? 'Lowest' : 'Highest'
             return (
               <div key={m.key}>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.48)' }}>{m.label}</span>
-                  <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>{m.unit}</span>
+                <div className="flex justify-between items-baseline mb-1.5">
+                  <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>{m.label}</span>
+                  <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
                 </div>
                 <div className="space-y-1.5">
-                  {ALGO_LIST.map((a) => {
-                    const val = a[m.key] as number
-                    const isBest = val === best
-                    const barW = m.lowerBetter
-                      ? ((m.max - val) / m.max) * 100
-                      : (val / m.max) * 100
+                  {rows.map(({ a, val }) => {
+                    const isWinner = val === best
+                    const barPct = range > 0
+                      ? (m.lowerBetter ? 50 + 50 * (worst - val) / range : 50 + 50 * (val - worst) / range)
+                      : 75
+                    const delta = !isWinner && best !== 0 ? Math.abs((val - best) / best * 100) : 0
                     return (
-                      <div key={a.id} className="flex items-center gap-2.5">
-                        <span className="text-[10px] w-10 text-right tabular-nums" style={{ color: 'rgba(255,255,255,0.4)' }}>{val}</span>
-                        <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.25)' }}>
-                          <div className="h-full rounded-full transition-all duration-700"
-                            style={{ width: `${barW}%`, background: a.color, opacity: isBest ? 1 : 0.42 }} />
+                      <div key={a.id} className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
+                        <span className="text-[9px] w-[52px] flex-shrink-0" style={{ color: a.color }}>{a.sublabel}</span>
+                        <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <div className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
                         </div>
-                        <div className="w-3.5 flex items-center justify-center">
-                          {isBest && <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#22C55E" /></svg>}
+                        <span className="text-[10px] w-16 text-right tabular-nums font-semibold"
+                          style={{ color: isWinner ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.42)' }}>
+                          {m.fmt(val)}
+                        </span>
+                        <div className="w-[46px] text-right flex-shrink-0">
+                          {isWinner
+                            ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                                style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>{winLabel}</span>
+                            : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
+                          }
                         </div>
                       </div>
                     )
@@ -1252,12 +1337,21 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
     {/* Key Findings */}
     <GlassCard className="p-5">
-      <h3 className="text-[13px] font-bold mb-3" style={{ color: 'rgba(255,255,255,0.78)' }}>Key Findings</h3>
-      <div className="grid grid-cols-3 gap-5 text-[12px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
-        {ALGO_LIST.map((a) => (
-          <div key={a.id}>
-            <p className="font-semibold mb-1.5" style={{ color: a.color }}>{a.label}</p>
-            <p className="leading-relaxed">{a.description}</p>
+      <h3 className="text-[13px] font-bold mb-4" style={{ color: 'rgba(255,255,255,0.78)' }}>Key Findings</h3>
+      <div className="grid grid-cols-2 gap-3">
+        {KEY_FINDINGS.map((f) => (
+          <div key={f.headline} className="p-4 rounded-xl"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-2"
+              style={{ background: `${f.tagColor}1a`, color: f.tagColor, border: `1px solid ${f.tagColor}33` }}>
+              {f.tag}
+            </span>
+            <p className="text-[12px] font-semibold mb-1.5 leading-snug" style={{ color: 'rgba(255,255,255,0.82)' }}>
+              {f.headline}
+            </p>
+            <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {f.body}
+            </p>
           </div>
         ))}
       </div>
