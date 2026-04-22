@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-04-21T11:38:51.655131Z",
   "scenario": "LOS C (Stable traffic)",
-  "map": "BGC Full (2km\u00b2)",
+  "map": "BGC Full (2km²)",
   "seed": 1805,
   "t_max": 1000000,
   "n_eval_episodes": 30,
@@ -168,8 +168,2009 @@
     1334.2657
   ],
   "training": {
-    "note": "Training curve from tfevents not yet parsed",
-    "curve": []
+    "note": "Text log: 200 entries, t=5000–1000000",
+    "curve": [
+      {
+        "t": 5000,
+        "episode": 50,
+        "reward": -56771.65,
+        "loss": 85.3739,
+        "gradNorm": 130.4634,
+        "qTaken": 8.5398,
+        "targetMean": null,
+        "ma": -56771.65
+      },
+      {
+        "t": 10000,
+        "episode": 100,
+        "reward": -57052.68,
+        "loss": 21.7842,
+        "gradNorm": 12.1907,
+        "qTaken": 12.2504,
+        "targetMean": null,
+        "ma": -56912.17
+      },
+      {
+        "t": 15000,
+        "episode": 150,
+        "reward": -56470.02,
+        "loss": 19.8994,
+        "gradNorm": 20.1918,
+        "qTaken": 14.0954,
+        "targetMean": null,
+        "ma": -56764.78
+      },
+      {
+        "t": 20000,
+        "episode": 200,
+        "reward": -58407.08,
+        "loss": 13.1771,
+        "gradNorm": 0.867,
+        "qTaken": 17.2463,
+        "targetMean": null,
+        "ma": -57175.36
+      },
+      {
+        "t": 25000,
+        "episode": 250,
+        "reward": -56045.55,
+        "loss": 9.3989,
+        "gradNorm": 25.1728,
+        "qTaken": 10.1963,
+        "targetMean": null,
+        "ma": -56949.4
+      },
+      {
+        "t": 30000,
+        "episode": 300,
+        "reward": -54973.73,
+        "loss": 11.1268,
+        "gradNorm": 45.1321,
+        "qTaken": 13.591,
+        "targetMean": null,
+        "ma": -56620.12
+      },
+      {
+        "t": 35000,
+        "episode": 350,
+        "reward": -56045.35,
+        "loss": 7.8419,
+        "gradNorm": 9.4877,
+        "qTaken": 11.4962,
+        "targetMean": null,
+        "ma": -56538.01
+      },
+      {
+        "t": 40000,
+        "episode": 400,
+        "reward": -53838.13,
+        "loss": 7.2128,
+        "gradNorm": 2.3126,
+        "qTaken": 11.9604,
+        "targetMean": null,
+        "ma": -56200.52
+      },
+      {
+        "t": 45000,
+        "episode": 450,
+        "reward": -53809.57,
+        "loss": 7.2063,
+        "gradNorm": 17.3136,
+        "qTaken": 6.2474,
+        "targetMean": null,
+        "ma": -55934.86
+      },
+      {
+        "t": 50000,
+        "episode": 500,
+        "reward": -56490.56,
+        "loss": 8.5251,
+        "gradNorm": 26.2021,
+        "qTaken": 8.7804,
+        "targetMean": null,
+        "ma": -55990.43
+      },
+      {
+        "t": 55000,
+        "episode": 550,
+        "reward": -57791.07,
+        "loss": 6.3691,
+        "gradNorm": 7.1886,
+        "qTaken": 6.4421,
+        "targetMean": null,
+        "ma": -56154.13
+      },
+      {
+        "t": 60000,
+        "episode": 600,
+        "reward": -54633.69,
+        "loss": 5.6869,
+        "gradNorm": 10.5829,
+        "qTaken": 6.5666,
+        "targetMean": null,
+        "ma": -56027.42
+      },
+      {
+        "t": 65000,
+        "episode": 650,
+        "reward": -52698.24,
+        "loss": 6.9458,
+        "gradNorm": 30.5146,
+        "qTaken": -0.5489,
+        "targetMean": null,
+        "ma": -55771.33
+      },
+      {
+        "t": 70000,
+        "episode": 700,
+        "reward": -55122.79,
+        "loss": 6.485,
+        "gradNorm": 25.5722,
+        "qTaken": -0.0136,
+        "targetMean": null,
+        "ma": -55725.01
+      },
+      {
+        "t": 75000,
+        "episode": 750,
+        "reward": -58108.54,
+        "loss": 7.1815,
+        "gradNorm": 26.1426,
+        "qTaken": -0.5576,
+        "targetMean": null,
+        "ma": -55883.91
+      },
+      {
+        "t": 80000,
+        "episode": 800,
+        "reward": -58044.83,
+        "loss": 6.5732,
+        "gradNorm": 24.1138,
+        "qTaken": 2.2148,
+        "targetMean": null,
+        "ma": -56018.97
+      },
+      {
+        "t": 85000,
+        "episode": 850,
+        "reward": -52917.68,
+        "loss": 8.3132,
+        "gradNorm": 22.8509,
+        "qTaken": -3.8884,
+        "targetMean": null,
+        "ma": -55836.54
+      },
+      {
+        "t": 90000,
+        "episode": 900,
+        "reward": -54706.87,
+        "loss": 7.1843,
+        "gradNorm": 18.9635,
+        "qTaken": -3.628,
+        "targetMean": null,
+        "ma": -55773.78
+      },
+      {
+        "t": 95000,
+        "episode": 950,
+        "reward": -53872.83,
+        "loss": 6.651,
+        "gradNorm": 16.8887,
+        "qTaken": -3.6186,
+        "targetMean": null,
+        "ma": -55673.73
+      },
+      {
+        "t": 100000,
+        "episode": 1000,
+        "reward": -57726.48,
+        "loss": 4.1615,
+        "gradNorm": 5.153,
+        "qTaken": -1.5617,
+        "targetMean": null,
+        "ma": -55776.37
+      },
+      {
+        "t": 105000,
+        "episode": 1050,
+        "reward": -55637.04,
+        "loss": 3.4947,
+        "gradNorm": 9.7259,
+        "qTaken": -5.4975,
+        "targetMean": null,
+        "ma": -55769.73
+      },
+      {
+        "t": 110000,
+        "episode": 1100,
+        "reward": -54062.15,
+        "loss": 3.6622,
+        "gradNorm": 9.8479,
+        "qTaken": -5.7019,
+        "targetMean": null,
+        "ma": -55640.71
+      },
+      {
+        "t": 115000,
+        "episode": 1150,
+        "reward": -57131.92,
+        "loss": 2.8352,
+        "gradNorm": 2.7923,
+        "qTaken": -5.2419,
+        "targetMean": null,
+        "ma": -55644.48
+      },
+      {
+        "t": 120000,
+        "episode": 1200,
+        "reward": -56232.08,
+        "loss": 2.9693,
+        "gradNorm": 4.7361,
+        "qTaken": -5.1613,
+        "targetMean": null,
+        "ma": -55633.15
+      },
+      {
+        "t": 125000,
+        "episode": 1250,
+        "reward": -56313.17,
+        "loss": 3.5612,
+        "gradNorm": 11.4826,
+        "qTaken": -5.2921,
+        "targetMean": null,
+        "ma": -55533.44
+      },
+      {
+        "t": 130000,
+        "episode": 1300,
+        "reward": -58774.61,
+        "loss": 2.2307,
+        "gradNorm": 1.7173,
+        "qTaken": -6.289,
+        "targetMean": null,
+        "ma": -55663.4
+      },
+      {
+        "t": 135000,
+        "episode": 1350,
+        "reward": -56923.29,
+        "loss": 2.2225,
+        "gradNorm": 4.4538,
+        "qTaken": -5.7678,
+        "targetMean": null,
+        "ma": -55756.23
+      },
+      {
+        "t": 140000,
+        "episode": 1400,
+        "reward": -56806.17,
+        "loss": 3.4883,
+        "gradNorm": 15.991,
+        "qTaken": -5.5515,
+        "targetMean": null,
+        "ma": -55792.46
+      },
+      {
+        "t": 145000,
+        "episode": 1450,
+        "reward": -57611.06,
+        "loss": 2.3004,
+        "gradNorm": 6.9649,
+        "qTaken": -7.6676,
+        "targetMean": null,
+        "ma": -55972.13
+      },
+      {
+        "t": 150000,
+        "episode": 1500,
+        "reward": -55090.05,
+        "loss": 2.3343,
+        "gradNorm": 6.9027,
+        "qTaken": -8.6879,
+        "targetMean": null,
+        "ma": -56033.1
+      },
+      {
+        "t": 155000,
+        "episode": 1550,
+        "reward": -56925.88,
+        "loss": 2.0302,
+        "gradNorm": 3.8132,
+        "qTaken": -8.3753,
+        "targetMean": null,
+        "ma": -56053.83
+      },
+      {
+        "t": 160000,
+        "episode": 1600,
+        "reward": -54978.73,
+        "loss": 2.5684,
+        "gradNorm": 11.8066,
+        "qTaken": -7.2145,
+        "targetMean": null,
+        "ma": -55919.91
+      },
+      {
+        "t": 165000,
+        "episode": 1650,
+        "reward": -55768.6,
+        "loss": 2.3193,
+        "gradNorm": 2.3153,
+        "qTaken": -9.754,
+        "targetMean": null,
+        "ma": -55973.95
+      },
+      {
+        "t": 170000,
+        "episode": 1700,
+        "reward": -57968.64,
+        "loss": 5.0533,
+        "gradNorm": 35.0076,
+        "qTaken": -7.9539,
+        "targetMean": null,
+        "ma": -56224.92
+      },
+      {
+        "t": 175000,
+        "episode": 1750,
+        "reward": -54112.4,
+        "loss": 2.1924,
+        "gradNorm": 5.0585,
+        "qTaken": -10.2434,
+        "targetMean": null,
+        "ma": -56176.81
+      },
+      {
+        "t": 180000,
+        "episode": 1800,
+        "reward": -53694.33,
+        "loss": 2.4044,
+        "gradNorm": 2.6013,
+        "qTaken": -9.9574,
+        "targetMean": null,
+        "ma": -55966.61
+      },
+      {
+        "t": 185000,
+        "episode": 1850,
+        "reward": -57910.89,
+        "loss": 2.9548,
+        "gradNorm": 14.8072,
+        "qTaken": -10.878,
+        "targetMean": null,
+        "ma": -55960.23
+      },
+      {
+        "t": 190000,
+        "episode": 1900,
+        "reward": -57994.02,
+        "loss": 3.6047,
+        "gradNorm": 24.1417,
+        "qTaken": -10.5775,
+        "targetMean": null,
+        "ma": -56201.96
+      },
+      {
+        "t": 195000,
+        "episode": 1950,
+        "reward": -53696.14,
+        "loss": 3.5256,
+        "gradNorm": 12.8382,
+        "qTaken": -10.7135,
+        "targetMean": null,
+        "ma": -56153.83
+      },
+      {
+        "t": 200000,
+        "episode": 2000,
+        "reward": -56926.54,
+        "loss": 2.4625,
+        "gradNorm": 11.523,
+        "qTaken": -11.88,
+        "targetMean": null,
+        "ma": -56299.25
+      },
+      {
+        "t": 205000,
+        "episode": 2050,
+        "reward": -56991.73,
+        "loss": 2.5335,
+        "gradNorm": 5.3781,
+        "qTaken": -13.7806,
+        "targetMean": null,
+        "ma": -56264.26
+      },
+      {
+        "t": 210000,
+        "episode": 2100,
+        "reward": -53393.89,
+        "loss": 3.5003,
+        "gradNorm": 16.0212,
+        "qTaken": -14.8425,
+        "targetMean": null,
+        "ma": -56157.44
+      },
+      {
+        "t": 215000,
+        "episode": 2150,
+        "reward": -56370.24,
+        "loss": 2.227,
+        "gradNorm": 6.6904,
+        "qTaken": -13.2655,
+        "targetMean": null,
+        "ma": -56267.35
+      },
+      {
+        "t": 220000,
+        "episode": 2200,
+        "reward": -55169.48,
+        "loss": 2.0914,
+        "gradNorm": 6.4705,
+        "qTaken": -13.5881,
+        "targetMean": null,
+        "ma": -56173.9
+      },
+      {
+        "t": 225000,
+        "episode": 2250,
+        "reward": -55316.1,
+        "loss": 2.4755,
+        "gradNorm": 2.4709,
+        "qTaken": -15.1206,
+        "targetMean": null,
+        "ma": -56130.28
+      },
+      {
+        "t": 230000,
+        "episode": 2300,
+        "reward": -55544.83,
+        "loss": 2.3661,
+        "gradNorm": 1.4267,
+        "qTaken": -15.4197,
+        "targetMean": null,
+        "ma": -56093.7
+      },
+      {
+        "t": 235000,
+        "episode": 2350,
+        "reward": -54872.74,
+        "loss": 2.5745,
+        "gradNorm": 19.2668,
+        "qTaken": -16.3689,
+        "targetMean": null,
+        "ma": -55907.89
+      },
+      {
+        "t": 240000,
+        "episode": 2400,
+        "reward": -58108.09,
+        "loss": 2.3486,
+        "gradNorm": 11.7812,
+        "qTaken": -14.9765,
+        "targetMean": null,
+        "ma": -55964.31
+      },
+      {
+        "t": 245000,
+        "episode": 2450,
+        "reward": -56327.85,
+        "loss": 2.4732,
+        "gradNorm": 6.0518,
+        "qTaken": -16.6204,
+        "targetMean": null,
+        "ma": -55941.53
+      },
+      {
+        "t": 250000,
+        "episode": 2500,
+        "reward": -56014.85,
+        "loss": 2.4734,
+        "gradNorm": 18.22,
+        "qTaken": -16.0946,
+        "targetMean": null,
+        "ma": -55865.52
+      },
+      {
+        "t": 255000,
+        "episode": 2550,
+        "reward": -53181.47,
+        "loss": 2.5683,
+        "gradNorm": 15.5391,
+        "qTaken": -17.2261,
+        "targetMean": null,
+        "ma": -55774.64
+      },
+      {
+        "t": 260000,
+        "episode": 2600,
+        "reward": -56052.45,
+        "loss": 2.3479,
+        "gradNorm": 15.0359,
+        "qTaken": -16.3987,
+        "targetMean": null,
+        "ma": -55733.05
+      },
+      {
+        "t": 265000,
+        "episode": 2650,
+        "reward": -53551.4,
+        "loss": 2.8719,
+        "gradNorm": 12.0595,
+        "qTaken": -17.5201,
+        "targetMean": null,
+        "ma": -55665.08
+      },
+      {
+        "t": 270000,
+        "episode": 2700,
+        "reward": -53135.9,
+        "loss": 2.8141,
+        "gradNorm": 9.0497,
+        "qTaken": -17.5283,
+        "targetMean": null,
+        "ma": -55539.71
+      },
+      {
+        "t": 275000,
+        "episode": 2750,
+        "reward": -56995.88,
+        "loss": 2.1159,
+        "gradNorm": 0.7762,
+        "qTaken": -17.5732,
+        "targetMean": null,
+        "ma": -55493.39
+      },
+      {
+        "t": 280000,
+        "episode": 2800,
+        "reward": -53728.5,
+        "loss": 2.4202,
+        "gradNorm": 20.3901,
+        "qTaken": -17.3276,
+        "targetMean": null,
+        "ma": -55475.11
+      },
+      {
+        "t": 285000,
+        "episode": 2850,
+        "reward": -57071.13,
+        "loss": 2.8341,
+        "gradNorm": 13.3932,
+        "qTaken": -19.5436,
+        "targetMean": null,
+        "ma": -55635.91
+      },
+      {
+        "t": 290000,
+        "episode": 2900,
+        "reward": -54846.94,
+        "loss": 2.5707,
+        "gradNorm": 15.2834,
+        "qTaken": -19.3673,
+        "targetMean": null,
+        "ma": -55490.01
+      },
+      {
+        "t": 295000,
+        "episode": 2950,
+        "reward": -53105.28,
+        "loss": 2.74,
+        "gradNorm": 16.7318,
+        "qTaken": -19.4453,
+        "targetMean": null,
+        "ma": -55257.21
+      },
+      {
+        "t": 300000,
+        "episode": 3000,
+        "reward": -55631.18,
+        "loss": 2.337,
+        "gradNorm": 24.0193,
+        "qTaken": -19.847,
+        "targetMean": null,
+        "ma": -55349.36
+      },
+      {
+        "t": 305000,
+        "episode": 3050,
+        "reward": -57652.89,
+        "loss": 2.2405,
+        "gradNorm": 6.0803,
+        "qTaken": -20.8917,
+        "targetMean": null,
+        "ma": -55383.94
+      },
+      {
+        "t": 310000,
+        "episode": 3100,
+        "reward": -54253.56,
+        "loss": 3.7933,
+        "gradNorm": 55.0753,
+        "qTaken": -19.71,
+        "targetMean": null,
+        "ma": -55253.55
+      },
+      {
+        "t": 315000,
+        "episode": 3150,
+        "reward": -55133.93,
+        "loss": 2.3141,
+        "gradNorm": 4.7462,
+        "qTaken": -20.9275,
+        "targetMean": null,
+        "ma": -55336.41
+      },
+      {
+        "t": 320000,
+        "episode": 3200,
+        "reward": -54674.96,
+        "loss": 2.5373,
+        "gradNorm": 25.8521,
+        "qTaken": -21.222,
+        "targetMean": null,
+        "ma": -55255.69
+      },
+      {
+        "t": 325000,
+        "episode": 3250,
+        "reward": -54023.66,
+        "loss": 2.2396,
+        "gradNorm": 24.1971,
+        "qTaken": -22.4858,
+        "targetMean": null,
+        "ma": -55201.12
+      },
+      {
+        "t": 330000,
+        "episode": 3300,
+        "reward": -54519.95,
+        "loss": 2.4896,
+        "gradNorm": 6.7367,
+        "qTaken": -23.0754,
+        "targetMean": null,
+        "ma": -55163.21
+      },
+      {
+        "t": 335000,
+        "episode": 3350,
+        "reward": -55660.98,
+        "loss": 2.5742,
+        "gradNorm": 20.0084,
+        "qTaken": -22.3703,
+        "targetMean": null,
+        "ma": -55168.74
+      },
+      {
+        "t": 340000,
+        "episode": 3400,
+        "reward": -53223.5,
+        "loss": 2.3615,
+        "gradNorm": 15.167,
+        "qTaken": -23.0679,
+        "targetMean": null,
+        "ma": -55090.21
+      },
+      {
+        "t": 345000,
+        "episode": 3450,
+        "reward": -53225.73,
+        "loss": 2.6086,
+        "gradNorm": 28.2921,
+        "qTaken": -24.0459,
+        "targetMean": null,
+        "ma": -54857.71
+      },
+      {
+        "t": 350000,
+        "episode": 3500,
+        "reward": -52836.69,
+        "loss": 2.8487,
+        "gradNorm": 8.1016,
+        "qTaken": -24.4359,
+        "targetMean": null,
+        "ma": -54691.47
+      },
+      {
+        "t": 355000,
+        "episode": 3550,
+        "reward": -52352.38,
+        "loss": 2.7908,
+        "gradNorm": 53.0383,
+        "qTaken": -23.1449,
+        "targetMean": null,
+        "ma": -54517.06
+      },
+      {
+        "t": 360000,
+        "episode": 3600,
+        "reward": -56908.95,
+        "loss": 2.1411,
+        "gradNorm": 4.9897,
+        "qTaken": -23.8952,
+        "targetMean": null,
+        "ma": -54694.56
+      },
+      {
+        "t": 365000,
+        "episode": 3650,
+        "reward": -55535.34,
+        "loss": 3.009,
+        "gradNorm": 46.9818,
+        "qTaken": -25.4625,
+        "targetMean": null,
+        "ma": -54669.94
+      },
+      {
+        "t": 370000,
+        "episode": 3700,
+        "reward": -55738.28,
+        "loss": 2.6727,
+        "gradNorm": 61.5852,
+        "qTaken": -24.223,
+        "targetMean": null,
+        "ma": -54774.08
+      },
+      {
+        "t": 375000,
+        "episode": 3750,
+        "reward": -52883.49,
+        "loss": 1.9781,
+        "gradNorm": 14.5531,
+        "qTaken": -25.0803,
+        "targetMean": null,
+        "ma": -54762.06
+      },
+      {
+        "t": 380000,
+        "episode": 3800,
+        "reward": -55274.46,
+        "loss": 1.9933,
+        "gradNorm": 26.1907,
+        "qTaken": -25.0533,
+        "targetMean": null,
+        "ma": -54680.08
+      },
+      {
+        "t": 385000,
+        "episode": 3850,
+        "reward": -53550.07,
+        "loss": 2.6269,
+        "gradNorm": 60.4721,
+        "qTaken": -25.9104,
+        "targetMean": null,
+        "ma": -54671.59
+      },
+      {
+        "t": 390000,
+        "episode": 3900,
+        "reward": -53360.42,
+        "loss": 2.4437,
+        "gradNorm": 49.0909,
+        "qTaken": -25.0087,
+        "targetMean": null,
+        "ma": -54494.89
+      },
+      {
+        "t": 395000,
+        "episode": 3950,
+        "reward": -54997.58,
+        "loss": 3.0627,
+        "gradNorm": 54.727,
+        "qTaken": -25.4646,
+        "targetMean": null,
+        "ma": -54502.06
+      },
+      {
+        "t": 400000,
+        "episode": 4000,
+        "reward": -55735.43,
+        "loss": 2.1392,
+        "gradNorm": 62.4638,
+        "qTaken": -24.7948,
+        "targetMean": null,
+        "ma": -54627.31
+      },
+      {
+        "t": 405000,
+        "episode": 4050,
+        "reward": -54411.44,
+        "loss": 2.541,
+        "gradNorm": 104.7319,
+        "qTaken": -26.3465,
+        "targetMean": null,
+        "ma": -54569.22
+      },
+      {
+        "t": 410000,
+        "episode": 4100,
+        "reward": -54058.42,
+        "loss": 2.4439,
+        "gradNorm": 59.1016,
+        "qTaken": -25.4,
+        "targetMean": null,
+        "ma": -54398.06
+      },
+      {
+        "t": 415000,
+        "episode": 4150,
+        "reward": -53800.1,
+        "loss": 2.3675,
+        "gradNorm": 74.2755,
+        "qTaken": -25.704,
+        "targetMean": null,
+        "ma": -54376.46
+      },
+      {
+        "t": 420000,
+        "episode": 4200,
+        "reward": -52938.15,
+        "loss": 2.0035,
+        "gradNorm": 7.9942,
+        "qTaken": -25.8256,
+        "targetMean": null,
+        "ma": -54271.9
+      },
+      {
+        "t": 425000,
+        "episode": 4250,
+        "reward": -57680.33,
+        "loss": 2.8396,
+        "gradNorm": 46.4304,
+        "qTaken": -26.8663,
+        "targetMean": null,
+        "ma": -54415.02
+      },
+      {
+        "t": 430000,
+        "episode": 4300,
+        "reward": -52920.85,
+        "loss": 1.9147,
+        "gradNorm": 29.3359,
+        "qTaken": -26.2253,
+        "targetMean": null,
+        "ma": -54362.5
+      },
+      {
+        "t": 435000,
+        "episode": 4350,
+        "reward": -55131.72,
+        "loss": 4.2993,
+        "gradNorm": 275.6032,
+        "qTaken": -27.208,
+        "targetMean": null,
+        "ma": -54391.63
+      },
+      {
+        "t": 440000,
+        "episode": 4400,
+        "reward": -54360.67,
+        "loss": 2.9712,
+        "gradNorm": 32.2304,
+        "qTaken": -27.7417,
+        "targetMean": null,
+        "ma": -54329.71
+      },
+      {
+        "t": 445000,
+        "episode": 4450,
+        "reward": -53507.18,
+        "loss": 2.4861,
+        "gradNorm": 26.0706,
+        "qTaken": -28.3052,
+        "targetMean": null,
+        "ma": -54343.22
+      },
+      {
+        "t": 450000,
+        "episode": 4500,
+        "reward": -55959.09,
+        "loss": 2.8586,
+        "gradNorm": 472.4912,
+        "qTaken": -27.9501,
+        "targetMean": null,
+        "ma": -54473.38
+      },
+      {
+        "t": 455000,
+        "episode": 4550,
+        "reward": -56308.26,
+        "loss": 1.702,
+        "gradNorm": 58.3301,
+        "qTaken": -28.0888,
+        "targetMean": null,
+        "ma": -54638.7
+      },
+      {
+        "t": 460000,
+        "episode": 4600,
+        "reward": -58202.75,
+        "loss": 2.4547,
+        "gradNorm": 268.2948,
+        "qTaken": -28.8807,
+        "targetMean": null,
+        "ma": -54917.28
+      },
+      {
+        "t": 465000,
+        "episode": 4650,
+        "reward": -53079.36,
+        "loss": 2.4242,
+        "gradNorm": 82.7218,
+        "qTaken": -28.6826,
+        "targetMean": null,
+        "ma": -54734.92
+      },
+      {
+        "t": 470000,
+        "episode": 4700,
+        "reward": -57746.59,
+        "loss": 1.9689,
+        "gradNorm": 83.7889,
+        "qTaken": -29.2515,
+        "targetMean": null,
+        "ma": -54840.22
+      },
+      {
+        "t": 475000,
+        "episode": 4750,
+        "reward": -56273.22,
+        "loss": 1.9098,
+        "gradNorm": 30.806,
+        "qTaken": -28.697,
+        "targetMean": null,
+        "ma": -54865.69
+      },
+      {
+        "t": 480000,
+        "episode": 4800,
+        "reward": -55060.02,
+        "loss": 1.9503,
+        "gradNorm": 33.1897,
+        "qTaken": -28.7914,
+        "targetMean": null,
+        "ma": -54969.34
+      },
+      {
+        "t": 485000,
+        "episode": 4850,
+        "reward": -52848.46,
+        "loss": 2.3707,
+        "gradNorm": 158.6455,
+        "qTaken": -29.3622,
+        "targetMean": null,
+        "ma": -54853.81
+      },
+      {
+        "t": 490000,
+        "episode": 4900,
+        "reward": -53184.81,
+        "loss": 2.6863,
+        "gradNorm": 98.3868,
+        "qTaken": -30.063,
+        "targetMean": null,
+        "ma": -54836.42
+      },
+      {
+        "t": 495000,
+        "episode": 4950,
+        "reward": -55737.79,
+        "loss": 2.8775,
+        "gradNorm": 204.8783,
+        "qTaken": -29.9702,
+        "targetMean": null,
+        "ma": -54949.63
+      },
+      {
+        "t": 500000,
+        "episode": 5000,
+        "reward": -56747.58,
+        "loss": 2.7826,
+        "gradNorm": 146.0014,
+        "qTaken": -30.5064,
+        "targetMean": null,
+        "ma": -55032.96
+      },
+      {
+        "t": 505000,
+        "episode": 5050,
+        "reward": -57595.04,
+        "loss": 2.796,
+        "gradNorm": 70.1746,
+        "qTaken": -31.2261,
+        "targetMean": null,
+        "ma": -55121.52
+      },
+      {
+        "t": 510000,
+        "episode": 5100,
+        "reward": -57378.23,
+        "loss": 2.0551,
+        "gradNorm": 48.2885,
+        "qTaken": -30.0176,
+        "targetMean": null,
+        "ma": -55262.79
+      },
+      {
+        "t": 515000,
+        "episode": 5150,
+        "reward": -55891.89,
+        "loss": 1.9957,
+        "gradNorm": 136.7097,
+        "qTaken": -30.6923,
+        "targetMean": null,
+        "ma": -55350.1
+      },
+      {
+        "t": 520000,
+        "episode": 5200,
+        "reward": -55755.0,
+        "loss": 2.0146,
+        "gradNorm": 60.3583,
+        "qTaken": -31.279,
+        "targetMean": null,
+        "ma": -55443.19
+      },
+      {
+        "t": 525000,
+        "episode": 5250,
+        "reward": -53540.75,
+        "loss": 2.9516,
+        "gradNorm": 143.5364,
+        "qTaken": -31.3984,
+        "targetMean": null,
+        "ma": -55471.89
+      },
+      {
+        "t": 530000,
+        "episode": 5300,
+        "reward": -56737.0,
+        "loss": 2.1898,
+        "gradNorm": 142.1537,
+        "qTaken": -31.5326,
+        "targetMean": null,
+        "ma": -55426.96
+      },
+      {
+        "t": 535000,
+        "episode": 5350,
+        "reward": -54110.23,
+        "loss": 2.1345,
+        "gradNorm": 148.5941,
+        "qTaken": -32.0817,
+        "targetMean": null,
+        "ma": -55483.6
+      },
+      {
+        "t": 540000,
+        "episode": 5400,
+        "reward": -53888.04,
+        "loss": 2.6342,
+        "gradNorm": 188.8651,
+        "qTaken": -32.5036,
+        "targetMean": null,
+        "ma": -55424.38
+      },
+      {
+        "t": 545000,
+        "episode": 5450,
+        "reward": -57638.3,
+        "loss": 2.2245,
+        "gradNorm": 30.684,
+        "qTaken": -31.6823,
+        "targetMean": null,
+        "ma": -55580.46
+      },
+      {
+        "t": 550000,
+        "episode": 5500,
+        "reward": -57813.69,
+        "loss": 2.5045,
+        "gradNorm": 174.2865,
+        "qTaken": -31.1881,
+        "targetMean": null,
+        "ma": -55785.53
+      },
+      {
+        "t": 555000,
+        "episode": 5550,
+        "reward": -53905.76,
+        "loss": 1.7589,
+        "gradNorm": 50.0697,
+        "qTaken": -32.2354,
+        "targetMean": null,
+        "ma": -55687.75
+      },
+      {
+        "t": 560000,
+        "episode": 5600,
+        "reward": -56437.34,
+        "loss": 2.1392,
+        "gradNorm": 65.1299,
+        "qTaken": -32.1091,
+        "targetMean": null,
+        "ma": -55693.9
+      },
+      {
+        "t": 565000,
+        "episode": 5650,
+        "reward": -54360.21,
+        "loss": 3.8518,
+        "gradNorm": 247.3744,
+        "qTaken": -31.0826,
+        "targetMean": null,
+        "ma": -55510.92
+      },
+      {
+        "t": 570000,
+        "episode": 5700,
+        "reward": -54029.96,
+        "loss": 2.2107,
+        "gradNorm": 20.8918,
+        "qTaken": -31.6463,
+        "targetMean": null,
+        "ma": -55556.19
+      },
+      {
+        "t": 575000,
+        "episode": 5750,
+        "reward": -53816.74,
+        "loss": 3.8766,
+        "gradNorm": 316.4025,
+        "qTaken": -32.3799,
+        "targetMean": null,
+        "ma": -55369.05
+      },
+      {
+        "t": 580000,
+        "episode": 5800,
+        "reward": -56401.42,
+        "loss": 2.6001,
+        "gradNorm": 156.6429,
+        "qTaken": -32.0847,
+        "targetMean": null,
+        "ma": -55375.16
+      },
+      {
+        "t": 585000,
+        "episode": 5850,
+        "reward": -55098.82,
+        "loss": 2.9675,
+        "gradNorm": 49.7839,
+        "qTaken": -32.2052,
+        "targetMean": null,
+        "ma": -55377.0
+      },
+      {
+        "t": 590000,
+        "episode": 5900,
+        "reward": -54938.46,
+        "loss": 2.5298,
+        "gradNorm": 94.796,
+        "qTaken": -31.9526,
+        "targetMean": null,
+        "ma": -55476.53
+      },
+      {
+        "t": 595000,
+        "episode": 5950,
+        "reward": -53155.3,
+        "loss": 2.9802,
+        "gradNorm": 163.7746,
+        "qTaken": -31.2252,
+        "targetMean": null,
+        "ma": -55475.12
+      },
+      {
+        "t": 600000,
+        "episode": 6000,
+        "reward": -55798.51,
+        "loss": 2.2412,
+        "gradNorm": 79.0717,
+        "qTaken": -30.9455,
+        "targetMean": null,
+        "ma": -55478.01
+      },
+      {
+        "t": 605000,
+        "episode": 6050,
+        "reward": -54391.28,
+        "loss": 2.554,
+        "gradNorm": 151.9747,
+        "qTaken": -32.2636,
+        "targetMean": null,
+        "ma": -55365.81
+      },
+      {
+        "t": 610000,
+        "episode": 6100,
+        "reward": -55776.92,
+        "loss": 2.3663,
+        "gradNorm": 145.9244,
+        "qTaken": -32.7052,
+        "targetMean": null,
+        "ma": -55279.23
+      },
+      {
+        "t": 615000,
+        "episode": 6150,
+        "reward": -55741.66,
+        "loss": 2.319,
+        "gradNorm": 126.4336,
+        "qTaken": -32.0849,
+        "targetMean": null,
+        "ma": -55201.3
+      },
+      {
+        "t": 620000,
+        "episode": 6200,
+        "reward": -60077.1,
+        "loss": 2.8324,
+        "gradNorm": 106.2109,
+        "qTaken": -32.6339,
+        "targetMean": null,
+        "ma": -55400.59
+      },
+      {
+        "t": 625000,
+        "episode": 6250,
+        "reward": -56283.37,
+        "loss": 2.3736,
+        "gradNorm": 76.0568,
+        "qTaken": -31.8198,
+        "targetMean": null,
+        "ma": -55425.76
+      },
+      {
+        "t": 630000,
+        "episode": 6300,
+        "reward": -54980.52,
+        "loss": 3.871,
+        "gradNorm": 247.4073,
+        "qTaken": -31.6907,
+        "targetMean": null,
+        "ma": -55494.32
+      },
+      {
+        "t": 635000,
+        "episode": 6350,
+        "reward": -53991.55,
+        "loss": 2.391,
+        "gradNorm": 131.8433,
+        "qTaken": -32.1057,
+        "targetMean": null,
+        "ma": -55363.58
+      },
+      {
+        "t": 640000,
+        "episode": 6400,
+        "reward": -53953.56,
+        "loss": 2.6559,
+        "gradNorm": 90.7114,
+        "qTaken": -33.0364,
+        "targetMean": null,
+        "ma": -55356.12
+      },
+      {
+        "t": 645000,
+        "episode": 6450,
+        "reward": -56964.65,
+        "loss": 2.4539,
+        "gradNorm": 74.6257,
+        "qTaken": -32.5357,
+        "targetMean": null,
+        "ma": -55502.62
+      },
+      {
+        "t": 650000,
+        "episode": 6500,
+        "reward": -57548.42,
+        "loss": 2.8375,
+        "gradNorm": 130.3902,
+        "qTaken": -32.9486,
+        "targetMean": null,
+        "ma": -55498.34
+      },
+      {
+        "t": 655000,
+        "episode": 6550,
+        "reward": -55055.34,
+        "loss": 3.0801,
+        "gradNorm": 124.2228,
+        "qTaken": -32.1034,
+        "targetMean": null,
+        "ma": -55366.99
+      },
+      {
+        "t": 660000,
+        "episode": 6600,
+        "reward": -55831.57,
+        "loss": 2.4903,
+        "gradNorm": 46.9111,
+        "qTaken": -32.702,
+        "targetMean": null,
+        "ma": -55458.7
+      },
+      {
+        "t": 665000,
+        "episode": 6650,
+        "reward": -53494.3,
+        "loss": 2.5807,
+        "gradNorm": 50.6243,
+        "qTaken": -32.9688,
+        "targetMean": null,
+        "ma": -55318.56
+      },
+      {
+        "t": 670000,
+        "episode": 6700,
+        "reward": -56176.96,
+        "loss": 3.0683,
+        "gradNorm": 74.8079,
+        "qTaken": -32.2798,
+        "targetMean": null,
+        "ma": -55405.07
+      },
+      {
+        "t": 675000,
+        "episode": 6750,
+        "reward": -52715.71,
+        "loss": 2.9724,
+        "gradNorm": 92.2769,
+        "qTaken": -33.265,
+        "targetMean": null,
+        "ma": -55342.48
+      },
+      {
+        "t": 680000,
+        "episode": 6800,
+        "reward": -57665.23,
+        "loss": 3.66,
+        "gradNorm": 42.5313,
+        "qTaken": -33.4781,
+        "targetMean": null,
+        "ma": -55525.75
+      },
+      {
+        "t": 685000,
+        "episode": 6850,
+        "reward": -53593.15,
+        "loss": 3.7426,
+        "gradNorm": 80.5386,
+        "qTaken": -34.8869,
+        "targetMean": null,
+        "ma": -55392.02
+      },
+      {
+        "t": 690000,
+        "episode": 6900,
+        "reward": -55861.1,
+        "loss": 4.143,
+        "gradNorm": 93.8618,
+        "qTaken": -35.1938,
+        "targetMean": null,
+        "ma": -55428.32
+      },
+      {
+        "t": 695000,
+        "episode": 6950,
+        "reward": -59045.72,
+        "loss": 2.7831,
+        "gradNorm": 27.3611,
+        "qTaken": -34.0902,
+        "targetMean": null,
+        "ma": -55623.9
+      },
+      {
+        "t": 700000,
+        "episode": 7000,
+        "reward": -54434.08,
+        "loss": 2.9905,
+        "gradNorm": 129.3689,
+        "qTaken": -34.0293,
+        "targetMean": null,
+        "ma": -55684.8
+      },
+      {
+        "t": 705000,
+        "episode": 7050,
+        "reward": -54044.02,
+        "loss": 3.1872,
+        "gradNorm": 80.3149,
+        "qTaken": -35.7003,
+        "targetMean": null,
+        "ma": -55601.25
+      },
+      {
+        "t": 710000,
+        "episode": 7100,
+        "reward": -56916.73,
+        "loss": 2.6773,
+        "gradNorm": 157.2168,
+        "qTaken": -35.1403,
+        "targetMean": null,
+        "ma": -55721.51
+      },
+      {
+        "t": 715000,
+        "episode": 7150,
+        "reward": -55190.95,
+        "loss": 3.566,
+        "gradNorm": 101.8259,
+        "qTaken": -34.5527,
+        "targetMean": null,
+        "ma": -55693.6
+      },
+      {
+        "t": 720000,
+        "episode": 7200,
+        "reward": -57348.54,
+        "loss": 2.5956,
+        "gradNorm": 98.052,
+        "qTaken": -35.0442,
+        "targetMean": null,
+        "ma": -55770.12
+      },
+      {
+        "t": 725000,
+        "episode": 7250,
+        "reward": -57734.55,
+        "loss": 4.3275,
+        "gradNorm": 204.7994,
+        "qTaken": -37.0517,
+        "targetMean": null,
+        "ma": -55658.57
+      },
+      {
+        "t": 730000,
+        "episode": 7300,
+        "reward": -57952.3,
+        "loss": 3.0503,
+        "gradNorm": 47.1917,
+        "qTaken": -36.6806,
+        "targetMean": null,
+        "ma": -55738.05
+      },
+      {
+        "t": 735000,
+        "episode": 7350,
+        "reward": -52537.56,
+        "loss": 4.497,
+        "gradNorm": 218.545,
+        "qTaken": -35.2376,
+        "targetMean": null,
+        "ma": -55621.71
+      },
+      {
+        "t": 740000,
+        "episode": 7400,
+        "reward": -56065.36,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55720.47
+      },
+      {
+        "t": 745000,
+        "episode": 7450,
+        "reward": -54955.97,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55768.2
+      },
+      {
+        "t": 750000,
+        "episode": 7500,
+        "reward": -55037.61,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55676.44
+      },
+      {
+        "t": 755000,
+        "episode": 7550,
+        "reward": -58061.75,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55700.88
+      },
+      {
+        "t": 760000,
+        "episode": 7600,
+        "reward": -57030.35,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55794.93
+      },
+      {
+        "t": 765000,
+        "episode": 7650,
+        "reward": -57240.79,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55862.03
+      },
+      {
+        "t": 770000,
+        "episode": 7700,
+        "reward": -53934.11,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55882.98
+      },
+      {
+        "t": 775000,
+        "episode": 7750,
+        "reward": -54708.19,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55813.04
+      },
+      {
+        "t": 780000,
+        "episode": 7800,
+        "reward": -54447.7,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55895.51
+      },
+      {
+        "t": 785000,
+        "episode": 7850,
+        "reward": -55303.29,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55783.04
+      },
+      {
+        "t": 790000,
+        "episode": 7900,
+        "reward": -54610.89,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55831.5
+      },
+      {
+        "t": 795000,
+        "episode": 7950,
+        "reward": -56577.95,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55865.64
+      },
+      {
+        "t": 800000,
+        "episode": 8000,
+        "reward": -56787.69,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55758.11
+      },
+      {
+        "t": 805000,
+        "episode": 8050,
+        "reward": -58558.37,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55954.51
+      },
+      {
+        "t": 810000,
+        "episode": 8100,
+        "reward": -58239.17,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -56154.28
+      },
+      {
+        "t": 815000,
+        "episode": 8150,
+        "reward": -54416.94,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -56035.24
+      },
+      {
+        "t": 820000,
+        "episode": 8200,
+        "reward": -55589.26,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -56054.21
+      },
+      {
+        "t": 825000,
+        "episode": 8250,
+        "reward": -53080.46,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55850.96
+      },
+      {
+        "t": 830000,
+        "episode": 8300,
+        "reward": -56036.36,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55770.1
+      },
+      {
+        "t": 835000,
+        "episode": 8350,
+        "reward": -57658.28,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55756.1
+      },
+      {
+        "t": 840000,
+        "episode": 8400,
+        "reward": -53455.11,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55799.79
+      },
+      {
+        "t": 845000,
+        "episode": 8450,
+        "reward": -53012.82,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55654.43
+      },
+      {
+        "t": 850000,
+        "episode": 8500,
+        "reward": -52903.7,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55556.7
+      },
+      {
+        "t": 855000,
+        "episode": 8550,
+        "reward": -52068.76,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55415.33
+      },
+      {
+        "t": 860000,
+        "episode": 8600,
+        "reward": -53735.69,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55209.33
+      },
+      {
+        "t": 865000,
+        "episode": 8650,
+        "reward": -52664.03,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -55001.41
+      },
+      {
+        "t": 870000,
+        "episode": 8700,
+        "reward": -52799.31,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -54789.91
+      },
+      {
+        "t": 875000,
+        "episode": 8750,
+        "reward": -52647.99,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -54728.66
+      },
+      {
+        "t": 880000,
+        "episode": 8800,
+        "reward": -52746.86,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -54635.27
+      },
+      {
+        "t": 885000,
+        "episode": 8850,
+        "reward": -53118.16,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -54571.96
+      },
+      {
+        "t": 890000,
+        "episode": 8900,
+        "reward": -52490.43,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -54438.01
+      },
+      {
+        "t": 895000,
+        "episode": 8950,
+        "reward": -52467.64,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -54335.95
+      },
+      {
+        "t": 900000,
+        "episode": 9000,
+        "reward": -53934.27,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -54210.06
+      },
+      {
+        "t": 905000,
+        "episode": 9050,
+        "reward": -53274.76,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -54042.78
+      },
+      {
+        "t": 910000,
+        "episode": 9100,
+        "reward": -52591.56,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53758.65
+      },
+      {
+        "t": 915000,
+        "episode": 9150,
+        "reward": -52673.35,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53493.61
+      },
+      {
+        "t": 920000,
+        "episode": 9200,
+        "reward": -51988.41,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53377.96
+      },
+      {
+        "t": 925000,
+        "episode": 9250,
+        "reward": -53006.56,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53254.98
+      },
+      {
+        "t": 930000,
+        "episode": 9300,
+        "reward": -53273.26,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53264.16
+      },
+      {
+        "t": 935000,
+        "episode": 9350,
+        "reward": -53917.08,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53163.24
+      },
+      {
+        "t": 940000,
+        "episode": 9400,
+        "reward": -53903.77,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -52984.45
+      },
+      {
+        "t": 945000,
+        "episode": 9450,
+        "reward": -53529.46,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -52987.99
+      },
+      {
+        "t": 950000,
+        "episode": 9500,
+        "reward": -52546.48,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -52965.79
+      },
+      {
+        "t": 955000,
+        "episode": 9550,
+        "reward": -52829.54,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -52962.26
+      },
+      {
+        "t": 960000,
+        "episode": 9600,
+        "reward": -53577.66,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53034.11
+      },
+      {
+        "t": 965000,
+        "episode": 9650,
+        "reward": -53124.54,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53005.01
+      },
+      {
+        "t": 970000,
+        "episode": 9700,
+        "reward": -53101.24,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53025.83
+      },
+      {
+        "t": 975000,
+        "episode": 9750,
+        "reward": -53669.97,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53067.29
+      },
+      {
+        "t": 980000,
+        "episode": 9800,
+        "reward": -53050.45,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53086.45
+      },
+      {
+        "t": 985000,
+        "episode": 9850,
+        "reward": -52836.29,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53090.71
+      },
+      {
+        "t": 990000,
+        "episode": 9900,
+        "reward": -52411.22,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53057.04
+      },
+      {
+        "t": 995000,
+        "episode": 9950,
+        "reward": -53646.17,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53112.08
+      },
+      {
+        "t": 1000000,
+        "episode": 10000,
+        "reward": -54204.97,
+        "loss": null,
+        "gradNorm": null,
+        "qTaken": null,
+        "targetMean": null,
+        "ma": -53194.81
+      }
+    ]
   },
   "trainMetrics": null,
   "testCurve": []
