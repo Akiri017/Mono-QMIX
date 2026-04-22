@@ -446,7 +446,7 @@ const GlassCard = ({
 
 const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
   if (!data || data.length < 2) return null
-  const W = 96, H = 44, PAD = 2
+  const W = 96, H = 44, PAD = 4
   const min = Math.min(...data), max = Math.max(...data)
   const range = max - min || 1
   const pts = data.map((v, i) => ({
@@ -461,7 +461,7 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
   ].join(' ')
   const gid = `sp-${color.replace('#', '')}`
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible', flexShrink: 0 }}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'hidden', flexShrink: 0, display: 'block' }}>
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.25" />
@@ -471,7 +471,6 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
       <polygon points={areaPts} fill={`url(#${gid})`} />
       <polyline points={linePts} fill="none" stroke={color} strokeWidth="2"
         strokeLinecap="round" strokeLinejoin="round" />
-      {/* last-point dot */}
       <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="2.5"
         fill={color} />
     </svg>
@@ -1335,7 +1334,7 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
       {/* Value + unit centred below arc */}
       <div className="flex flex-col items-center mt-0.5">
         <span className="text-[20px] font-extrabold tabular-nums leading-none" style={{ color: '#ffffff' }}>
-          {typeof value === 'number' ? parseFloat(value.toFixed(3)) : value}
+          {typeof value === 'number' ? parseFloat(value.toFixed(2)) : value}
         </span>
         <span className="text-[10px] font-semibold mt-0.5" style={{ color: 'rgba(255,255,255,0.75)' }}>{unit}</span>
         <span className="text-[9px] font-bold uppercase tracking-wider mt-1.5 text-center"
@@ -1903,7 +1902,7 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
               <div className="text-right flex-shrink-0">
                 <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.28)' }}>Peak MA Index</div>
                 <div className="text-[16px] font-bold tabular-nums" style={{ color: algo.color }}>
-                  {Math.max(...algo.congestion.map(p => p.ma)).toFixed(3)}
+                  {Math.max(...algo.congestion.map(p => p.ma)).toFixed(2)}
                 </div>
               </div>
             </div>
@@ -1997,12 +1996,19 @@ const KPI_META: Record<EpisodeMetricKey, { label: string; abbr: string; unit: st
   speed:      { label: 'Real-time Factor',  abbr: 'RTF', unit: 'x' },
 }
 
-const EpisodeDetailModal = ({ algo, metricKey, onClose }: {
+const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onClose }: {
   algo: AlgoData
   metricKey: EpisodeMetricKey
+  labelOverride?: string
+  unitOverride?: string
   onClose: () => void
 }) => {
-  const meta = KPI_META[metricKey]
+  const baseMeta = KPI_META[metricKey]
+  const meta = {
+    ...baseMeta,
+    label: labelOverride ?? baseMeta.label,
+    unit:  unitOverride  ?? baseMeta.unit,
+  }
   const data = algo.episodes[metricKey]
 
   // Custom tooltip
@@ -2030,7 +2036,7 @@ const EpisodeDetailModal = ({ algo, metricKey, onClose }: {
       <div
         className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
         style={{
-          maxWidth: '780px',
+          maxWidth: '790px',
           background: 'rgba(4,9,22,0.97)',
           border: '1px solid rgba(255,255,255,0.13)',
           boxShadow: '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)',
@@ -2883,6 +2889,43 @@ function qmixToTrainingPoints(curve: QmixTrainingEntry[]): TrainingPoint[] {
   return full.filter((_, i) => i % step === 0 || i === full.length - 1)
 }
 
+/** Convert training.curve → EpisodePoint[] for the "View detail" modal.
+ *  Uses global mean±std as a fixed confidence band; downsampled to MAX_PTS. */
+function trainingCurveToEpisodePoints(curve: QmixTrainingEntry[]): EpisodePoint[] {
+  if (!curve.length) return []
+  const MAX_PTS = 500
+  const W = 20
+  const rewards = curve.map(p => p.reward)
+  const mean = rewards.reduce((a, b) => a + b, 0) / rewards.length
+  const std  = Math.sqrt(rewards.reduce((s, x) => s + (x - mean) ** 2, 0) / rewards.length)
+  const lo = parseFloat((mean - std).toFixed(1))
+  const hi = parseFloat((mean + std).toFixed(1))
+  const full = rewards.map((r, i) => {
+    const win = rewards.slice(Math.max(0, i - W), i + 1)
+    const ma  = parseFloat((win.reduce((a, b) => a + b, 0) / win.length).toFixed(1))
+    return { episode: curve[i].episode, value: parseFloat(r.toFixed(1)), lo, hi, ma }
+  })
+  if (full.length <= MAX_PTS) return full
+  const step = Math.ceil(full.length / MAX_PTS)
+  return full.filter((_, i) => i % step === 0 || i === full.length - 1)
+}
+
+/** Downsample training curve rewards to n evenly-spaced values for sparkline. */
+function trainingCurveToSparkline(curve: QmixTrainingEntry[], n = 10): number[] {
+  if (!curve.length) return []
+  if (curve.length <= n) return curve.map(p => p.reward)
+  const step = (curve.length - 1) / (n - 1)
+  return Array.from({ length: n }, (_, i) => curve[Math.round(i * step)].reward)
+}
+
+/** Downsample any numeric array to n evenly-spaced values for sparkline. */
+function downsampleArray(arr: number[], n = 10): number[] {
+  if (!arr.length) return []
+  if (arr.length <= n) return arr
+  const step = (arr.length - 1) / (n - 1)
+  return Array.from({ length: n }, (_, i) => arr[Math.round(i * step)])
+}
+
 /** Convert training.curve → MarlPoint[] using real loss/gradNorm/qTaken values.
  *  Only points that have loss data are used; output downsampled to MAX_PTS. */
 function qmixToMarlPoints(curve: QmixTrainingEntry[]): MarlPoint[] {
@@ -3153,9 +3196,10 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       const k = qmixData.kpis
       const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
       const civiqRef  = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
+      const trainCurve = qmixData.training?.curve ?? []
+      const trainPts   = trainingCurveToEpisodePoints(trainCurve)
       return {
         ...algo,
-        // Override KPIs with scenario-specific real values
         travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
         waitTime:   k.waitTime_s,
         throughput: k.throughput,
@@ -3164,10 +3208,10 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         fuel:       k.fuel,
         reward:     k.returnMean,
         sparklines: {
-          travelTime: algo.sparklines.travelTime.map(() => parseFloat((k.travelTime_s / 60).toFixed(3))),
-          waitTime:   algo.sparklines.waitTime.map(()   => k.waitTime_s),
-          throughput: algo.sparklines.throughput.map(() => k.throughput),
-          speed:      algo.sparklines.speed.map(()      => k.realTimeFactor ?? algo.speed),
+          travelTime: downsampleArray((qmixData.evalTravelTimes ?? []).map(t => t / 60), 10),
+          waitTime:   downsampleArray(qmixData.evalWaitingTimes ?? [], 10),
+          throughput: downsampleArray(qmixData.evalThroughputs  ?? [], 10),
+          speed:      trainingCurveToSparkline(trainCurve, 10),
         },
         changes: civiqRef ? {
           travelTime: changePct(k.travelTime_s, civiqRef.travelTime * 60),
@@ -3177,18 +3221,20 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         } : algo.changes,
         system: {
           ...algo.system,
-          training: qmixToTrainingPoints(qmixData.training?.curve ?? []),
+          training: qmixToTrainingPoints(trainCurve),
           cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak, 120), 8, 120, 18),
         },
-        marl:     qmixToMarlPoints(qmixData.training?.curve ?? []),
-        episodes: qmixToEpisodeSeries(qmixData),
+        marl:     qmixToMarlPoints(trainCurve),
+        episodes: { travelTime: trainPts, waitTime: trainPts, throughput: trainPts, speed: trainPts },
       }
     }
     if (isCiviq && civiqData) {
-      const k       = civiqData.kpis
-      const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
-      const qmixRef   = QMIX_LOS_REF[trafficScale as keyof typeof QMIX_LOS_REF]
+      const k          = civiqData.kpis
+      const changePct  = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
+      const qmixRef    = QMIX_LOS_REF[trafficScale as keyof typeof QMIX_LOS_REF]
       const selfishRef = SELFISH_LOS_REF[trafficScale as keyof typeof SELFISH_LOS_REF]
+      const trainCurve = civiqData.training?.curve ?? []
+      const trainPts   = trainingCurveToEpisodePoints(trainCurve)
       return {
         ...algo,
         travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
@@ -3199,10 +3245,10 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         fuel:       k.fuel,
         reward:     k.returnMean,
         sparklines: {
-          travelTime: algo.sparklines.travelTime.map(() => parseFloat((k.travelTime_s / 60).toFixed(3))),
-          waitTime:   algo.sparklines.waitTime.map(()   => k.waitTime_s),
-          throughput: algo.sparklines.throughput.map(() => k.throughput),
-          speed:      algo.sparklines.speed.map(()      => k.realTimeFactor ?? algo.speed),
+          travelTime: downsampleArray((civiqData.evalTravelTimes ?? []).map(t => t / 60), 10),
+          waitTime:   downsampleArray(civiqData.evalWaitingTimes ?? [], 10),
+          throughput: downsampleArray(civiqData.evalThroughputs  ?? [], 10),
+          speed:      trainingCurveToSparkline(trainCurve, 10),
         },
         changes: qmixRef ? {
           travelTime: changePct(k.travelTime_s, qmixRef.travelTime_s),
@@ -3218,15 +3264,11 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         } : undefined,
         system: {
           ...algo.system,
-          training: civiqData.training?.curve?.length
-            ? qmixToTrainingPoints(civiqData.training.curve)
-            : algo.system.training,
+          training: trainCurve.length ? qmixToTrainingPoints(trainCurve) : algo.system.training,
           cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak / 100, 120), 8, 120, 15),
         },
-        marl:     civiqData.training?.curve?.length
-          ? qmixToMarlPoints(civiqData.training.curve)
-          : algo.marl,
-        episodes: qmixToEpisodeSeries(civiqData),
+        marl: trainCurve.length ? qmixToMarlPoints(trainCurve) : algo.marl,
+        episodes: { travelTime: trainPts, waitTime: trainPts, throughput: trainPts, speed: trainPts },
       }
     }
     return algo
@@ -3236,7 +3278,13 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
     {/* Episode detail modal */}
     {openModal && (
-      <EpisodeDetailModal algo={displayAlgo} metricKey={openModal} onClose={() => setOpenModal(null)} />
+      <EpisodeDetailModal
+        algo={displayAlgo}
+        metricKey={openModal}
+        labelOverride={(isQmix || isCiviq) ? 'Episode Return (Training Curve)' : undefined}
+        unitOverride={(isQmix || isCiviq) ? '' : undefined}
+        onClose={() => setOpenModal(null)}
+      />
     )}
     {/* Selfish detail modal */}
     {isSelfish && selfishModal && (() => {
@@ -3314,7 +3362,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 
     {/* KPI Row */}
     <div className="grid grid-cols-4 gap-4">
-      <KpiCard label="Avg. Travel Time" abbr="ATT" value={displayAlgo.travelTime} unit="min"
+      <KpiCard label="Avg. Travel Time" abbr="ATT" value={parseFloat((displayAlgo.travelTime * 60).toFixed(2))} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.travelTime} lowerBetter sparkData={displayAlgo.sparklines.travelTime}
         changeLabel={isQmix ? 'vs. CiViQ' : isCiviq ? 'vs. QMIX' : (isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined)}
@@ -3322,7 +3370,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('travelTime') : () => setOpenModal('travelTime')}
         description="The mean time it takes for a vehicle to complete its route from entry to exit, across all vehicles in the simulation." />
-      <KpiCard label="Avg. Wait Time" abbr="AWT" value={displayAlgo.waitTime} unit="sec"
+      <KpiCard label="Avg. Wait Time" abbr="AWT" value={parseFloat(displayAlgo.waitTime.toFixed(2))} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.waitTime} lowerBetter sparkData={displayAlgo.sparklines.waitTime}
         changeLabel={isQmix ? 'vs. CiViQ' : isCiviq ? 'vs. QMIX' : (isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined)}
@@ -3330,7 +3378,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('waitTime') : () => setOpenModal('waitTime')}
         description="The mean time vehicles spent fully stopped in traffic. High values indicate congestion or poor routing decisions." />
-      <KpiCard label="Throughput" abbr="TPT" value={displayAlgo.throughput.toLocaleString()} unit="veh/hr"
+      <KpiCard label="Throughput" abbr="TPT" value={Math.round(displayAlgo.throughput).toLocaleString()} unit="veh/hr"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.throughput} sparkData={displayAlgo.sparklines.throughput}
         changeLabel={isQmix ? 'vs. CiViQ' : isCiviq ? 'vs. QMIX' : (isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined)}
