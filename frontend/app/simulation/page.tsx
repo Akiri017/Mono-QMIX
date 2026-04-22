@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {
   ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine, Bar, Cell,
+  ResponsiveContainer, ReferenceLine, Bar, Cell, ReferenceArea,
 } from 'recharts'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { SimulationControls } from '@/components/SimulationControls'
@@ -149,7 +149,6 @@ interface AlgoData {
   computeTime: number
   convergence: number | null
   reward: number | null
-  efficiency: number
   description: string
   strengths: string[]
   scores: number[]
@@ -321,26 +320,27 @@ const ALGO: Record<AlgoKey, AlgoData> = {
   civiq: {
     id: 'civiq', label: 'Hierarchical QMIX', sublabel: 'Civiq', rank: 1,
     color: '#38BDF8', colorDim: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)',
-    travelTime: 4.2, waitTime: 18.5, throughput: 1875, speed: 1.24,
-    co2: 142, fuel: 23, computeTime: 22.35, convergence: 150, reward: 1250, efficiency: 88,
+    // Averages across LOS A/C/E on BGC Full (2 km²)
+    travelTime: 1.96, waitTime: 12.4, throughput: 1536, speed: 1.24,
+    co2: 491.9, fuel: 21.2, computeTime: 22.35, convergence: 150, reward: -65761,
     description: 'Civiq employs a hierarchical two-tier coordination mechanism where a global orchestrator assigns zone-level routing goals, while local agents optimize intersection-level decisions using QMIX. This architecture enables scalable, cooperative traffic management that generalizes across varying network topologies and traffic densities.',
-    strengths: ['Lowest travel time across all scenarios', 'Best emission reduction (37% vs baseline)', 'Superior network throughput coordination', 'Scalable to larger road networks'],
-    scores: [0.90, 0.90, 0.88, 0.70, 0.88, 0.88, 0.82],
+    strengths: ['Lowest travel time across all scenarios', 'Lowest average wait time', 'Best throughput in heavy traffic (LOS E)', 'Scalable to larger road networks'],
+    scores: [0.99, 1.00, 1.00, 0.67, 0.96, 0.96, 0.30],
     sparklines: {
-      travelTime:  [8.5, 7.8, 7.1, 6.4, 5.9, 5.3, 4.9, 4.6, 4.4, 4.2],
-      waitTime:    [36, 32, 29, 26, 24, 22, 21, 20, 19, 18.5],
-      throughput:  [1380, 1480, 1570, 1650, 1710, 1760, 1810, 1840, 1862, 1875],
-      speed:       [0.86, 0.92, 0.97, 1.02, 1.08, 1.12, 1.16, 1.19, 1.22, 1.24],
+      travelTime:  [1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96],
+      waitTime:    [12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4],
+      throughput:  [1536, 1536, 1536, 1536, 1536, 1536, 1536, 1536, 1536, 1536],
+      speed:       [1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24],
     },
     changes: { travelTime: -50.6, waitTime: -48.6, throughput: 35.9, speed: 44.2 },
     episodes: {
-      travelTime:  makeSeries(8.5, 4.2,   0.5, 0.35, 200, 1),
-      waitTime:    makeSeries(36,  18.5,  1.8, 1.2,  200, 2),
-      throughput:  makeSeries(1380,1875,  38,  28,   200, 3),
-      speed:       makeSeries(0.86, 1.24,  0.06, 0.04, 200, 4),
+      travelTime:  makeSeries(2.80, 1.97, 0.15, 0.10, 200, 1),
+      waitTime:    makeSeries(18.0, 10.3, 1.8,  1.2,  200, 2),
+      throughput:  makeSeries(800,  1223, 80,   55,   200, 3),
+      speed:       makeSeries(1.24, 1.24, 0.01, 0.005, 200, 4),
     },
     system: {
-      training: makeTraining(-200, 1250, 120, 200, 13),
+      training: makeTraining(-97828, -46630, 8000, 200, 13),
       cpu:      makeCpu(28, 72, 6, 120, 15),
     },
     queue:      makeQueue([2.1, 3.2, 2.6, 1.8], 0.9, 120, 21),
@@ -354,30 +354,30 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Detail page fetches training curve & MARL diagnostics dynamically via /api/qmix
     id: 'qmix', label: 'Monolithic QMIX', sublabel: 'Baseline RL', rank: 2,
     color: '#A78BFA', colorDim: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)',
-    // LOS A eval defaults (seed 1801, 30 episodes) — overridden by useQmixRealData
-    travelTime: 2.08, waitTime: 7.96, throughput: 981, speed: 53.97,
-    co2: 498.2, fuel: 21.5, computeTime: 18.20, convergence: 9001, reward: -45791, efficiency: 71,
+    // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-LOS by useQmixRealData
+    travelTime: 1.99, waitTime: 14.1, throughput: 1305, speed: 53.97,
+    co2: 538.9, fuel: 23.2, computeTime: 18.20, convergence: 9001, reward: -68798,
     description: 'Monolithic QMIX applies centralized multi-agent reinforcement learning where all agents share a joint action-value function. While effective at coordination, the monolithic architecture faces scalability limitations as network size grows, requiring more training episodes and compute to converge on larger topologies.',
-    strengths: ['Fastest compute time per decision step', 'Good coordination at small scale', 'Solid baseline RL performance', 'Well-established QMIX framework'],
-    scores: [0.80, 0.70, 0.70, 0.90, 0.72, 0.72, 0.75],
-    // Flat sparklines at eval measurement (single post-training evaluation)
+    strengths: ['Lighter compute per decision step than CiViQ', 'Good coordination at small scale', 'Solid baseline RL performance', 'Well-established QMIX framework'],
+    scores: [0.85, 0.87, 0.98, 0.82, 0.87, 0.87, 0.32],
+    // Flat sparklines at averaged eval measurement — overridden by useQmixRealData
     sparklines: {
-      travelTime: [2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08],
-      waitTime:   [7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96],
-      throughput: [981,  981,  981,  981,  981,  981,  981,  981,  981,  981],
+      travelTime: [1.99, 1.99, 1.99, 1.99, 1.99, 1.99, 1.99, 1.99, 1.99, 1.99],
+      waitTime:   [14.1, 14.1, 14.1, 14.1, 14.1, 14.1, 14.1, 14.1, 14.1, 14.1],
+      throughput: [1305, 1305, 1305, 1305, 1305, 1305, 1305, 1305, 1305, 1305],
       speed:      [53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97],
     },
     // vs noop baseline (LOS A): QMIX underperforms noop signal-free in low-traffic scenario
     changes: { travelTime: +4.5, waitTime: +12.1, throughput: -12.3, speed: 0 },
     episodes: {
-      travelTime:  makeSeries(2.66, 2.08, 0.20, 0.12, 200, 5),
-      waitTime:    makeSeries(9.8,  7.96, 0.35, 0.22, 200, 6),
-      throughput:  makeSeries(920,  981,  55,   35,   200, 7),
-      speed:       makeSeries(50,   53.97, 2.5, 1.5,  200, 8),
+      travelTime:  makeSeries(2.60, 1.99, 0.18, 0.12, 200, 5),
+      waitTime:    makeSeries(18.0, 14.1, 1.5,  1.0,  200, 6),
+      throughput:  makeSeries(900,  1305, 70,   50,   200, 7),
+      speed:       makeSeries(50,   53.97, 2.0, 1.0,  200, 8),
     },
     system: {
       // Placeholder training curve — replaced by useQmixRealData hook on detail page
-      training: makeTraining(-48700, -45791, 800, 200, 16),
+      training: makeTraining(-105961, -45791, 8000, 200, 16),
       cpu:      makeCpu(65, 95, 8, 120, 18),
     },
     queue:      makeQueue([4.5, 5.8, 5.1, 3.9], 1.3, 120, 25),
@@ -393,17 +393,17 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Detail page fetches per-traffic-level values dynamically via /api/selfish
     id: 'selfish', label: 'Selfish Routing', sublabel: 'Nash Equilibrium', rank: 3,
     color: '#F87171', colorDim: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.3)',
-    // forced_flow (LOS E) bgc_full defaults — overridden per-level by useSelfishRealData
-    travelTime: 2.12, waitTime: 20.8, throughput: 2178, speed: 248.84,
-    co2: 485.6, fuel: 20.89, computeTime: 0, convergence: null, reward: null, efficiency: 48,
+    // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-level by useSelfishRealData
+    travelTime: 2.05, waitTime: 13.1, throughput: 1545, speed: 248.84,
+    co2: 471.2, fuel: 20.3, computeTime: 0, convergence: null, reward: null,
     description: 'Selfish Routing models each vehicle independently optimizing its own route via shortest-path algorithms, representing the Nash Equilibrium state of the network. Without coordination, vehicles converge on popular routes causing Braess\'s Paradox — where adding road capacity can paradoxically worsen network-wide performance.',
     strengths: ['No training or setup required', 'Simple and fully interpretable', 'Establishes the Price of Anarchy baseline', 'Handles novel edge cases naturally'],
-    scores: [0.58, 0.42, 0.40, 0.80, 0.42, 0.52, 0.70],
-    // Sparklines: flat at the forced_flow measurement (overridden by real data once loaded)
+    scores: [1.00, 0.95, 0.95, 1.00, 1.00, 1.00, 1.00],
+    // Sparklines: flat at averaged measurement — overridden by real data once loaded
     sparklines: {
-      travelTime:  [2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12],
-      waitTime:    [20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8],
-      throughput:  [2178, 2178, 2178, 2178, 2178, 2178, 2178, 2178, 2178, 2178],
+      travelTime:  [2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05],
+      waitTime:    [13.1, 13.1, 13.1, 13.1, 13.1, 13.1, 13.1, 13.1, 13.1, 13.1],
+      throughput:  [1545, 1545, 1545, 1545, 1545, 1545, 1545, 1545, 1545, 1545],
       speed:       [248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84],
     },
     changes: { travelTime: 0, waitTime: 0, throughput: 0, speed: 0 },
@@ -715,12 +715,11 @@ const rankMeta = [
 ]
 
 const COMPARE_METRICS = [
-  { label: 'Avg. Travel Time', unit: 'min', key: 'travelTime' as const, max: 10, lowerBetter: true },
-  { label: 'Avg. Wait Time', unit: 'sec', key: 'waitTime' as const, max: 40, lowerBetter: true },
+  { label: 'Avg. Travel Time', unit: 'min', key: 'travelTime' as const, max: 3, lowerBetter: true },
+  { label: 'Avg. Wait Time', unit: 'sec', key: 'waitTime' as const, max: 20, lowerBetter: true },
   { label: 'Throughput', unit: 'veh/hr', key: 'throughput' as const, max: 2000, lowerBetter: false },
-  { label: 'Real-time Factor', unit: 'x', key: 'speed' as const, max: 2, lowerBetter: false },
-  { label: 'CO₂ Emissions', unit: 'g/km', key: 'co2' as const, max: 280, lowerBetter: true },
-  { label: 'Compute Time', unit: 'ms', key: 'computeTime' as const, max: 30, lowerBetter: true },
+  { label: 'CO₂ Emissions', unit: 'g/km', key: 'co2' as const, max: 600, lowerBetter: true },
+  { label: 'Fuel Consumption', unit: 'L/100km', key: 'fuel' as const, max: 30, lowerBetter: true },
 ]
 
 // ─── Compare helpers ──────────────────────────────────────────────────────────
@@ -1114,6 +1113,9 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
           Aggregate performance across Civiq, Monolithic QMIX, and Selfish Routing
         </p>
+        <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          KPIs averaged across LOS A · LOS C · LOS E — BGC Full (2 km²) map
+        </p>
         <div className="flex items-center gap-4 mt-2">
           {ALGO_LIST.map((a) => (
             <div key={a.id} className="flex items-center gap-1.5">
@@ -1176,7 +1178,8 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             </div>
             <div className="space-y-2 text-[12px]">
               {[
-                { k: 'Travel Time', v: `${a.travelTime} min` },
+                { k: 'Avg. Travel Time', v: `${a.travelTime} min` },
+                { k: 'Avg. Wait Time', v: `${a.waitTime} sec` },
                 { k: 'Throughput', v: `${a.throughput.toLocaleString()} veh/hr` },
                 { k: 'CO₂ Emissions', v: `${a.co2} g/km` },
               ].map(({ k, v }) => (
@@ -1185,14 +1188,6 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.82)' }}>{v}</span>
                 </div>
               ))}
-              <div className="flex justify-between">
-                <span style={{ color: 'rgba(255,255,255,0.42)' }}>Efficiency</span>
-                <span className="font-bold" style={{ color: a.color }}>{a.efficiency}%</span>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <HBar value={a.efficiency} max={100} color={a.color} />
-              <span className="text-[11px] font-bold w-8 text-right tabular-nums" style={{ color: a.color }}>{a.efficiency}%</span>
             </div>
           </div>
         </GlassCard>
@@ -2091,7 +2086,7 @@ const EpisodeDetailModal = ({ algo, metricKey, onClose }: {
               tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
               axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
               label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
-              interval={Math.floor(data.length / 10)}
+              interval={data.length <= 50 ? 0 : Math.floor(data.length / 10)}
             />
             <YAxis
               tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
@@ -2099,21 +2094,30 @@ const EpisodeDetailModal = ({ algo, metricKey, onClose }: {
               axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
               tickFormatter={(v) => `${v}`}
               width={52}
+              domain={[
+                (min: number) => parseFloat((min - Math.abs(min) * 0.04).toFixed(3)),
+                (max: number) => parseFloat((max + Math.abs(max) * 0.04).toFixed(3)),
+              ]}
             />
             <Tooltip content={<CustomTooltip />} />
 
-            {/* Confidence band: hi fills to baseline, lo paints over with bg colour */}
-            <Area type="monotone" dataKey="hi" stroke="none"
-              fill={algo.color} fillOpacity={0.14} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-            <Area type="monotone" dataKey="lo" stroke="none"
-              fill="#040916" fillOpacity={1} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
+            {/* ±1σ confidence band as reference area (stays above gridlines) */}
+            {data.length > 0 && data[0].lo !== undefined && data[0].hi !== undefined && (
+              <ReferenceArea
+                y1={data[0].lo} y2={data[0].hi}
+                fill={algo.color} fillOpacity={0.13}
+                stroke={algo.color} strokeOpacity={0.18} strokeWidth={1}
+                ifOverflow="hidden"
+              />
+            )}
 
-            {/* Raw per-episode line */}
+            {/* Raw per-episode line — show dots for small datasets */}
             <Line type="monotone" dataKey="value" stroke={algo.color} strokeWidth={1.5}
-              dot={false} activeDot={{ r: 3, fill: algo.color }} strokeOpacity={0.85} isAnimationActive={false} />
+              dot={data.length <= 50 ? { fill: algo.color, r: 2.5, strokeWidth: 0 } : false}
+              activeDot={{ r: 3.5, fill: algo.color }} strokeOpacity={0.85} isAnimationActive={false} />
 
             {/* Moving average overlay */}
-            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.68)" strokeWidth={2}
+            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.72)" strokeWidth={2}
               dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
@@ -2454,13 +2458,13 @@ function ExportButton({ algo, selfishTimeseries = null }: {
       'Algorithm', 'Label',
       'Travel Time (min)', 'Wait Time (sec)', 'Throughput (veh/hr)',
       'Real-time Factor (x)', 'CO2 (g/km)', 'Fuel (L/100km)',
-      'Decision Latency (ms)', 'Convergence Episode', 'Cumulative Reward', 'Efficiency (%)',
+      'Decision Latency (ms)', 'Best Episode', 'Cumulative Reward',
     ]
     const row = [
       algo.id, algo.label,
       algo.travelTime, algo.waitTime, algo.throughput,
       algo.speed, algo.co2, algo.fuel,
-      algo.computeTime, algo.convergence ?? 'N/A', algo.reward ?? 'N/A', algo.efficiency,
+      algo.computeTime, algo.convergence ?? 'N/A', algo.reward ?? 'N/A',
     ]
     downloadFile(
       `civiq_${algo.id}_kpi.csv`,
@@ -2555,7 +2559,7 @@ function ExportButton({ algo, selfishTimeseries = null }: {
       kpi: {
         travelTime: algo.travelTime, waitTime: algo.waitTime, throughput: algo.throughput,
         speed: algo.speed, co2: algo.co2, fuel: algo.fuel, computeTime: algo.computeTime,
-        convergenceEpisode: algo.convergence, cumulativeReward: algo.reward, efficiency: algo.efficiency,
+        bestEpisode: algo.convergence, cumulativeReward: algo.reward,
       },
       changes: algo.changes,
     }
@@ -2919,21 +2923,26 @@ function qmixToMarlPoints(curve: QmixTrainingEntry[]): MarlPoint[] {
 
 /** Convert eval episode arrays → EpisodeSeries for detail modal */
 function qmixToEpisodeSeries(data: QmixRealData): EpisodeSeries {
-  const W = 5
+  const W = 10
   function evalPoints(raw: number[], scale = 1): EpisodePoint[] {
+    if (!raw.length) return []
     const vals = raw.map(v => v * scale)
+    // Global mean ± 1σ for a stable, readable confidence band
+    const mean = vals.reduce((a, b) => a + b, 0) / vals.length
+    const globalStd = Math.sqrt(vals.reduce((s, x) => s + (x - mean) ** 2, 0) / vals.length)
+    const lo = parseFloat((mean - globalStd).toFixed(3))
+    const hi = parseFloat((mean + globalStd).toFixed(3))
     return vals.map((v, i) => {
       const win = vals.slice(Math.max(0, i - W), i + 1)
-      const avg = win.reduce((a, b) => a + b, 0) / win.length
-      const std = win.length > 1 ? Math.sqrt(win.reduce((s, x) => s + (x - avg) ** 2, 0) / win.length) : 0
-      return { episode: i + 1, value: parseFloat(v.toFixed(3)), lo: parseFloat((v - std).toFixed(3)), hi: parseFloat((v + std).toFixed(3)), ma: parseFloat(avg.toFixed(3)) }
+      const ma  = parseFloat((win.reduce((a, b) => a + b, 0) / win.length).toFixed(3))
+      return { episode: i + 1, value: parseFloat(v.toFixed(3)), lo, hi, ma }
     })
   }
   return {
     travelTime: evalPoints(data.evalTravelTimes, 1 / 60),
     waitTime:   evalPoints(data.evalWaitingTimes),
     throughput: evalPoints(data.evalThroughputs),
-    speed:      evalPoints(data.evalReturns.map(() => data.kpis.realTimeFactor ?? 53.97)),
+    speed:      [],  // RTF has no per-episode variation; modal not shown
   }
 }
 
@@ -3301,10 +3310,6 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         )}
       </div>
       <ExportButton algo={displayAlgo} selfishTimeseries={isSelfish ? realTimeseries : null} />
-      <div className="px-4 py-1.5 rounded-full text-[12px] font-bold flex-shrink-0"
-        style={{ background: displayAlgo.colorDim, color: displayAlgo.color, border: `1px solid ${displayAlgo.border}` }}>
-        {displayAlgo.efficiency}% Efficiency Score
-      </div>
     </div>
 
     {/* KPI Row */}
@@ -3336,7 +3341,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       <KpiCard label="Real-time Factor" abbr="RTF" value={displayAlgo.speed.toFixed(2)} unit="x"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         valueAlign="center"
-        onClick={isSelfish ? undefined : () => setOpenModal('speed')}
+        onClick={undefined}
         descriptionSide="left"
         description="The ratio of simulation time to actual wall-clock time. A value of 1.0 means the simulation runs in real time; higher values indicate faster-than-real-time execution." />
     </div>
