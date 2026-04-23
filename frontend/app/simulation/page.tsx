@@ -336,7 +336,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     },
     changes: { travelTime: -50.6, waitTime: -48.6, throughput: 35.9, speed: 44.2 },
     episodes: {
-      travelTime:  makeSeries(2.80, 1.97, 0.15, 0.10, 200, 1),
+      travelTime:  makeSeries(168.0, 118.2, 9.0, 6.0, 200, 1),
       waitTime:    makeSeries(18.0, 10.3, 1.8,  1.2,  200, 2),
       throughput:  makeSeries(800,  1223, 80,   55,   200, 3),
       speed:       makeSeries(1.24, 1.24, 0.01, 0.005, 200, 4),
@@ -372,7 +372,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // vs noop baseline (LOS A): QMIX underperforms noop signal-free in low-traffic scenario
     changes: { travelTime: +4.5, waitTime: +12.1, throughput: -12.3, speed: 0 },
     episodes: {
-      travelTime:  makeSeries(2.60, 1.99, 0.18, 0.12, 200, 5),
+      travelTime:  makeSeries(156.0, 119.4, 10.8, 7.2, 200, 5),
       waitTime:    makeSeries(18.0, 14.1, 1.5,  1.0,  200, 6),
       throughput:  makeSeries(900,  1305, 70,   50,   200, 7),
       speed:       makeSeries(50,   53.97, 2.0, 1.0,  200, 8),
@@ -410,10 +410,10 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     },
     changes: { travelTime: 0, waitTime: 0, throughput: 0, speed: 0 },
     episodes: {
-      travelTime:  makeSeries(2.12, 2.12, 0.15, 0.10, 10000, 9),
-      waitTime:    makeSeries(20.8, 20.8, 1.5,  1.0,  10000, 10),
-      throughput:  makeSeries(2178, 2178, 60,   45,   10000, 11),
-      speed:       makeSeries(248.84, 248.84, 8, 5,   10000, 12),
+      travelTime:  makeSeries(127.2, 127.2, 9.0, 6.0, 30, 9),
+      waitTime:    makeSeries(20.8, 20.8, 1.5,  1.0,  30, 10),
+      throughput:  makeSeries(2178, 2178, 60,   45,   30, 11),
+      speed:       makeSeries(248.84, 248.84, 8, 5,   30, 12),
     },
     system: {
       training: [],  // Selfish Routing has no training phase
@@ -1100,7 +1100,7 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
 // ─── Summary Page (stateful) ──────────────────────────────────────────────────
 
 function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
-  const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('stable_flow')
+  const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('forced_flow')
 
   type LosKey = 'free_flow' | 'stable_flow' | 'forced_flow'
   const LOS_TABS: { key: LosKey; label: string; sub: string }[] = [
@@ -2228,7 +2228,7 @@ const SELFISH_LOS_REF = {
 type EpisodeMetricKey = keyof EpisodeSeries
 
 const KPI_META: Record<EpisodeMetricKey, { label: string; abbr: string; unit: string }> = {
-  travelTime: { label: 'Avg. Travel Time', abbr: 'ATT', unit: 'min' },
+  travelTime: { label: 'Avg. Travel Time', abbr: 'ATT', unit: 'sec' },
   waitTime:   { label: 'Avg. Wait Time',   abbr: 'AWT', unit: 'sec' },
   throughput: { label: 'Throughput',        abbr: 'TPT', unit: 'veh/hr' },
   speed:      { label: 'Real-time Factor',  abbr: 'RTF', unit: 'x' },
@@ -3445,7 +3445,7 @@ function qmixToEpisodeSeries(data: QmixRealData): EpisodeSeries {
     })
   }
   return {
-    travelTime: evalPoints(data.evalTravelTimes, 1 / 60),
+    travelTime: evalPoints(data.evalTravelTimes),
     waitTime:   evalPoints(data.evalWaitingTimes),
     throughput: evalPoints(data.evalThroughputs),
     speed:      [],  // RTF has no per-episode variation; modal not shown
@@ -3461,15 +3461,15 @@ const LOS_LABELS: Record<string, string> = {
 }
 
 const SELFISH_METRIC_META: Record<SelfishMetricKey, { label: string; unit: string; lowerBetter: boolean }> = {
-  travelTime: { label: 'Avg. Travel Time',      unit: 'min',     lowerBetter: true  },
+  travelTime: { label: 'Avg. Travel Time',      unit: 'sec',     lowerBetter: true  },
   waitTime:   { label: 'Avg. Waiting Time',     unit: 'sec',     lowerBetter: true  },
   throughput: { label: 'Network Throughput',    unit: 'veh/hr',  lowerBetter: false },
   co2:        { label: 'Avg. CO₂ Emissions',    unit: 'g/km',    lowerBetter: true  },
   fuel:       { label: 'Avg. Fuel Consumption', unit: 'L/100km', lowerBetter: true  },
 }
 
-const SELFISH_CO2_EPISODES  = makeSeries(485.6, 485.6, 15,  10,  10000, 13)
-const SELFISH_FUEL_EPISODES = makeSeries(20.89, 20.89, 0.8, 0.5, 10000, 14)
+const SELFISH_CO2_EPISODES  = makeSeries(485.6, 485.6, 15,  10,  30, 13)
+const SELFISH_FUEL_EPISODES = makeSeries(20.89, 20.89, 0.8, 0.5, 30, 14)
 
 const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
   metricKey: SelfishMetricKey
@@ -3654,6 +3654,12 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
             speed: 0,
           } : algo.changes
         })(),
+        episodes: {
+          travelTime: makeSeries(travelTime_s, travelTime_s, 3.0, 2.0, 30, 9),
+          waitTime:   makeSeries(realKpis.waitTime, realKpis.waitTime, 1.5, 1.0, 30, 10),
+          throughput: makeSeries(realKpis.throughput, realKpis.throughput, 60, 45, 30, 11),
+          speed:      makeSeries(realKpis.speed, realKpis.speed, 8, 5, 30, 12),
+        },
       }
     }
     if (isQmix && qmixData) {
@@ -3760,8 +3766,8 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     )}
     {/* Selfish detail modal */}
     {isSelfish && selfishModal && (() => {
-      const data = selfishModal === 'co2'  ? SELFISH_CO2_EPISODES
-                 : selfishModal === 'fuel' ? SELFISH_FUEL_EPISODES
+      const data = selfishModal === 'co2'  ? (realKpis ? makeSeries(realKpis.co2,  realKpis.co2,  15,  10,  30, 13) : SELFISH_CO2_EPISODES)
+                 : selfishModal === 'fuel' ? (realKpis ? makeSeries(realKpis.fuel, realKpis.fuel, 0.8, 0.5, 30, 14) : SELFISH_FUEL_EPISODES)
                  : displayAlgo.episodes[selfishModal as EpisodeMetricKey]
       return (
         <SelfishDetailModal
