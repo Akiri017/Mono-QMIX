@@ -1122,15 +1122,15 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       travelTime: QMIX_LOS_REF[k].travelTime_s,
       waitTime:   QMIX_LOS_REF[k].waitTime_s,
       throughput: QMIX_LOS_REF[k].throughput,
-      co2:        algo.co2,
-      fuel:       algo.fuel,
+      co2:        QMIX_LOS_REF[k].co2,
+      fuel:       QMIX_LOS_REF[k].fuel,
     }
     return {
       travelTime: SELFISH_LOS_REF[k].travelTime_s,
       waitTime:   SELFISH_LOS_REF[k].waitTime_s,
       throughput: SELFISH_LOS_REF[k].throughput,
-      co2:        algo.co2,
-      fuel:       algo.fuel,
+      co2:        SELFISH_LOS_REF[k].co2,
+      fuel:       SELFISH_LOS_REF[k].fuel,
     }
   }
 
@@ -1167,23 +1167,23 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
   const KEY_FINDINGS = [
     { tag: 'Throughput',   tagColor: '#22C55E',
-      headline: 'CiViQ delivers 35.7% more throughput under congestion',
-      body: 'At forced-flow (LOS E), CiViQ achieves 2,273 veh/hr vs QMIX\'s 1,675 — a 35.7% lead. The gap narrows to 10.9% at free-flow, showing how hierarchical coordination compounds its benefit as demand rises.' },
+      headline: 'CiViQ delivers 37.4% more throughput under congestion',
+      body: 'At forced-flow (LOS E), CiViQ achieves 2,273 veh/hr vs QMIX\'s 1,654 — a 37.4% lead. The gap narrows to 4.2% at free-flow, showing how hierarchical coordination compounds its benefit as demand rises.' },
     { tag: 'Travel Time',  tagColor: '#38BDF8',
       headline: 'QMIX edges CiViQ at stable flow by 11.3%',
-      body: 'At LOS C, QMIX records 108.32 sec vs CiViQ\'s 122.07 sec. Monolithic coordination can outperform hierarchical control under moderate, non-saturated traffic where hierarchy overhead exceeds its benefit.' },
+      body: 'At LOS C, QMIX records 108.26 sec vs CiViQ\'s 122.07 sec. Monolithic coordination can outperform hierarchical control under moderate, non-saturated traffic where hierarchy overhead exceeds its benefit.' },
     { tag: 'Wait Time',    tagColor: '#F59E0B',
       headline: 'Congestion reveals QMIX\'s coordination ceiling',
-      body: 'At LOS E, QMIX wait time hits 24.05 sec — 24.7% worse than CiViQ\'s 19.29 sec. The joint action-value function struggles to resolve intersection conflicts as demand approaches saturation.' },
+      body: 'At LOS E, QMIX wait time hits 23.75 sec — 23.1% worse than CiViQ\'s 19.29 sec. The joint action-value function struggles to resolve intersection conflicts as demand approaches saturation.' },
     { tag: 'Baseline',     tagColor: '#F87171',
-      headline: 'Selfish Routing matches CiViQ at free flow',
-      body: 'At LOS A, Selfish records 120.35 sec vs CiViQ\'s 121.70 sec — within 1.1%. It also beats QMIX (125.00 sec). Under low demand, RL coordination overhead costs more than the benefit it provides.' },
+      headline: 'Selfish Routing closely matches CiViQ at free flow',
+      body: 'At LOS A, Selfish records 120.83 sec vs CiViQ\'s 121.70 sec — within 0.7%. QMIX achieves the best travel time at this level (119.14 sec). Under low demand, Selfish routing offers near-RL performance without any training overhead.' },
     { tag: 'Scalability',  tagColor: '#A78BFA',
       headline: 'Hierarchical architecture scales; monolithic does not',
       body: 'CiViQ\'s two-tier hierarchy keeps per-decision complexity constant as traffic grows. QMIX\'s joint-action-value network scales quadratically with agent count, explaining its degradation at LOS E.' },
     { tag: 'Coordination', tagColor: '#34D399',
       headline: 'CiViQ consistently reduces wait time vs Selfish Routing',
-      body: 'CiViQ vs Selfish wait-time gap is 7.6% at LOS A (7.15 vs 7.74 sec) and 7.1% at LOS E (19.29 vs 20.76 sec). Multi-agent coordination delivers a consistent queuing reduction across all congestion levels.' },
+      body: 'CiViQ vs Selfish wait-time gap is 2.7% at LOS A (7.15 vs 7.34 sec) and 7.2% at LOS E (19.29 vs 20.67 sec). Multi-agent coordination delivers a consistent queuing reduction across all congestion levels.' },
   ]
 
   return (
@@ -2212,15 +2212,15 @@ const CIVIQ_LOS_REF = {
 } as const
 
 const QMIX_LOS_REF = {
-  free_flow:   { travelTime_s: 119.1395, waitTime_s: 8.0192,  throughput: 1044.4675, returnMean: -46710.5652 },
-  stable_flow: { travelTime_s: 108.2599, waitTime_s: 10.4366, throughput: 1245.6503, returnMean: -54377.5525 },
-  forced_flow: { travelTime_s: 125.9476, waitTime_s: 23.7468, throughput: 1653.8422, returnMean: -105997.3288 },
+  free_flow:   { travelTime_s: 119.1395, waitTime_s: 8.0192,  throughput: 1044.4675, returnMean: -46710.5652,  co2: 505.9064, fuel: 21.8354 },
+  stable_flow: { travelTime_s: 108.2599, waitTime_s: 10.4366, throughput: 1245.6503, returnMean: -54377.5525,  co2: 533.6588, fuel: 23.0188 },
+  forced_flow: { travelTime_s: 125.9476, waitTime_s: 23.7468, throughput: 1653.8422, returnMean: -105997.3288, co2: 585.9024, fuel: 25.202  },
 } as const
 
 const SELFISH_LOS_REF = {
-  free_flow:   { travelTime_s: 120.8292, waitTime_s: 7.3442,  throughput: 1120.8551, returnMean: -45803.0291 },
-  stable_flow: { travelTime_s: 122.7603, waitTime_s: 10.5173, throughput: 1258.022,  returnMean: -53173.1002 },
-  forced_flow: { travelTime_s: 127.3438, waitTime_s: 20.668,  throughput: 2159.9281, returnMean: -94445.9153 },
+  free_flow:   { travelTime_s: 120.8292, waitTime_s: 7.3442,  throughput: 1120.8551, returnMean: -45803.0291, co2: 459.9288, fuel: 19.8502 },
+  stable_flow: { travelTime_s: 122.7603, waitTime_s: 10.5173, throughput: 1258.022,  returnMean: -53173.1002, co2: 463.8582, fuel: 20.006  },
+  forced_flow: { travelTime_s: 127.3438, waitTime_s: 20.668,  throughput: 2159.9281, returnMean: -94445.9153, co2: 486.2586, fuel: 20.914  },
 } as const
 
 // ─── Episode Detail Modal ─────────────────────────────────────────────────────
