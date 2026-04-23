@@ -351,7 +351,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     marl:       makeMarlMetrics(2.8, -55, 95, 2.1, -200, 1250, 200, 24),
   },
   qmix: {
-    // ── Real PyMARL data — BGC Full (2 km²), LOS A, seed 1801, 30 eval episodes ──
+    // ── Real PyMARL data — BGC Full (2 km²), LOS A, seed 1801, 50 eval episodes ──
     // Source: results/mono-qmix-los-a/experiment_summary_losA.json + qmix_exp_1801.json
     // Detail page fetches training curve & MARL diagnostics dynamically via /api/qmix
     id: 'qmix', label: 'Monolithic QMIX', sublabel: 'Baseline RL', rank: 2,
@@ -2212,9 +2212,9 @@ const CIVIQ_LOS_REF = {
 } as const
 
 const QMIX_LOS_REF = {
-  free_flow:   { travelTime_s: 125.003, waitTime_s: 7.9577,  throughput: 981.2,  returnMean: -45791.033 },
-  stable_flow: { travelTime_s: 108.316, waitTime_s: 10.4217, throughput: 1259.1, returnMean: -54641.307 },
-  forced_flow: { travelTime_s: 124.792, waitTime_s: 24.0477, throughput: 1674.7, returnMean: -105961.277 },
+  free_flow:   { travelTime_s: 119.1395, waitTime_s: 8.0192,  throughput: 1044.4675, returnMean: -46710.5652 },
+  stable_flow: { travelTime_s: 108.2599, waitTime_s: 10.4366, throughput: 1245.6503, returnMean: -54377.5525 },
+  forced_flow: { travelTime_s: 125.9476, waitTime_s: 23.7468, throughput: 1653.8422, returnMean: -105997.3288 },
 } as const
 
 const SELFISH_LOS_REF = {
@@ -2579,7 +2579,7 @@ const CpuStatsCard = ({ algo, evalCpuMeans, onViewDetail }: {
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
           <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>CPU Utilization</span>
-          <InfoBubble text="Per-episode CPU usage across 30 evaluation runs. 100% = one fully utilised core — values above 100% indicate multi-core usage. Average is the mean within each episode; peak is the maximum instantaneous spike observed." />
+          <InfoBubble text="Per-episode CPU usage across 50 evaluation runs. 100% = one fully utilised core — values above 100% indicate multi-core usage. Average is the mean within each episode; peak is the maximum instantaneous spike observed." />
         </div>
         <button
           onClick={onViewDetail}
