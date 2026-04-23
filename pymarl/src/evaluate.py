@@ -360,14 +360,21 @@ def compare_results(result_files):
                         d2 = r2['metrics'][key]['raw']
 
                     if len(d1) >= 2 and len(d2) >= 2 and d1 and d2:
-                        t_stat, p_val = scipy_stats.ttest_ind(d1, d2)
+                        # Use paired t-test when episode counts match (same seed = same scenarios).
+                        # Fall back to unpaired if counts differ (e.g. a run was cut short).
+                        if len(d1) == len(d2):
+                            t_stat, p_val = scipy_stats.ttest_rel(d1, d2)
+                            test_name = "paired"
+                        else:
+                            t_stat, p_val = scipy_stats.ttest_ind(d1, d2)
+                            test_name = "unpaired"
                         sig = "***" if p_val < 0.001 else ("**" if p_val < 0.01 else ("*" if p_val < 0.05 else "ns"))
                         better = n1 if np.mean(d1) > np.mean(d2) else n2
                         # For travel time, lower is better
                         if key == "mean_travel_time":
                             better = n1 if np.mean(d1) < np.mean(d2) else n2
                         print(f"  [{metric_label}] {n1} vs {n2}: "
-                              f"t={t_stat:.3f}, p={p_val:.4f} {sig}  => better: {better}")
+                              f"t={t_stat:.3f}, p={p_val:.4f} {sig} ({test_name})  => better: {better}")
                 print()
 
 

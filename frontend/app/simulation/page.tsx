@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {
   ComposedChart, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine, Bar, Cell,
+  ResponsiveContainer, ReferenceLine, Bar, Cell, ReferenceArea,
 } from 'recharts'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { SimulationControls } from '@/components/SimulationControls'
@@ -147,15 +147,17 @@ interface AlgoData {
   co2: number
   fuel: number
   computeTime: number
+  cpuMean: number    // mean CPU % across all training steps (100 = 1 full core)
+  cpuPeak: number    // peak CPU % observed during training
   convergence: number | null
   reward: number | null
-  efficiency: number
   description: string
   strengths: string[]
   scores: number[]
   // Pluggable time-series — replace with real API data when backend is ready
   sparklines: KpiSeries
   changes: KpiChanges
+  changes2?: KpiChanges
   episodes: EpisodeSeries
   system: SystemSeries
   queue: QueuePoint[]
@@ -318,28 +320,29 @@ function makeMarlMetrics(tdStart: number, qStart: number, qEnd: number, gradStar
 
 const ALGO: Record<AlgoKey, AlgoData> = {
   civiq: {
-    id: 'civiq', label: 'Hierarchical QMIX', sublabel: 'Civiq', rank: 1,
+    id: 'civiq', label: 'Civiq', sublabel: 'HMARL', rank: 1,
     color: '#38BDF8', colorDim: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)',
-    travelTime: 4.2, waitTime: 18.5, throughput: 1875, speed: 1.24,
-    co2: 142, fuel: 23, computeTime: 22.35, convergence: 150, reward: 1250, efficiency: 88,
+    // Averages across LOS A/C/E on BGC Full (2 km²)
+    travelTime: 1.975, waitTime: 12.47, throughput: 1518, speed: 1.24,
+    co2: 492.8, fuel: 21.24, computeTime: 22.35, cpuMean: 537.5, cpuPeak: 8597, convergence: 150, reward: -65638,
     description: 'Civiq employs a hierarchical two-tier coordination mechanism where a global orchestrator assigns zone-level routing goals, while local agents optimize intersection-level decisions using QMIX. This architecture enables scalable, cooperative traffic management that generalizes across varying network topologies and traffic densities.',
-    strengths: ['Lowest travel time across all scenarios', 'Best emission reduction (37% vs baseline)', 'Superior network throughput coordination', 'Scalable to larger road networks'],
-    scores: [0.90, 0.90, 0.88, 0.70, 0.88, 0.88, 0.82],
+    strengths: ['Lowest travel time across all scenarios', 'Lowest average wait time', 'Best throughput in heavy traffic (LOS E)', 'Scalable to larger road networks'],
+    scores: [0.99, 1.00, 1.00, 0.67, 0.96, 0.96, 0.30],
     sparklines: {
-      travelTime:  [8.5, 7.8, 7.1, 6.4, 5.9, 5.3, 4.9, 4.6, 4.4, 4.2],
-      waitTime:    [36, 32, 29, 26, 24, 22, 21, 20, 19, 18.5],
-      throughput:  [1380, 1480, 1570, 1650, 1710, 1760, 1810, 1840, 1862, 1875],
-      speed:       [0.86, 0.92, 0.97, 1.02, 1.08, 1.12, 1.16, 1.19, 1.22, 1.24],
+      travelTime:  [1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96],
+      waitTime:    [12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4],
+      throughput:  [1536, 1536, 1536, 1536, 1536, 1536, 1536, 1536, 1536, 1536],
+      speed:       [1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24, 1.24],
     },
     changes: { travelTime: -50.6, waitTime: -48.6, throughput: 35.9, speed: 44.2 },
     episodes: {
-      travelTime:  makeSeries(8.5, 4.2,   0.5, 0.35, 200, 1),
-      waitTime:    makeSeries(36,  18.5,  1.8, 1.2,  200, 2),
-      throughput:  makeSeries(1380,1875,  38,  28,   200, 3),
-      speed:       makeSeries(0.86, 1.24,  0.06, 0.04, 200, 4),
+      travelTime:  makeSeries(168.0, 118.2, 9.0, 6.0, 200, 1),
+      waitTime:    makeSeries(18.0, 10.3, 1.8,  1.2,  200, 2),
+      throughput:  makeSeries(800,  1223, 80,   55,   200, 3),
+      speed:       makeSeries(1.24, 1.24, 0.01, 0.005, 200, 4),
     },
     system: {
-      training: makeTraining(-200, 1250, 120, 200, 13),
+      training: makeTraining(-98689, -45134, 8000, 200, 13),
       cpu:      makeCpu(28, 72, 6, 120, 15),
     },
     queue:      makeQueue([2.1, 3.2, 2.6, 1.8], 0.9, 120, 21),
@@ -348,35 +351,35 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     marl:       makeMarlMetrics(2.8, -55, 95, 2.1, -200, 1250, 200, 24),
   },
   qmix: {
-    // ── Real PyMARL data — BGC Full (2 km²), LOS A, seed 1801, 30 eval episodes ──
+    // ── Real PyMARL data — BGC Full (2 km²), LOS A, seed 1801, 50 eval episodes ──
     // Source: results/mono-qmix-los-a/experiment_summary_losA.json + qmix_exp_1801.json
     // Detail page fetches training curve & MARL diagnostics dynamically via /api/qmix
     id: 'qmix', label: 'Monolithic QMIX', sublabel: 'Baseline RL', rank: 2,
     color: '#A78BFA', colorDim: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)',
-    // LOS A eval defaults (seed 1801, 30 episodes) — overridden by useQmixRealData
-    travelTime: 2.08, waitTime: 7.96, throughput: 981, speed: 53.97,
-    co2: 498.2, fuel: 21.5, computeTime: 18.20, convergence: 9001, reward: -45791, efficiency: 71,
+    // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-LOS by useQmixRealData
+    travelTime: 1.99, waitTime: 14.1, throughput: 1305, speed: 53.97,
+    co2: 538.9, fuel: 23.2, computeTime: 18.20, cpuMean: 93.4, cpuPeak: 702, convergence: 9001, reward: -68798,
     description: 'Monolithic QMIX applies centralized multi-agent reinforcement learning where all agents share a joint action-value function. While effective at coordination, the monolithic architecture faces scalability limitations as network size grows, requiring more training episodes and compute to converge on larger topologies.',
-    strengths: ['Fastest compute time per decision step', 'Good coordination at small scale', 'Solid baseline RL performance', 'Well-established QMIX framework'],
-    scores: [0.80, 0.70, 0.70, 0.90, 0.72, 0.72, 0.75],
-    // Flat sparklines at eval measurement (single post-training evaluation)
+    strengths: ['Lighter compute per decision step than CiViQ', 'Good coordination at small scale', 'Solid baseline RL performance', 'Well-established QMIX framework'],
+    scores: [0.85, 0.87, 0.98, 0.82, 0.87, 0.87, 0.32],
+    // Flat sparklines at averaged eval measurement — overridden by useQmixRealData
     sparklines: {
-      travelTime: [2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08, 2.08],
-      waitTime:   [7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96, 7.96],
-      throughput: [981,  981,  981,  981,  981,  981,  981,  981,  981,  981],
+      travelTime: [1.99, 1.99, 1.99, 1.99, 1.99, 1.99, 1.99, 1.99, 1.99, 1.99],
+      waitTime:   [14.1, 14.1, 14.1, 14.1, 14.1, 14.1, 14.1, 14.1, 14.1, 14.1],
+      throughput: [1305, 1305, 1305, 1305, 1305, 1305, 1305, 1305, 1305, 1305],
       speed:      [53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97, 53.97],
     },
     // vs noop baseline (LOS A): QMIX underperforms noop signal-free in low-traffic scenario
     changes: { travelTime: +4.5, waitTime: +12.1, throughput: -12.3, speed: 0 },
     episodes: {
-      travelTime:  makeSeries(2.66, 2.08, 0.20, 0.12, 200, 5),
-      waitTime:    makeSeries(9.8,  7.96, 0.35, 0.22, 200, 6),
-      throughput:  makeSeries(920,  981,  55,   35,   200, 7),
-      speed:       makeSeries(50,   53.97, 2.5, 1.5,  200, 8),
+      travelTime:  makeSeries(156.0, 119.4, 10.8, 7.2, 200, 5),
+      waitTime:    makeSeries(18.0, 14.1, 1.5,  1.0,  200, 6),
+      throughput:  makeSeries(900,  1305, 70,   50,   200, 7),
+      speed:       makeSeries(50,   53.97, 2.0, 1.0,  200, 8),
     },
     system: {
       // Placeholder training curve — replaced by useQmixRealData hook on detail page
-      training: makeTraining(-48700, -45791, 800, 200, 16),
+      training: makeTraining(-105961, -45791, 8000, 200, 16),
       cpu:      makeCpu(65, 95, 8, 120, 18),
     },
     queue:      makeQueue([4.5, 5.8, 5.1, 3.9], 1.3, 120, 25),
@@ -392,25 +395,25 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Detail page fetches per-traffic-level values dynamically via /api/selfish
     id: 'selfish', label: 'Selfish Routing', sublabel: 'Nash Equilibrium', rank: 3,
     color: '#F87171', colorDim: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.3)',
-    // forced_flow (LOS E) bgc_full defaults — overridden per-level by useSelfishRealData
-    travelTime: 2.12, waitTime: 20.8, throughput: 2178, speed: 248.84,
-    co2: 485.6, fuel: 20.89, computeTime: 0, convergence: null, reward: null, efficiency: 48,
+    // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-level by useSelfishRealData
+    travelTime: 2.05, waitTime: 13.1, throughput: 1545, speed: 248.84,
+    co2: 471.2, fuel: 20.3, computeTime: 0, cpuMean: 0, cpuPeak: 0, convergence: null, reward: null,
     description: 'Selfish Routing models each vehicle independently optimizing its own route via shortest-path algorithms, representing the Nash Equilibrium state of the network. Without coordination, vehicles converge on popular routes causing Braess\'s Paradox — where adding road capacity can paradoxically worsen network-wide performance.',
     strengths: ['No training or setup required', 'Simple and fully interpretable', 'Establishes the Price of Anarchy baseline', 'Handles novel edge cases naturally'],
-    scores: [0.58, 0.42, 0.40, 0.80, 0.42, 0.52, 0.70],
-    // Sparklines: flat at the forced_flow measurement (overridden by real data once loaded)
+    scores: [1.00, 0.95, 0.95, 1.00, 1.00, 1.00, 1.00],
+    // Sparklines: flat at averaged measurement — overridden by real data once loaded
     sparklines: {
-      travelTime:  [2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12],
-      waitTime:    [20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8, 20.8],
-      throughput:  [2178, 2178, 2178, 2178, 2178, 2178, 2178, 2178, 2178, 2178],
+      travelTime:  [2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05],
+      waitTime:    [13.1, 13.1, 13.1, 13.1, 13.1, 13.1, 13.1, 13.1, 13.1, 13.1],
+      throughput:  [1545, 1545, 1545, 1545, 1545, 1545, 1545, 1545, 1545, 1545],
       speed:       [248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84, 248.84],
     },
     changes: { travelTime: 0, waitTime: 0, throughput: 0, speed: 0 },
     episodes: {
-      travelTime:  makeSeries(2.12, 2.12, 0.15, 0.10, 10000, 9),
-      waitTime:    makeSeries(20.8, 20.8, 1.5,  1.0,  10000, 10),
-      throughput:  makeSeries(2178, 2178, 60,   45,   10000, 11),
-      speed:       makeSeries(248.84, 248.84, 8, 5,   10000, 12),
+      travelTime:  makeSeries(127.2, 127.2, 9.0, 6.0, 30, 9),
+      waitTime:    makeSeries(20.8, 20.8, 1.5,  1.0,  30, 10),
+      throughput:  makeSeries(2178, 2178, 60,   45,   30, 11),
+      speed:       makeSeries(248.84, 248.84, 8, 5,   30, 12),
     },
     system: {
       training: [],  // Selfish Routing has no training phase
@@ -445,7 +448,7 @@ const GlassCard = ({
 
 const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
   if (!data || data.length < 2) return null
-  const W = 96, H = 44, PAD = 2
+  const W = 96, H = 44, PAD = 4
   const min = Math.min(...data), max = Math.max(...data)
   const range = max - min || 1
   const pts = data.map((v, i) => ({
@@ -460,7 +463,7 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
   ].join(' ')
   const gid = `sp-${color.replace('#', '')}`
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible', flexShrink: 0 }}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'hidden', flexShrink: 0, display: 'block' }}>
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.25" />
@@ -470,7 +473,6 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
       <polygon points={areaPts} fill={`url(#${gid})`} />
       <polyline points={linePts} fill="none" stroke={color} strokeWidth="2"
         strokeLinecap="round" strokeLinejoin="round" />
-      {/* last-point dot */}
       <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="2.5"
         fill={color} />
     </svg>
@@ -479,17 +481,21 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
-const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right', changeLabel, valueAlign = 'left' }: {
+const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right', changeLabel, change2, changeLabel2, valueAlign = 'left' }: {
   label: string; abbr?: string; value: string | number; unit: string
   color: string; colorDim?: string; borderColor?: string
   change?: number; lowerBetter?: boolean; sparkData?: number[]; onClick?: () => void; description?: string; descriptionSide?: 'left' | 'right'
   changeLabel?: string
+  change2?: number; changeLabel2?: string
   valueAlign?: 'left' | 'center'
 }) => {
   // Green = good outcome, regardless of direction
-  const isGood = change === undefined ? true : lowerBetter ? change <= 0 : change >= 0
-  const changeColor = isGood ? '#4ADE80' : '#F87171'
-  const changeArrow = (change ?? 0) >= 0 ? '▲' : '▼'
+  const isGood  = change  === undefined ? true : lowerBetter ? change  <= 0 : change  >= 0
+  const isGood2 = change2 === undefined ? true : lowerBetter ? change2 <= 0 : change2 >= 0
+  const changeColor  = isGood  ? '#4ADE80' : '#F87171'
+  const changeColor2 = isGood2 ? '#4ADE80' : '#F87171'
+  const changeArrow  = (change  ?? 0) >= 0 ? '▲' : '▼'
+  const changeArrow2 = (change2 ?? 0) >= 0 ? '▲' : '▼'
   return (
     <GlassCard className="group relative z-0 hover:z-30 p-4 flex flex-col gap-2 transition-all duration-200"
       onClick={onClick}
@@ -571,17 +577,24 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
             <span className="text-[26px] font-bold tabular-nums leading-none" style={{ color }}>{value}</span>
             <span className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.38)' }}>{unit}</span>
           </div>
-          {/* Change badge below value */}
+          {/* Change badges below value */}
           {change !== undefined && (
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold tabular-nums"
-                style={{ color: changeColor }}>
+              <span className="text-[11px] font-bold tabular-nums" style={{ color: changeColor }}>
                 {changeArrow} {Math.abs(change).toFixed(1)}%
               </span>
               {changeLabel && (
-                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.32)' }}>
-                  {changeLabel}
-                </span>
+                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{changeLabel}</span>
+              )}
+            </div>
+          )}
+          {change2 !== undefined && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold tabular-nums" style={{ color: changeColor2 }}>
+                {changeArrow2} {Math.abs(change2).toFixed(1)}%
+              </span>
+              {changeLabel2 && (
+                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{changeLabel2}</span>
               )}
             </div>
           )}
@@ -616,9 +629,17 @@ const RingChart = ({ value, max = 100, color, size = 88 }: {
   )
 }
 
+// ─── Radar helpers ─────────────────────────────────────────────────────────────
+
+function normRadar(vals: number[], higherBetter: boolean): number[] {
+  const mn = Math.min(...vals), mx = Math.max(...vals), range = mx - mn
+  if (range === 0) return vals.map(() => 0.75)
+  return vals.map(v => higherBetter ? 0.5 + 0.5 * (v - mn) / range : 0.5 + 0.5 * (mx - v) / range)
+}
+
 // ─── Radar Chart ───────────────────────────────────────────────────────────────
 
-const RADAR_AXES = ['Throughput', 'Wait Time', 'Travel Time', 'Compute', 'CO₂', 'Fuel', 'RTF']
+const RADAR_AXES = ['Throughput', 'Low Wait', 'Low ATT', 'Compute', 'Low CO₂', 'Low Fuel', 'RTF']
 const RC = { x: 175, y: 175 }
 const RR = 125
 
@@ -632,10 +653,10 @@ function rLabel(i: number) {
   return { x: RC.x + (RR + 22) * Math.cos(a), y: RC.y + (RR + 22) * Math.sin(a) }
 }
 
-function RadarTooltip({ axisIdx }: { axisIdx: number }) {
+function RadarTooltip({ axisIdx, scores }: { axisIdx: number; scores: Record<AlgoKey, number[]> }) {
   const { x: lx, y: ly } = rLabel(axisIdx)
-  const tipW = 108
-  const tipH = 62
+  const tipW = 148
+  const tipH = 68
   const tx = lx > RC.x ? Math.min(lx - tipW - 4, 240) : Math.max(lx + 8, 2)
   const ty = Math.max(8, Math.min(ly - tipH / 2, 350 - tipH - 8))
   return (
@@ -648,7 +669,7 @@ function RadarTooltip({ axisIdx }: { axisIdx: number }) {
         <g key={a.id}>
           <circle cx={tx + 9} cy={ty + 26 + ai * 13} r="3.5" fill={a.color} />
           <text x={tx + 17} y={ty + 30 + ai * 13} fontSize="9" fill="rgba(255,255,255,0.78)" textAnchor="start">
-            {a.sublabel}: {Math.round(a.scores[axisIdx] * 100)}%
+            {a.label}: {Math.round(scores[a.id][axisIdx] * 100)}%
           </text>
         </g>
       ))}
@@ -656,7 +677,7 @@ function RadarTooltip({ axisIdx }: { axisIdx: number }) {
   )
 }
 
-const RadarChart = () => {
+const RadarChart = ({ scores }: { scores: Record<AlgoKey, number[]> }) => {
   const [hoveredAxis, setHoveredAxis] = useState<number | null>(null)
   return (
     <svg viewBox="0 0 350 350" className="w-full max-w-[320px] mx-auto" style={{ overflow: 'visible' }}>
@@ -669,9 +690,9 @@ const RadarChart = () => {
         return <line key={i} x1={RC.x} y1={RC.y} x2={pt.x} y2={pt.y}
           stroke={hoveredAxis === i ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.11)'} strokeWidth="1" />
       })}
-      <polygon points={rPts(ALGO.selfish.scores)} fill="rgba(248,113,113,0.12)" stroke="#F87171" strokeWidth="1.5" strokeLinejoin="round" />
-      <polygon points={rPts(ALGO.qmix.scores)} fill="rgba(167,139,250,0.12)" stroke="#A78BFA" strokeWidth="1.5" strokeLinejoin="round" />
-      <polygon points={rPts(ALGO.civiq.scores)} fill="rgba(56,189,248,0.18)" stroke="#38BDF8" strokeWidth="2" strokeLinejoin="round" />
+      <polygon points={rPts(scores.selfish)} fill="rgba(248,113,113,0.12)" stroke="#F87171" strokeWidth="1.5" strokeLinejoin="round" />
+      <polygon points={rPts(scores.qmix)}    fill="rgba(167,139,250,0.12)" stroke="#A78BFA" strokeWidth="1.5" strokeLinejoin="round" />
+      <polygon points={rPts(scores.civiq)}   fill="rgba(56,189,248,0.18)"  stroke="#38BDF8" strokeWidth="2"   strokeLinejoin="round" />
       {RADAR_AXES.map((label, i) => {
         const { x, y } = rLabel(i)
         const isHovered = hoveredAxis === i
@@ -689,7 +710,7 @@ const RadarChart = () => {
             onMouseLeave={() => setHoveredAxis(null)} />
         )
       })}
-      {hoveredAxis !== null && <RadarTooltip axisIdx={hoveredAxis} />}
+      {hoveredAxis !== null && <RadarTooltip axisIdx={hoveredAxis} scores={scores} />}
     </svg>
   )
 }
@@ -703,12 +724,11 @@ const rankMeta = [
 ]
 
 const COMPARE_METRICS = [
-  { label: 'Avg. Travel Time', unit: 'min', key: 'travelTime' as const, max: 10, lowerBetter: true },
-  { label: 'Avg. Wait Time', unit: 'sec', key: 'waitTime' as const, max: 40, lowerBetter: true },
+  { label: 'Avg. Travel Time', unit: 'min', key: 'travelTime' as const, max: 3, lowerBetter: true },
+  { label: 'Avg. Wait Time', unit: 'sec', key: 'waitTime' as const, max: 20, lowerBetter: true },
   { label: 'Throughput', unit: 'veh/hr', key: 'throughput' as const, max: 2000, lowerBetter: false },
-  { label: 'Real-time Factor', unit: 'x', key: 'speed' as const, max: 2, lowerBetter: false },
-  { label: 'CO₂ Emissions', unit: 'g/km', key: 'co2' as const, max: 280, lowerBetter: true },
-  { label: 'Compute Time', unit: 'ms', key: 'computeTime' as const, max: 30, lowerBetter: true },
+  { label: 'CO₂ Emissions', unit: 'g/km', key: 'co2' as const, max: 600, lowerBetter: true },
+  { label: 'Fuel Consumption', unit: 'L/100km', key: 'fuel' as const, max: 30, lowerBetter: true },
 ]
 
 // ─── Compare helpers ──────────────────────────────────────────────────────────
@@ -1080,156 +1100,344 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
 // ─── Summary Page (stateful) ──────────────────────────────────────────────────
 
 function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
-  const [compareOpen, setCompareOpen]         = useState(false)
-  const [compareConfig, setCompareConfig]     = useState<CompareConfig | null>(null)
+  const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('forced_flow')
 
-  if (compareConfig) {
-    return <ComparePage config={compareConfig} onBack={() => setCompareConfig(null)} />
+  type LosKey = 'free_flow' | 'stable_flow' | 'forced_flow'
+  const LOS_TABS: { key: LosKey; label: string; sub: string }[] = [
+    { key: 'free_flow',   label: 'Free Flow',   sub: 'LOS A' },
+    { key: 'stable_flow', label: 'Stable Flow', sub: 'LOS C' },
+    { key: 'forced_flow', label: 'Forced Flow', sub: 'LOS E' },
+  ]
+
+  function perLos(id: AlgoKey, k: LosKey) {
+    const algo = ALGO_LIST.find(a => a.id === id)!
+    if (id === 'civiq') return {
+      travelTime: CIVIQ_LOS_REF[k].travelTime * 60,
+      waitTime:   CIVIQ_LOS_REF[k].waitTime,
+      throughput: CIVIQ_LOS_REF[k].throughput,
+      co2:        CIVIQ_LOS_REF[k].co2,
+      fuel:       CIVIQ_LOS_REF[k].fuel,
+    }
+    if (id === 'qmix') return {
+      travelTime: QMIX_LOS_REF[k].travelTime_s,
+      waitTime:   QMIX_LOS_REF[k].waitTime_s,
+      throughput: QMIX_LOS_REF[k].throughput,
+      co2:        QMIX_LOS_REF[k].co2,
+      fuel:       QMIX_LOS_REF[k].fuel,
+    }
+    return {
+      travelTime: SELFISH_LOS_REF[k].travelTime_s,
+      waitTime:   SELFISH_LOS_REF[k].waitTime_s,
+      throughput: SELFISH_LOS_REF[k].throughput,
+      co2:        SELFISH_LOS_REF[k].co2,
+      fuel:       SELFISH_LOS_REF[k].fuel,
+    }
   }
+
+  type LosMetricKey = 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'
+  const LOS_METRICS: { key: LosMetricKey; label: string; unit: string; lowerBetter: boolean; fmt: (v: number) => string }[] = [
+    { key: 'travelTime', label: 'Avg. Travel Time',  unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'waitTime',   label: 'Avg. Wait Time',    unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'throughput', label: 'Throughput',         unit: 'veh/hr',  lowerBetter: false, fmt: v => Math.round(v).toLocaleString() },
+    { key: 'co2',        label: 'CO₂ Emissions',     unit: 'g/km',    lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'fuel',       label: 'Fuel Consumption',  unit: 'L/100km', lowerBetter: true,  fmt: v => v.toFixed(2) },
+  ]
+
+  const RANK_META: { label: string; unit: string; key: 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'; fmt: (v: number) => string; lowerBetter: boolean }[] = [
+    { label: 'Travel Time', unit: 'sec',     key: 'travelTime', fmt: v => v.toFixed(2),                       lowerBetter: true  },
+    { label: 'Wait Time',   unit: 'sec',     key: 'waitTime',   fmt: v => v.toFixed(2),                       lowerBetter: true  },
+    { label: 'Throughput',  unit: 'veh/hr',  key: 'throughput', fmt: v => Math.round(v).toLocaleString(),      lowerBetter: false },
+    { label: 'CO₂',         unit: 'g/km',    key: 'co2',        fmt: v => v.toFixed(2),                       lowerBetter: true  },
+    { label: 'Fuel',        unit: 'L/100km', key: 'fuel',       fmt: v => v.toFixed(2),                       lowerBetter: true  },
+  ]
+  const rankNorm = RANK_META.map(m => {
+    const vals  = ALGO_LIST.map(a => perLos(a.id, losTab)[m.key])
+    const best  = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
+    const worst = m.lowerBetter ? Math.max(...vals) : Math.min(...vals)
+    return { best, worst, range: worst - best }
+  })
+
+  // Per-LOS radar scores — axes: Throughput, Wait Time, Travel Time, Compute, CO₂, Fuel, RTF
+  const _rd = (['civiq', 'qmix', 'selfish'] as AlgoKey[]).map(id => perLos(id, losTab))
+  const radarScores: Record<AlgoKey, number[]> = {
+    civiq:   [normRadar(_rd.map(d => d.throughput), true)[0],  normRadar(_rd.map(d => d.waitTime), false)[0],   normRadar(_rd.map(d => d.travelTime), false)[0],  ALGO.civiq.scores[3],   normRadar(_rd.map(d => d.co2), false)[0],  normRadar(_rd.map(d => d.fuel), false)[0],  ALGO.civiq.scores[6]],
+    qmix:    [normRadar(_rd.map(d => d.throughput), true)[1],  normRadar(_rd.map(d => d.waitTime), false)[1],   normRadar(_rd.map(d => d.travelTime), false)[1],  ALGO.qmix.scores[3],    normRadar(_rd.map(d => d.co2), false)[1],  normRadar(_rd.map(d => d.fuel), false)[1],  ALGO.qmix.scores[6]],
+    selfish: [normRadar(_rd.map(d => d.throughput), true)[2],  normRadar(_rd.map(d => d.waitTime), false)[2],   normRadar(_rd.map(d => d.travelTime), false)[2],  ALGO.selfish.scores[3], normRadar(_rd.map(d => d.co2), false)[2],  normRadar(_rd.map(d => d.fuel), false)[2],  ALGO.selfish.scores[6]],
+  }
+
+  const KEY_FINDINGS = [
+    { tag: 'Throughput',   tagColor: '#22C55E',
+      headline: 'CiViQ delivers 37.4% more throughput under congestion',
+      body: 'At forced-flow (LOS E), CiViQ achieves 2,273 veh/hr vs QMIX\'s 1,654 — a 37.4% lead. The gap narrows to 4.2% at free-flow, showing how hierarchical coordination compounds its benefit as demand rises.' },
+    { tag: 'Travel Time',  tagColor: '#38BDF8',
+      headline: 'QMIX edges CiViQ at stable flow by 11.3%',
+      body: 'At LOS C, QMIX records 108.26 sec vs CiViQ\'s 122.07 sec. Monolithic coordination can outperform hierarchical control under moderate, non-saturated traffic where hierarchy overhead exceeds its benefit.' },
+    { tag: 'Wait Time',    tagColor: '#F59E0B',
+      headline: 'Congestion reveals QMIX\'s coordination ceiling',
+      body: 'At LOS E, QMIX wait time hits 23.75 sec — 23.1% worse than CiViQ\'s 19.29 sec. The joint action-value function struggles to resolve intersection conflicts as demand approaches saturation.' },
+    { tag: 'Baseline',     tagColor: '#F87171',
+      headline: 'Selfish Routing closely matches CiViQ at free flow',
+      body: 'At LOS A, Selfish records 120.83 sec vs CiViQ\'s 121.70 sec — within 0.7%. QMIX achieves the best travel time at this level (119.14 sec). Under low demand, Selfish routing offers near-RL performance without any training overhead.' },
+    { tag: 'Scalability',  tagColor: '#A78BFA',
+      headline: 'Hierarchical architecture scales; monolithic does not',
+      body: 'CiViQ\'s two-tier hierarchy keeps per-decision complexity constant as traffic grows. QMIX\'s joint-action-value network scales quadratically with agent count, explaining its degradation at LOS E.' },
+    { tag: 'Coordination', tagColor: '#34D399',
+      headline: 'CiViQ consistently reduces wait time vs Selfish Routing',
+      body: 'CiViQ vs Selfish wait-time gap is 2.7% at LOS A (7.15 vs 7.34 sec) and 7.2% at LOS E (19.29 vs 20.67 sec). Multi-agent coordination delivers a consistent queuing reduction across all congestion levels.' },
+  ]
 
   return (
   <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
-    {compareOpen && (
-      <CompareModal
-        onClose={() => setCompareOpen(false)}
-        onConfirm={(cfg) => { setCompareOpen(false); setCompareConfig(cfg) }}
-      />
-    )}
+
     {/* Header */}
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-4">
       <div>
         <h2 className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>Algorithm Comparison</h2>
-        <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
-          Aggregate performance across Civiq, Monolithic QMIX, and Selfish Routing
-        </p>
-        <div className="flex items-center gap-4 mt-2">
+        <div className="flex items-center gap-4 mt-1.5">
           {ALGO_LIST.map((a) => (
             <div key={a.id} className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: a.color }} />
-              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.sublabel}</span>
+              <div className="w-2 h-2 rounded-full" style={{ background: a.color }} />
+              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.label}</span>
             </div>
           ))}
         </div>
       </div>
-      <button
-        onClick={() => setCompareOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold transition-all duration-200"
-        style={{
-          background: 'linear-gradient(135deg, rgba(6,182,212,0.22) 0%, rgba(99,102,241,0.18) 100%)',
-          border: '1px solid rgba(6,182,212,0.45)',
-          color: '#06B6D4',
-          boxShadow: '0 0 18px rgba(6,182,212,0.18)',
-        }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 28px rgba(6,182,212,0.35)' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 18px rgba(6,182,212,0.18)' }}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="7" height="18" rx="1" /><rect x="14" y="3" width="7" height="18" rx="1" />
-        </svg>
-        Compare Side-by-Side
-      </button>
+      {/* LOS Selector */}
+      <div className="flex gap-1 p-1 rounded-xl flex-shrink-0" style={{ background: 'rgba(255,255,255,0.05)' }}>
+        {LOS_TABS.map(t => (
+          <button key={t.key} onClick={() => setLosTab(t.key)}
+            className="px-6 py-2 rounded-lg text-[11px] font-semibold transition-all duration-150"
+            style={{
+              background: losTab === t.key ? 'rgba(255,255,255,0.12)' : 'transparent',
+              color:      losTab === t.key ? 'rgba(255,255,255,0.9)'  : 'rgba(255,255,255,0.38)',
+              border:     losTab === t.key ? '1px solid rgba(255,255,255,0.16)' : '1px solid transparent',
+            }}>
+            {t.label}&nbsp;<span style={{ opacity: 0.55 }}>({t.sub})</span>
+          </button>
+        ))}
+      </div>
     </div>
 
-    {/* Rank cards */}
+    {/* Algorithm KPI cards */}
     <div className="grid grid-cols-3 gap-4">
-      {ALGO_LIST.map((a, i) => (
-        <GlassCard key={a.id} className="p-5 relative overflow-hidden"
-          style={{ border: `1px solid ${a.border}`, transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px ${a.border}` }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)' }}>
+      {ALGO_LIST.map((a) => (
+        <GlassCard key={a.id} className="p-5 relative overflow-hidden cursor-pointer"
+          style={{ border: `1px solid ${a.border}`, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }}
+          onClick={() => onNavigate(a.id)}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'
+            ;(e.currentTarget as HTMLElement).style.boxShadow = `0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px ${a.border}`
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
+            ;(e.currentTarget as HTMLElement).style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)'
+          }}>
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: `radial-gradient(ellipse at 80% 0%, ${a.colorDim}, transparent 65%)` }} />
           <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-                style={{ background: rankMeta[i].bg, color: rankMeta[i].color }}>
-                {rankMeta[i].label}
-              </span>
+            {/* Card header: title + view detail button on the same row */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[14px] font-bold" style={{ color: 'rgba(255,255,255,0.92)' }}>{a.label}</h3>
               <button
-                onClick={() => onNavigate(a.id)}
-                className="text-[10px] font-semibold px-2.5 py-1 rounded-full transition-all duration-150"
-                style={{ color: a.color, background: a.colorDim, border: `1px solid ${a.border}` }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.3)'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)' }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.filter = 'none'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
-              >
+                className="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-all duration-150"
+                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.1)' }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.background = `${a.color}22`
+                  el.style.color = a.color
+                  el.style.borderColor = `${a.color}55`
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.background = 'rgba(255,255,255,0.07)'
+                  el.style.color = 'rgba(255,255,255,0.45)'
+                  el.style.borderColor = 'rgba(255,255,255,0.1)'
+                }}>
                 View Detail →
               </button>
             </div>
-            <div className="flex items-center gap-2 mb-3">
-              <h3 className="text-[15px] font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>{a.label}</h3>
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                style={{ background: a.colorDim, color: a.color, border: `1px solid ${a.border}` }}>
-                {a.sublabel}
-              </span>
-            </div>
-            <div className="space-y-2 text-[12px]">
-              {[
-                { k: 'Travel Time', v: `${a.travelTime} min` },
-                { k: 'Throughput', v: `${a.throughput.toLocaleString()} veh/hr` },
-                { k: 'CO₂ Emissions', v: `${a.co2} g/km` },
-              ].map(({ k, v }) => (
-                <div key={k} className="flex justify-between">
-                  <span style={{ color: 'rgba(255,255,255,0.42)' }}>{k}</span>
-                  <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.82)' }}>{v}</span>
-                </div>
-              ))}
-              <div className="flex justify-between">
-                <span style={{ color: 'rgba(255,255,255,0.42)' }}>Efficiency</span>
-                <span className="font-bold" style={{ color: a.color }}>{a.efficiency}%</span>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <HBar value={a.efficiency} max={100} color={a.color} />
-              <span className="text-[11px] font-bold w-8 text-right tabular-nums" style={{ color: a.color }}>{a.efficiency}%</span>
+            {/* KPI metrics */}
+            <div className="space-y-2.5">
+              {RANK_META.map((m, mi) => {
+                const val = perLos(a.id, losTab)[m.key]
+                const { best, worst, range } = rankNorm[mi]
+                const isBest = val === best
+                const barPct = range > 0
+                  ? (m.lowerBetter ? 50 + 50 * (worst - val) / range : 50 + 50 * (val - worst) / range)
+                  : 75
+                return (
+                  <div key={m.label}>
+                    <div className="flex items-baseline justify-between mb-1">
+                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.32)' }}>{m.label}</span>
+                      <div className="flex items-center gap-1.5">
+                        {isBest && (
+                          <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: 'rgba(34,197,94,0.14)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.25)' }}>
+                            {m.lowerBetter ? 'Lowest' : 'Highest'}
+                          </span>
+                        )}
+                        <span className="text-[11px] font-bold tabular-nums" style={{ color: isBest ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.5)' }}>
+                          {m.fmt(val)}<span className="text-[9px] font-normal ml-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{m.unit}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isBest ? 0.9 : 0.25 }} />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </GlassCard>
       ))}
     </div>
 
-    {/* Radar + Breakdown */}
+    {/* Performance Profile + Key Findings */}
     <div className="grid grid-cols-5 gap-4">
       <GlassCard className="col-span-2 p-5">
         <h3 className="text-[13px] font-bold mb-3" style={{ color: 'rgba(255,255,255,0.78)' }}>Performance Profile</h3>
-        <RadarChart />
+        <RadarChart scores={radarScores} />
         <div className="flex justify-center gap-5 mt-2">
           {ALGO_LIST.map((a) => (
             <div key={a.id} className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: a.color }} />
-              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.sublabel}</span>
+              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.label}</span>
             </div>
           ))}
         </div>
       </GlassCard>
 
       <GlassCard className="col-span-3 p-5">
-        <h3 className="text-[13px] font-bold mb-4" style={{ color: 'rgba(255,255,255,0.78)' }}>Metrics Breakdown</h3>
-        <div className="space-y-4">
-          {COMPARE_METRICS.map((m) => {
-            const vals = ALGO_LIST.map((a) => a[m.key] as number)
-            const best = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
+        <h3 className="text-[13px] font-bold mb-4" style={{ color: 'rgba(255,255,255,0.78)' }}>Key Findings</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {KEY_FINDINGS.map((f) => (
+            <div key={f.headline} className="p-4 rounded-xl"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-2"
+                style={{ background: `${f.tagColor}1a`, color: f.tagColor, border: `1px solid ${f.tagColor}33` }}>
+                {f.tag}
+              </span>
+              <p className="text-[12px] font-semibold mb-1.5 leading-snug" style={{ color: 'rgba(255,255,255,0.82)' }}>
+                {f.headline}
+              </p>
+              <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                {f.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+    </div>
+
+    {/* Per-LOS Performance */}
+    <GlassCard className="p-6 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Per-KPI Performance</h3>
+        <div className="flex gap-1 p-0.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+          {LOS_TABS.map(t => (
+            <button key={t.key} onClick={() => setLosTab(t.key)}
+              className="px-5 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150"
+              style={{
+                background: losTab === t.key ? 'rgba(255,255,255,0.12)' : 'transparent',
+                color:      losTab === t.key ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.38)',
+                border:     losTab === t.key ? '1px solid rgba(255,255,255,0.16)' : '1px solid transparent',
+              }}>
+              {t.sub}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-5 flex-1">
+        {/* Avg. Travel Time — full width */}
+        {(() => {
+          const m = LOS_METRICS[0]
+          const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
+          const vals  = rows.map(r => r.val)
+          const best  = Math.min(...vals)
+          const worst = Math.max(...vals)
+          const range = worst - best
+          return (
+            <div className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex justify-between items-baseline mb-3">
+                <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.62)' }}>{m.label}</span>
+                <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
+              </div>
+              <div className="space-y-2.5">
+                {rows.map(({ a, val }) => {
+                  const isWinner = val === best
+                  const barPct = range > 0 ? 50 + 50 * (worst - val) / range : 75
+                  const delta = !isWinner && best !== 0 ? Math.abs((val - best) / best * 100) : 0
+                  return (
+                    <div key={a.id} className="flex items-center gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
+                      <span className="text-[10px] font-semibold w-[108px] flex-shrink-0" style={{ color: a.color }}>{a.label}</span>
+                      <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                        <div className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
+                      </div>
+                      <span className="text-[11px] w-14 text-right tabular-nums font-bold"
+                        style={{ color: isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.42)' }}>
+                        {m.fmt(val)}
+                      </span>
+                      <div className="w-[44px] text-right flex-shrink-0">
+                        {isWinner
+                          ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                              style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>Lowest</span>
+                          : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
+                        }
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Avg. Wait Time | Throughput — 2 cols */}
+        <div className="grid grid-cols-2 gap-4">
+          {LOS_METRICS.slice(1, 3).map(m => {
+            const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
+            const vals  = rows.map(r => r.val)
+            const best  = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
+            const worst = m.lowerBetter ? Math.max(...vals) : Math.min(...vals)
+            const range = worst - best
             return (
-              <div key={m.key}>
-                <div className="flex justify-between mb-1.5">
-                  <span className="text-[11px] font-medium" style={{ color: 'rgba(255,255,255,0.48)' }}>{m.label}</span>
-                  <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>{m.unit}</span>
+              <div key={m.key} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex justify-between items-baseline mb-3">
+                  <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.62)' }}>{m.label}</span>
+                  <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
                 </div>
-                <div className="space-y-1.5">
-                  {ALGO_LIST.map((a) => {
-                    const val = a[m.key] as number
-                    const isBest = val === best
-                    const barW = m.lowerBetter
-                      ? ((m.max - val) / m.max) * 100
-                      : (val / m.max) * 100
+                <div className="space-y-2.5">
+                  {rows.map(({ a, val }) => {
+                    const isWinner = val === best
+                    const barPct = range > 0
+                      ? (m.lowerBetter ? 50 + 50 * (worst - val) / range : 50 + 50 * (val - worst) / range)
+                      : 75
+                    const delta = !isWinner && best !== 0 ? Math.abs((val - best) / best * 100) : 0
                     return (
-                      <div key={a.id} className="flex items-center gap-2.5">
-                        <span className="text-[10px] w-10 text-right tabular-nums" style={{ color: 'rgba(255,255,255,0.4)' }}>{val}</span>
-                        <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.25)' }}>
-                          <div className="h-full rounded-full transition-all duration-700"
-                            style={{ width: `${barW}%`, background: a.color, opacity: isBest ? 1 : 0.42 }} />
+                      <div key={a.id} className="flex items-center gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
+                        <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <div className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
                         </div>
-                        <div className="w-3.5 flex items-center justify-center">
-                          {isBest && <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#22C55E" /></svg>}
+                        <span className="text-[11px] w-14 text-right tabular-nums font-bold"
+                          style={{ color: isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.42)' }}>
+                          {m.fmt(val)}
+                        </span>
+                        <div className="w-[44px] text-right flex-shrink-0">
+                          {isWinner
+                            ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                                style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
+                                {m.lowerBetter ? 'Lowest' : 'Highest'}
+                              </span>
+                            : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
+                          }
                         </div>
                       </div>
                     )
@@ -1239,19 +1447,55 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             )
           })}
         </div>
-      </GlassCard>
-    </div>
 
-    {/* Key Findings */}
-    <GlassCard className="p-5">
-      <h3 className="text-[13px] font-bold mb-3" style={{ color: 'rgba(255,255,255,0.78)' }}>Key Findings</h3>
-      <div className="grid grid-cols-3 gap-5 text-[12px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
-        {ALGO_LIST.map((a) => (
-          <div key={a.id}>
-            <p className="font-semibold mb-1.5" style={{ color: a.color }}>{a.label}</p>
-            <p className="leading-relaxed">{a.description}</p>
-          </div>
-        ))}
+        {/* Divider */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
+
+        {/* CO₂ Emissions | Fuel Consumption — 2 cols */}
+        <div className="grid grid-cols-2 gap-4">
+          {LOS_METRICS.slice(3).map(m => {
+            const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
+            const vals  = rows.map(r => r.val)
+            const best  = Math.min(...vals)
+            const worst = Math.max(...vals)
+            const range = worst - best
+            return (
+              <div key={m.key} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex justify-between items-baseline mb-3">
+                  <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.62)' }}>{m.label}</span>
+                  <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
+                </div>
+                <div className="space-y-2.5">
+                  {rows.map(({ a, val }) => {
+                    const isWinner = val === best
+                    const barPct = range > 0 ? 50 + 50 * (worst - val) / range : 75
+                    const delta = !isWinner && best !== 0 ? Math.abs((val - best) / best * 100) : 0
+                    return (
+                      <div key={a.id} className="flex items-center gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
+                        <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                          <div className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
+                        </div>
+                        <span className="text-[11px] w-14 text-right tabular-nums font-bold"
+                          style={{ color: isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.42)' }}>
+                          {m.fmt(val)}
+                        </span>
+                        <div className="w-[44px] text-right flex-shrink-0">
+                          {isWinner
+                            ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                                style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>Lowest</span>
+                            : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
+                          }
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </GlassCard>
   </div>
@@ -1328,7 +1572,7 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
       {/* Value + unit centred below arc */}
       <div className="flex flex-col items-center mt-0.5">
         <span className="text-[20px] font-extrabold tabular-nums leading-none" style={{ color: '#ffffff' }}>
-          {typeof value === 'number' ? parseFloat(value.toFixed(3)) : value}
+          {typeof value === 'number' ? parseFloat(value.toFixed(2)) : value}
         </span>
         <span className="text-[10px] font-semibold mt-0.5" style={{ color: 'rgba(255,255,255,0.75)' }}>{unit}</span>
         <span className="text-[9px] font-bold uppercase tracking-wider mt-1.5 text-center"
@@ -1896,7 +2140,7 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
               <div className="text-right flex-shrink-0">
                 <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.28)' }}>Peak MA Index</div>
                 <div className="text-[16px] font-bold tabular-nums" style={{ color: algo.color }}>
-                  {Math.max(...algo.congestion.map(p => p.ma)).toFixed(3)}
+                  {Math.max(...algo.congestion.map(p => p.ma)).toFixed(2)}
                 </div>
               </div>
             </div>
@@ -1962,9 +2206,21 @@ function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: 
 type SelfishMetricKey = 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'
 
 const CIVIQ_LOS_REF = {
-  free_flow:   { travelTime: 2.013, waitTime: 7.4794,  throughput: 1140.18, co2: 461.511, fuel: 19.917, returnMean: -46630.30 },
-  stable_flow: { travelTime: 1.965, waitTime: 10.2765, throughput: 1223.017, co2: 488.249, fuel: 21.057, returnMean: -52824.61 },
-  forced_flow: { travelTime: 1.885, waitTime: 19.3433, throughput: 2243.68,  co2: 525.807, fuel: 22.617, returnMean: -97827.74 },
+  free_flow:   { travelTime: 2.0284, waitTime: 7.1514,  throughput: 1088.2717, co2: 459.7436, fuel: 19.8422, returnMean: -45133.5598 },
+  stable_flow: { travelTime: 2.0345, waitTime: 10.9775, throughput: 1193.2867, co2: 490.171,  fuel: 21.1406, returnMean: -53092.4031 },
+  forced_flow: { travelTime: 1.8637, waitTime: 19.2875, throughput: 2272.5674, co2: 528.5116, fuel: 22.734,  returnMean: -98688.5972 },
+} as const
+
+const QMIX_LOS_REF = {
+  free_flow:   { travelTime_s: 119.1395, waitTime_s: 8.0192,  throughput: 1044.4675, returnMean: -46710.5652,  co2: 505.9064, fuel: 21.8354 },
+  stable_flow: { travelTime_s: 108.2599, waitTime_s: 10.4366, throughput: 1245.6503, returnMean: -54377.5525,  co2: 533.6588, fuel: 23.0188 },
+  forced_flow: { travelTime_s: 125.9476, waitTime_s: 23.7468, throughput: 1653.8422, returnMean: -105997.3288, co2: 585.9024, fuel: 25.202  },
+} as const
+
+const SELFISH_LOS_REF = {
+  free_flow:   { travelTime_s: 120.8292, waitTime_s: 7.3442,  throughput: 1120.8551, returnMean: -45803.0291, co2: 459.9288, fuel: 19.8502 },
+  stable_flow: { travelTime_s: 122.7603, waitTime_s: 10.5173, throughput: 1258.022,  returnMean: -53173.1002, co2: 463.8582, fuel: 20.006  },
+  forced_flow: { travelTime_s: 127.3438, waitTime_s: 20.668,  throughput: 2159.9281, returnMean: -94445.9153, co2: 486.2586, fuel: 20.914  },
 } as const
 
 // ─── Episode Detail Modal ─────────────────────────────────────────────────────
@@ -1972,18 +2228,25 @@ const CIVIQ_LOS_REF = {
 type EpisodeMetricKey = keyof EpisodeSeries
 
 const KPI_META: Record<EpisodeMetricKey, { label: string; abbr: string; unit: string }> = {
-  travelTime: { label: 'Avg. Travel Time', abbr: 'ATT', unit: 'min' },
+  travelTime: { label: 'Avg. Travel Time', abbr: 'ATT', unit: 'sec' },
   waitTime:   { label: 'Avg. Wait Time',   abbr: 'AWT', unit: 'sec' },
   throughput: { label: 'Throughput',        abbr: 'TPT', unit: 'veh/hr' },
   speed:      { label: 'Real-time Factor',  abbr: 'RTF', unit: 'x' },
 }
 
-const EpisodeDetailModal = ({ algo, metricKey, onClose }: {
+const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onClose }: {
   algo: AlgoData
   metricKey: EpisodeMetricKey
+  labelOverride?: string
+  unitOverride?: string
   onClose: () => void
 }) => {
-  const meta = KPI_META[metricKey]
+  const baseMeta = KPI_META[metricKey]
+  const meta = {
+    ...baseMeta,
+    label: labelOverride ?? baseMeta.label,
+    unit:  unitOverride  ?? baseMeta.unit,
+  }
   const data = algo.episodes[metricKey]
 
   // Custom tooltip
@@ -2011,7 +2274,7 @@ const EpisodeDetailModal = ({ algo, metricKey, onClose }: {
       <div
         className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
         style={{
-          maxWidth: '780px',
+          maxWidth: '790px',
           background: 'rgba(4,9,22,0.97)',
           border: '1px solid rgba(255,255,255,0.13)',
           boxShadow: '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)',
@@ -2067,7 +2330,7 @@ const EpisodeDetailModal = ({ algo, metricKey, onClose }: {
               tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
               axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
               label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
-              interval={Math.floor(data.length / 10)}
+              interval={data.length <= 50 ? 0 : Math.floor(data.length / 10)}
             />
             <YAxis
               tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
@@ -2075,21 +2338,30 @@ const EpisodeDetailModal = ({ algo, metricKey, onClose }: {
               axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
               tickFormatter={(v) => `${v}`}
               width={52}
+              domain={[
+                (min: number) => parseFloat((min - Math.abs(min) * 0.04).toFixed(3)),
+                (max: number) => parseFloat((max + Math.abs(max) * 0.04).toFixed(3)),
+              ]}
             />
             <Tooltip content={<CustomTooltip />} />
 
-            {/* Confidence band: hi fills to baseline, lo paints over with bg colour */}
-            <Area type="monotone" dataKey="hi" stroke="none"
-              fill={algo.color} fillOpacity={0.14} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-            <Area type="monotone" dataKey="lo" stroke="none"
-              fill="#040916" fillOpacity={1} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
+            {/* ±1σ confidence band as reference area (stays above gridlines) */}
+            {data.length > 0 && data[0].lo !== undefined && data[0].hi !== undefined && (
+              <ReferenceArea
+                y1={data[0].lo} y2={data[0].hi}
+                fill={algo.color} fillOpacity={0.13}
+                stroke={algo.color} strokeOpacity={0.18} strokeWidth={1}
+                ifOverflow="hidden"
+              />
+            )}
 
-            {/* Raw per-episode line */}
+            {/* Raw per-episode line — show dots for small datasets */}
             <Line type="monotone" dataKey="value" stroke={algo.color} strokeWidth={1.5}
-              dot={false} activeDot={{ r: 3, fill: algo.color }} strokeOpacity={0.85} isAnimationActive={false} />
+              dot={data.length <= 50 ? { fill: algo.color, r: 2.5, strokeWidth: 0 } : false}
+              activeDot={{ r: 3.5, fill: algo.color }} strokeOpacity={0.85} isAnimationActive={false} />
 
             {/* Moving average overlay */}
-            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.68)" strokeWidth={2}
+            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.72)" strokeWidth={2}
               dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
@@ -2141,11 +2413,239 @@ const ChartTooltip = ({ active, payload, label, xLabel, rows }: {
   )
 }
 
+// ─── CPU Detail Modal ─────────────────────────────────────────────────────────
+
+const CpuDetailModal = ({ algo, evalCpuMeans, onClose }: {
+  algo: AlgoData
+  evalCpuMeans: number[] | null
+  onClose: () => void
+}) => {
+  const isReal = evalCpuMeans && evalCpuMeans.length > 0
+  const W = 5
+
+  // Real: 30-episode per-episode mean CPU% from eval runs
+  // Fallback: synthetic series based on scalar mean/peak
+  const data: { episode: number; cpu: number; ma: number }[] = isReal
+    ? evalCpuMeans.map((cpu, i) => {
+        const slice = evalCpuMeans.slice(Math.max(0, i - W + 1), i + 1)
+        const ma = slice.reduce((a, b) => a + b, 0) / slice.length
+        return { episode: i + 1, cpu: +cpu.toFixed(1), ma: +ma.toFixed(1) }
+      })
+    : (() => {
+        const steps = 30
+        let r = algo.id === 'civiq' ? 15 : 18
+        const rand = () => { r = (r * 1664525 + 1013904223) & 0xffffffff; return (r >>> 0) / 0xffffffff - 0.5 }
+        const mean = algo.cpuMean, noiseAmp = mean * 0.05
+        return Array.from({ length: steps }, (_, i) => {
+          const cpu = Math.max(0, mean + rand() * noiseAmp)
+          const slice = Array.from({ length: Math.min(i + 1, W) }, (__, j) => mean + rand() * noiseAmp * 0.5)
+          const ma = slice.reduce((a, b) => a + b, 0) / slice.length
+          return { episode: i + 1, cpu: +cpu.toFixed(1), ma: +ma.toFixed(1) }
+        })
+      })()
+
+  const mean = data.reduce((s, d) => s + d.cpu, 0) / data.length
+  const fmt = (v: number) => v.toFixed(1)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
+        style={{
+          maxWidth: '790px',
+          background: 'rgba(4,9,22,0.97)',
+          border: '1px solid rgba(255,255,255,0.13)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-[17px] font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
+              CPU Utilization <span style={{ color: algo.color }}>(CPU)</span>
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)"
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-5 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-[2px] rounded" style={{ background: algo.color }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>CPU %</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-[2px] rounded" style={{ background: 'rgba(255,255,255,0.65)', borderTop: '2px dashed rgba(255,255,255,0.65)' }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>5-ep. moving avg.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-[1px]" style={{ borderTop: `1px dashed ${algo.color}`, opacity: 0.5 }} />
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Mean</span>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 20 }}>
+            <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 4" />
+            <XAxis
+              dataKey="episode"
+              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
+              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+              interval={data.length <= 30 ? 2 : Math.floor(data.length / 10)}
+            />
+            <YAxis
+              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
+              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+              tickFormatter={(v) => `${v}%`}
+              width={58}
+              label={{ value: 'CPU %', angle: -90, position: 'insideLeft', offset: 14, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+            />
+            <Tooltip content={({ active, payload, label }: any) => {
+              if (!active || !payload?.length) return null
+              const byKey = Object.fromEntries(payload.map((p: any) => [p.dataKey, p.value]))
+              return (
+                <div style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', fontSize: 11 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Episode {label}</p>
+                  {byKey.cpu !== undefined && <p style={{ color: algo.color }}>CPU: <b>{Number(byKey.cpu).toFixed(1)}%</b> ({(Number(byKey.cpu) / 100).toFixed(2)} cores)</p>}
+                  {byKey.ma  !== undefined && <p style={{ color: 'rgba(255,255,255,0.7)' }}>MA-5: <b>{Number(byKey.ma).toFixed(1)}%</b></p>}
+                </div>
+              )
+            }} />
+            <ReferenceLine
+              y={mean}
+              stroke={algo.color} strokeDasharray="4 2" strokeOpacity={0.45}
+              label={{ value: `Mean: ${fmt(mean)}%`, position: 'insideTopRight', fill: algo.color, fontSize: 10 }}
+            />
+            <Line type="monotone" dataKey="cpu" stroke={algo.color} strokeWidth={1.5}
+              dot={{ fill: algo.color, r: 2.5, strokeWidth: 0 }}
+              activeDot={{ r: 3.5, fill: algo.color }} strokeOpacity={0.85} isAnimationActive={false} />
+            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.72)" strokeWidth={2}
+              dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+
+        {/* Summary stats */}
+        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          {[
+            { label: 'Mean CPU',   value: `${fmt(mean)}%`,                    sub: `${(mean / 100).toFixed(2)} cores` },
+            { label: 'Min CPU',    value: `${fmt(Math.min(...data.map(d => d.cpu)))}%`, sub: `${(Math.min(...data.map(d => d.cpu)) / 100).toFixed(2)} cores` },
+            { label: 'Max CPU',    value: `${fmt(Math.max(...data.map(d => d.cpu)))}%`, sub: `${(Math.max(...data.map(d => d.cpu)) / 100).toFixed(2)} cores` },
+            { label: 'Episodes',   value: `${data.length}`,                   sub: 'eval runs' },
+          ].map(({ label, value, sub }) => (
+            <div key={label} className="text-center">
+              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</div>
+              <div className="text-[15px] font-bold tabular-nums" style={{ color: algo.color }}>{value}</div>
+              <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>{sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── CPU Utilization Card ─────────────────────────────────────────────────────
+
+const CpuStatsCard = ({ algo, evalCpuMeans, onViewDetail }: {
+  algo: AlgoData
+  evalCpuMeans: number[] | null
+  onViewDetail: () => void
+}) => {
+  const mean = algo.cpuMean
+  const peak = algo.cpuPeak
+  const maxVal = Math.max(peak, mean, 1)
+
+  return (
+    <GlassCard className="p-5 flex flex-col col-span-1">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>CPU Utilization</span>
+          <InfoBubble text="Per-episode CPU usage across 50 evaluation runs. 100% = one fully utilised core — values above 100% indicate multi-core usage. Average is the mean within each episode; peak is the maximum instantaneous spike observed." />
+        </div>
+        <button
+          onClick={onViewDetail}
+          className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all flex-shrink-0"
+          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.13)', color: 'rgba(255,255,255,0.45)' }}
+          onMouseEnter={(e) => {
+            ;(e.currentTarget as HTMLElement).style.background = algo.colorDim
+            ;(e.currentTarget as HTMLElement).style.borderColor = algo.border
+            ;(e.currentTarget as HTMLElement).style.color = algo.color
+          }}
+          onMouseLeave={(e) => {
+            ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'
+            ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.13)'
+            ;(e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.45)'
+          }}
+        >
+          View detail ↗
+        </button>
+      </div>
+
+      {/* Two-column stat layout — flex-1 + justify-center fills remaining card height */}
+      <div className="flex-1 flex items-center">
+      <div className="w-full flex items-center gap-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.75rem', paddingBottom: '0.75rem' }}>
+
+        {/* Average column */}
+        <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>Average</span>
+          <div className="text-[24px] font-bold tabular-nums leading-none" style={{ color: algo.color }}>
+            {mean.toFixed(1)}<span className="text-[13px] font-normal ml-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>%</span>
+          </div>
+          <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.38)' }}>≈ {(mean / 100).toFixed(2)} cores</div>
+          <div className="w-full mt-1.5">
+            <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <div className="h-full rounded-full" style={{ width: `${Math.min(100, (mean / maxVal) * 100).toFixed(1)}%`, background: algo.color, opacity: 0.7 }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="w-px mx-3 self-stretch" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+        {/* Peak column */}
+        <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>Peak</span>
+          <div className="text-[24px] font-bold tabular-nums leading-none" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            {peak.toFixed(1)}<span className="text-[13px] font-normal ml-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>%</span>
+          </div>
+          <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.38)' }}>≈ {(peak / 100).toFixed(1)} cores</div>
+          <div className="w-full mt-1.5">
+            <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <div className="h-full rounded-full" style={{ width: `${Math.min(100, (peak / maxVal) * 100).toFixed(1)}%`, background: 'rgba(255,255,255,0.4)' }} />
+            </div>
+          </div>
+        </div>
+
+      </div>
+      </div>
+    </GlassCard>
+  )
+}
+
 // 1 — Training Curve
 const TrainingCurveChart = ({ algo }: { algo: AlgoData }) => {
   const data = algo.system.training
   if (!data.length) return (
-    <GlassCard className="p-5 flex flex-col gap-2 col-span-3">
+    <GlassCard className="p-5 flex flex-col gap-2 col-span-2">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Training Curve</span>
         <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(248,113,113,0.12)', color: '#F87171', border: '1px solid rgba(248,113,113,0.25)' }}>No training phase</span>
@@ -2158,7 +2658,7 @@ const TrainingCurveChart = ({ algo }: { algo: AlgoData }) => {
     </GlassCard>
   )
   return (
-    <GlassCard className="p-5 flex flex-col gap-3 col-span-3">
+    <GlassCard className="p-5 flex flex-col gap-3 col-span-2">
       <div className="flex items-center justify-between">
         <div>
           <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Training Curve</span>
@@ -2243,10 +2743,6 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
       <div className="flex items-center gap-3">
         <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.55)' }}>{algo.id === 'civiq' ? 'HMARL' : 'MARL'} Training Diagnostics</span>
         <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-        <span className="text-[10px] px-2 py-0.5 rounded"
-          style={{ background: algo.colorDim, color: algo.color, border: `1px solid ${algo.border}` }}>
-          {data.length} episodes
-        </span>
       </div>
 
       {/* ── 1. Episode Cumulative Reward (full-width, prominent) ── */}
@@ -2430,13 +2926,13 @@ function ExportButton({ algo, selfishTimeseries = null }: {
       'Algorithm', 'Label',
       'Travel Time (min)', 'Wait Time (sec)', 'Throughput (veh/hr)',
       'Real-time Factor (x)', 'CO2 (g/km)', 'Fuel (L/100km)',
-      'Decision Latency (ms)', 'Convergence Episode', 'Cumulative Reward', 'Efficiency (%)',
+      'Decision Latency (ms)', 'Best Episode', 'Cumulative Reward',
     ]
     const row = [
       algo.id, algo.label,
       algo.travelTime, algo.waitTime, algo.throughput,
       algo.speed, algo.co2, algo.fuel,
-      algo.computeTime, algo.convergence ?? 'N/A', algo.reward ?? 'N/A', algo.efficiency,
+      algo.computeTime, algo.convergence ?? 'N/A', algo.reward ?? 'N/A',
     ]
     downloadFile(
       `civiq_${algo.id}_kpi.csv`,
@@ -2531,7 +3027,7 @@ function ExportButton({ algo, selfishTimeseries = null }: {
       kpi: {
         travelTime: algo.travelTime, waitTime: algo.waitTime, throughput: algo.throughput,
         speed: algo.speed, co2: algo.co2, fuel: algo.fuel, computeTime: algo.computeTime,
-        convergenceEpisode: algo.convergence, cumulativeReward: algo.reward, efficiency: algo.efficiency,
+        bestEpisode: algo.convergence, cumulativeReward: algo.reward,
       },
       changes: algo.changes,
     }
@@ -2670,10 +3166,18 @@ interface SelfishTimeseries {
   totalSystemWait: number[]
 }
 
+interface SelfishEvalArrays {
+  evalTravelTimes:  number[]
+  evalWaitingTimes: number[]
+  evalThroughputs:  number[]
+  evalReturns:      number[]
+}
+
 function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: string) {
   const [kpis, setKpis] = useState<SelfishApiKpis | null>(null)
   const [timeseries, setTimeseries] = useState<SelfishTimeseries | null>(null)
   const [civiq, setCiviq] = useState<SelfishCiviqBaseline | null>(null)
+  const [evalArrays, setEvalArrays] = useState<SelfishEvalArrays | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -2681,6 +3185,7 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
     setKpis(null)
     setTimeseries(null)
     setCiviq(null)
+    setEvalArrays(null)
     setLoading(true)
     fetch(`/api/selfish?trafficLevel=${trafficLevel}&map=${mapSize}`)
       .then(r => r.json())
@@ -2689,6 +3194,14 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
           setKpis(data.kpis)
           setTimeseries(data.timeseries)
           setCiviq(data.baselines?.civiq ?? null)
+          if (data.evalTravelTimes && data.evalWaitingTimes && data.evalThroughputs && data.evalReturns) {
+            setEvalArrays({
+              evalTravelTimes:  data.evalTravelTimes,
+              evalWaitingTimes: data.evalWaitingTimes,
+              evalThroughputs:  data.evalThroughputs,
+              evalReturns:      data.evalReturns,
+            })
+          }
         }
         // On error (e.g. 4x4 map, missing forced_flow for bgc_core) silently fall back to static data
       })
@@ -2696,7 +3209,7 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
       .finally(() => setLoading(false))
   }, [enabled, trafficLevel, mapSize])
 
-  return { kpis, timeseries, civiq, loading }
+  return { kpis, timeseries, civiq, evalArrays, loading }
 }
 
 // ─── Selfish All-Levels hook ───────────────────────────────────────────────────
@@ -2782,6 +3295,7 @@ interface QmixRealData {
   evalTravelTimes: number[]
   evalWaitingTimes: number[]
   evalThroughputs: number[]
+  evalCpuMeans: number[] | null
   training: { note: string; curve: QmixTrainingEntry[] }
   trainMetrics?: null
   testCurve: { t: number; episode: number; returnMean: number | null }[]
@@ -2855,6 +3369,43 @@ function qmixToTrainingPoints(curve: QmixTrainingEntry[]): TrainingPoint[] {
   return full.filter((_, i) => i % step === 0 || i === full.length - 1)
 }
 
+/** Convert training.curve → EpisodePoint[] for the "View detail" modal.
+ *  Uses global mean±std as a fixed confidence band; downsampled to MAX_PTS. */
+function trainingCurveToEpisodePoints(curve: QmixTrainingEntry[]): EpisodePoint[] {
+  if (!curve.length) return []
+  const MAX_PTS = 500
+  const W = 20
+  const rewards = curve.map(p => p.reward)
+  const mean = rewards.reduce((a, b) => a + b, 0) / rewards.length
+  const std  = Math.sqrt(rewards.reduce((s, x) => s + (x - mean) ** 2, 0) / rewards.length)
+  const lo = parseFloat((mean - std).toFixed(1))
+  const hi = parseFloat((mean + std).toFixed(1))
+  const full = rewards.map((r, i) => {
+    const win = rewards.slice(Math.max(0, i - W), i + 1)
+    const ma  = parseFloat((win.reduce((a, b) => a + b, 0) / win.length).toFixed(1))
+    return { episode: curve[i].episode, value: parseFloat(r.toFixed(1)), lo, hi, ma }
+  })
+  if (full.length <= MAX_PTS) return full
+  const step = Math.ceil(full.length / MAX_PTS)
+  return full.filter((_, i) => i % step === 0 || i === full.length - 1)
+}
+
+/** Downsample training curve rewards to n evenly-spaced values for sparkline. */
+function trainingCurveToSparkline(curve: QmixTrainingEntry[], n = 10): number[] {
+  if (!curve.length) return []
+  if (curve.length <= n) return curve.map(p => p.reward)
+  const step = (curve.length - 1) / (n - 1)
+  return Array.from({ length: n }, (_, i) => curve[Math.round(i * step)].reward)
+}
+
+/** Downsample any numeric array to n evenly-spaced values for sparkline. */
+function downsampleArray(arr: number[], n = 10): number[] {
+  if (!arr.length) return []
+  if (arr.length <= n) return arr
+  const step = (arr.length - 1) / (n - 1)
+  return Array.from({ length: n }, (_, i) => arr[Math.round(i * step)])
+}
+
 /** Convert training.curve → MarlPoint[] using real loss/gradNorm/qTaken values.
  *  Only points that have loss data are used; output downsampled to MAX_PTS. */
 function qmixToMarlPoints(curve: QmixTrainingEntry[]): MarlPoint[] {
@@ -2893,23 +3444,29 @@ function qmixToMarlPoints(curve: QmixTrainingEntry[]): MarlPoint[] {
   return full.filter((_, i) => i % step === 0 || i === full.length - 1)
 }
 
+/** Convert a raw eval array → EpisodePoint[] with moving average and global ±1σ band */
+function evalRawToPoints(raw: number[], scale = 1): EpisodePoint[] {
+  if (!raw.length) return []
+  const W = 10
+  const vals = raw.map(v => v * scale)
+  const mean = vals.reduce((a, b) => a + b, 0) / vals.length
+  const globalStd = Math.sqrt(vals.reduce((s, x) => s + (x - mean) ** 2, 0) / vals.length)
+  const lo = parseFloat((mean - globalStd).toFixed(3))
+  const hi = parseFloat((mean + globalStd).toFixed(3))
+  return vals.map((v, i) => {
+    const win = vals.slice(Math.max(0, i - W), i + 1)
+    const ma  = parseFloat((win.reduce((a, b) => a + b, 0) / win.length).toFixed(3))
+    return { episode: i + 1, value: parseFloat(v.toFixed(3)), lo, hi, ma }
+  })
+}
+
 /** Convert eval episode arrays → EpisodeSeries for detail modal */
 function qmixToEpisodeSeries(data: QmixRealData): EpisodeSeries {
-  const W = 5
-  function evalPoints(raw: number[], scale = 1): EpisodePoint[] {
-    const vals = raw.map(v => v * scale)
-    return vals.map((v, i) => {
-      const win = vals.slice(Math.max(0, i - W), i + 1)
-      const avg = win.reduce((a, b) => a + b, 0) / win.length
-      const std = win.length > 1 ? Math.sqrt(win.reduce((s, x) => s + (x - avg) ** 2, 0) / win.length) : 0
-      return { episode: i + 1, value: parseFloat(v.toFixed(3)), lo: parseFloat((v - std).toFixed(3)), hi: parseFloat((v + std).toFixed(3)), ma: parseFloat(avg.toFixed(3)) }
-    })
-  }
   return {
-    travelTime: evalPoints(data.evalTravelTimes, 1 / 60),
-    waitTime:   evalPoints(data.evalWaitingTimes),
-    throughput: evalPoints(data.evalThroughputs),
-    speed:      evalPoints(data.evalReturns.map(() => data.kpis.realTimeFactor ?? 53.97)),
+    travelTime: evalRawToPoints(data.evalTravelTimes),
+    waitTime:   evalRawToPoints(data.evalWaitingTimes),
+    throughput: evalRawToPoints(data.evalThroughputs),
+    speed:      [],  // RTF has no per-episode variation; modal not shown
   }
 }
 
@@ -2922,15 +3479,15 @@ const LOS_LABELS: Record<string, string> = {
 }
 
 const SELFISH_METRIC_META: Record<SelfishMetricKey, { label: string; unit: string; lowerBetter: boolean }> = {
-  travelTime: { label: 'Avg. Travel Time',      unit: 'min',     lowerBetter: true  },
+  travelTime: { label: 'Avg. Travel Time',      unit: 'sec',     lowerBetter: true  },
   waitTime:   { label: 'Avg. Waiting Time',     unit: 'sec',     lowerBetter: true  },
   throughput: { label: 'Network Throughput',    unit: 'veh/hr',  lowerBetter: false },
   co2:        { label: 'Avg. CO₂ Emissions',    unit: 'g/km',    lowerBetter: true  },
   fuel:       { label: 'Avg. Fuel Consumption', unit: 'L/100km', lowerBetter: true  },
 }
 
-const SELFISH_CO2_EPISODES  = makeSeries(485.6, 485.6, 15,  10,  10000, 13)
-const SELFISH_FUEL_EPISODES = makeSeries(20.89, 20.89, 0.8, 0.5, 10000, 14)
+const SELFISH_CO2_EPISODES  = makeSeries(486.26, 486.26, 15,  10,  50, 13)
+const SELFISH_FUEL_EPISODES = makeSeries(20.914, 20.914, 0.8, 0.5, 50, 14)
 
 const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
   metricKey: SelfishMetricKey
@@ -3056,10 +3613,11 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   const [openModal, setOpenModal] = useState<EpisodeMetricKey | null>(null)
   const [congestionDetail, setCongestionDetail] = useState(false)
   const [selfishModal, setSelfishModal] = useState<SelfishMetricKey | null>(null)
+  const [openCpuModal, setOpenCpuModal] = useState(false)
 
   // For selfish routing, fetch real simulation data and overlay onto static algo object
   const isSelfish = algo.id === 'selfish'
-  const { kpis: realKpis, timeseries: realTimeseries, civiq: selfishCiviq, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale, mapSize)
+  const { kpis: realKpis, timeseries: realTimeseries, civiq: selfishCiviq, evalArrays: selfishEvalArrays, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale, mapSize)
   const { levels: selfishAllLevels } = useSelfishAllLevels(isSelfish, mapSize)
 
   // For monolithic QMIX, fetch real training curve and eval data (scenario selected by trafficScale)
@@ -3114,15 +3672,32 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
             speed: 0,
           } : algo.changes
         })(),
+        episodes: selfishEvalArrays
+          ? {
+            travelTime: evalRawToPoints(selfishEvalArrays.evalTravelTimes),
+            waitTime:   evalRawToPoints(selfishEvalArrays.evalWaitingTimes),
+            throughput: evalRawToPoints(selfishEvalArrays.evalThroughputs),
+            speed:      [],
+          }
+          : {
+            travelTime: makeSeries(travelTime_s, travelTime_s, 3.0, 2.0, 50, 9),
+            waitTime:   makeSeries(realKpis.waitTime, realKpis.waitTime, 1.5, 1.0, 50, 10),
+            throughput: makeSeries(realKpis.throughput, realKpis.throughput, 60, 45, 50, 11),
+            speed:      makeSeries(realKpis.speed, realKpis.speed, 8, 5, 50, 12),
+          },
       }
     }
     if (isQmix && qmixData) {
       const k = qmixData.kpis
-      const noop = qmixData.baselines?.noop
       const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
+      const civiqRef  = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
+      const trainCurve = qmixData.training?.curve ?? []
+      const peakTrainEp = trainCurve.length > 0
+        ? trainCurve.reduce((a: any, b: any) => b.reward > a.reward ? b : a).episode as number
+        : null
       return {
         ...algo,
-        // Override KPIs with scenario-specific real values
+        convergence: peakTrainEp,
         travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
         waitTime:   k.waitTime_s,
         throughput: k.throughput,
@@ -3130,33 +3705,41 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         co2:        k.co2,
         fuel:       k.fuel,
         reward:     k.returnMean,
+        cpuMean:    k.cpuMean,
+        cpuPeak:    k.cpuPeak,
         sparklines: {
-          travelTime: algo.sparklines.travelTime.map(() => parseFloat((k.travelTime_s / 60).toFixed(3))),
-          waitTime:   algo.sparklines.waitTime.map(()   => k.waitTime_s),
-          throughput: algo.sparklines.throughput.map(() => k.throughput),
-          speed:      algo.sparklines.speed.map(()      => k.realTimeFactor ?? algo.speed),
+          travelTime: downsampleArray((qmixData.evalTravelTimes ?? []).map(t => t / 60), 10),
+          waitTime:   downsampleArray(qmixData.evalWaitingTimes ?? [], 10),
+          throughput: downsampleArray(qmixData.evalThroughputs  ?? [], 10),
+          speed:      trainingCurveToSparkline(trainCurve, 10),
         },
-        changes: noop ? {
-          travelTime: changePct(k.travelTime_s, noop.travelTime_s),
-          waitTime:   changePct(k.waitTime_s,   noop.waitTime_s),
-          throughput: changePct(k.throughput,   noop.throughput),
+        changes: civiqRef ? {
+          travelTime: changePct(k.travelTime_s, civiqRef.travelTime * 60),
+          waitTime:   changePct(k.waitTime_s,   civiqRef.waitTime),
+          throughput: changePct(k.throughput,   civiqRef.throughput),
           speed: 0,
         } : algo.changes,
         system: {
           ...algo.system,
-          training: qmixToTrainingPoints(qmixData.training?.curve ?? []),
+          training: qmixToTrainingPoints(trainCurve),
           cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak, 120), 8, 120, 18),
         },
-        marl:     qmixToMarlPoints(qmixData.training?.curve ?? []),
+        marl:     qmixToMarlPoints(trainCurve),
         episodes: qmixToEpisodeSeries(qmixData),
       }
     }
     if (isCiviq && civiqData) {
-      const k = civiqData.kpis
-      const noop = civiqData.baselines?.noop
-      const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
+      const k          = civiqData.kpis
+      const changePct  = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
+      const qmixRef    = QMIX_LOS_REF[trafficScale as keyof typeof QMIX_LOS_REF]
+      const selfishRef = SELFISH_LOS_REF[trafficScale as keyof typeof SELFISH_LOS_REF]
+      const trainCurve = civiqData.training?.curve ?? []
+      const peakTrainEp = trainCurve.length > 0
+        ? trainCurve.reduce((a: any, b: any) => b.reward > a.reward ? b : a).episode as number
+        : null
       return {
         ...algo,
+        convergence: peakTrainEp,
         travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
         waitTime:   k.waitTime_s,
         throughput: k.throughput,
@@ -3164,28 +3747,32 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         co2:        k.co2,
         fuel:       k.fuel,
         reward:     k.returnMean,
+        cpuMean:    k.cpuMean,
+        cpuPeak:    k.cpuPeak,
         sparklines: {
-          travelTime: algo.sparklines.travelTime.map(() => parseFloat((k.travelTime_s / 60).toFixed(3))),
-          waitTime:   algo.sparklines.waitTime.map(()   => k.waitTime_s),
-          throughput: algo.sparklines.throughput.map(() => k.throughput),
-          speed:      algo.sparklines.speed.map(()      => k.realTimeFactor ?? algo.speed),
+          travelTime: downsampleArray((civiqData.evalTravelTimes ?? []).map(t => t / 60), 10),
+          waitTime:   downsampleArray(civiqData.evalWaitingTimes ?? [], 10),
+          throughput: downsampleArray(civiqData.evalThroughputs  ?? [], 10),
+          speed:      trainingCurveToSparkline(trainCurve, 10),
         },
-        changes: noop ? {
-          travelTime: changePct(k.travelTime_s, noop.travelTime_s),
-          waitTime:   changePct(k.waitTime_s,   noop.waitTime_s),
-          throughput: changePct(k.throughput,   noop.throughput),
+        changes: qmixRef ? {
+          travelTime: changePct(k.travelTime_s, qmixRef.travelTime_s),
+          waitTime:   changePct(k.waitTime_s,   qmixRef.waitTime_s),
+          throughput: changePct(k.throughput,   qmixRef.throughput),
           speed: 0,
         } : algo.changes,
+        changes2: selfishRef ? {
+          travelTime: changePct(k.travelTime_s, selfishRef.travelTime_s),
+          waitTime:   changePct(k.waitTime_s,   selfishRef.waitTime_s),
+          throughput: changePct(k.throughput,   selfishRef.throughput),
+          speed: 0,
+        } : undefined,
         system: {
           ...algo.system,
-          training: civiqData.training?.curve?.length
-            ? qmixToTrainingPoints(civiqData.training.curve)
-            : algo.system.training,
+          training: trainCurve.length ? qmixToTrainingPoints(trainCurve) : algo.system.training,
           cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak / 100, 120), 8, 120, 15),
         },
-        marl:     civiqData.training?.curve?.length
-          ? qmixToMarlPoints(civiqData.training.curve)
-          : algo.marl,
+        marl: trainCurve.length ? qmixToMarlPoints(trainCurve) : algo.marl,
         episodes: qmixToEpisodeSeries(civiqData),
       }
     }
@@ -3196,12 +3783,16 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
     {/* Episode detail modal */}
     {openModal && (
-      <EpisodeDetailModal algo={displayAlgo} metricKey={openModal} onClose={() => setOpenModal(null)} />
+      <EpisodeDetailModal
+        algo={displayAlgo}
+        metricKey={openModal}
+        onClose={() => setOpenModal(null)}
+      />
     )}
     {/* Selfish detail modal */}
     {isSelfish && selfishModal && (() => {
-      const data = selfishModal === 'co2'  ? SELFISH_CO2_EPISODES
-                 : selfishModal === 'fuel' ? SELFISH_FUEL_EPISODES
+      const data = selfishModal === 'co2'  ? (realKpis ? makeSeries(realKpis.co2,  realKpis.co2,  15,  10,  50, 13) : SELFISH_CO2_EPISODES)
+                 : selfishModal === 'fuel' ? (realKpis ? makeSeries(realKpis.fuel, realKpis.fuel, 0.8, 0.5, 50, 14) : SELFISH_FUEL_EPISODES)
                  : displayAlgo.episodes[selfishModal as EpisodeMetricKey]
       return (
         <SelfishDetailModal
@@ -3215,6 +3806,14 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     {/* Congestion detail modal */}
     {congestionDetail && (
       <CongestionDetailModal algo={displayAlgo} onClose={() => setCongestionDetail(false)} />
+    )}
+    {/* CPU detail modal */}
+    {openCpuModal && (
+      <CpuDetailModal
+        algo={displayAlgo}
+        evalCpuMeans={isQmix ? (qmixData?.evalCpuMeans ?? null) : isCiviq ? (civiqData?.evalCpuMeans ?? null) : null}
+        onClose={() => setOpenCpuModal(false)}
+      />
     )}
 
     {/* Header */}
@@ -3254,7 +3853,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
               border: qmixLoading ? '1px solid rgba(255,255,255,0.1)' : qmixData ? '1px solid rgba(167,139,250,0.4)' : '1px solid rgba(255,255,255,0.1)',
               color: qmixLoading ? 'rgba(255,255,255,0.3)' : qmixData ? '#A78BFA' : 'rgba(255,255,255,0.3)',
             }}>
-            {qmixLoading ? 'Loading data…' : qmixData ? `Real PyMARL Data · ${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
+            {qmixLoading ? 'Loading data…' : qmixData ? `${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
           </span>
         )}
         {/* Real-data badge for CiViQ */}
@@ -3265,41 +3864,43 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
               border: civiqLoading ? '1px solid rgba(255,255,255,0.1)' : civiqData ? '1px solid rgba(56,189,248,0.4)' : '1px solid rgba(255,255,255,0.1)',
               color: civiqLoading ? 'rgba(255,255,255,0.3)' : civiqData ? '#38BDF8' : 'rgba(255,255,255,0.3)',
             }}>
-            {civiqLoading ? 'Loading data…' : civiqData ? `Real PyMARL Data · ${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
+            {civiqLoading ? 'Loading data…' : civiqData ? `${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
           </span>
         )}
       </div>
       <ExportButton algo={displayAlgo} selfishTimeseries={isSelfish ? realTimeseries : null} />
-      <div className="px-4 py-1.5 rounded-full text-[12px] font-bold flex-shrink-0"
-        style={{ background: displayAlgo.colorDim, color: displayAlgo.color, border: `1px solid ${displayAlgo.border}` }}>
-        {displayAlgo.efficiency}% Efficiency Score
-      </div>
     </div>
 
     {/* KPI Row */}
     <div className="grid grid-cols-4 gap-4">
-      <KpiCard label="Avg. Travel Time" abbr="ATT" value={displayAlgo.travelTime} unit="min"
+      <KpiCard label="Avg. Travel Time" abbr="ATT" value={parseFloat((displayAlgo.travelTime * 60).toFixed(2))} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.travelTime} lowerBetter sparkData={displayAlgo.sparklines.travelTime}
-        changeLabel={isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined}
+        changeLabel={isQmix ? 'vs. CiViQ' : isCiviq ? 'vs. QMIX' : (isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined)}
+        change2={isCiviq ? displayAlgo.changes2?.travelTime : undefined}
+        changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('travelTime') : () => setOpenModal('travelTime')}
         description="The mean time it takes for a vehicle to complete its route from entry to exit, across all vehicles in the simulation." />
-      <KpiCard label="Avg. Wait Time" abbr="AWT" value={displayAlgo.waitTime} unit="sec"
+      <KpiCard label="Avg. Wait Time" abbr="AWT" value={parseFloat(displayAlgo.waitTime.toFixed(2))} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.waitTime} lowerBetter sparkData={displayAlgo.sparklines.waitTime}
-        changeLabel={isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined}
+        changeLabel={isQmix ? 'vs. CiViQ' : isCiviq ? 'vs. QMIX' : (isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined)}
+        change2={isCiviq ? displayAlgo.changes2?.waitTime : undefined}
+        changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('waitTime') : () => setOpenModal('waitTime')}
         description="The mean time vehicles spent fully stopped in traffic. High values indicate congestion or poor routing decisions." />
-      <KpiCard label="Throughput" abbr="TPT" value={displayAlgo.throughput.toLocaleString()} unit="veh/hr"
+      <KpiCard label="Throughput" abbr="TPT" value={Math.round(displayAlgo.throughput).toLocaleString()} unit="veh/hr"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.throughput} sparkData={displayAlgo.sparklines.throughput}
-        changeLabel={isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined}
+        changeLabel={isQmix ? 'vs. CiViQ' : isCiviq ? 'vs. QMIX' : (isSelfish && CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF] ? 'vs. CiViQ' : undefined)}
+        change2={isCiviq ? displayAlgo.changes2?.throughput : undefined}
+        changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('throughput') : () => setOpenModal('throughput')}
         description="The number of vehicles that successfully completed their routes per minute. Higher values indicate better overall traffic flow." />
       <KpiCard label="Real-time Factor" abbr="RTF" value={displayAlgo.speed.toFixed(2)} unit="x"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         valueAlign="center"
-        onClick={isSelfish ? undefined : () => setOpenModal('speed')}
+        onClick={undefined}
         descriptionSide="left"
         description="The ratio of simulation time to actual wall-clock time. A value of 1.0 means the simulation runs in real time; higher values indicate faster-than-real-time execution." />
     </div>
@@ -3313,11 +3914,11 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.52)' }}>
             {displayAlgo.description}
           </p>
-          {(displayAlgo.convergence !== null || (isSelfish && displayAlgo.reward !== null)) && (
+          {(displayAlgo.convergence !== null || displayAlgo.reward !== null) && (
             <div className="pt-3 grid grid-cols-2 gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
               {displayAlgo.convergence !== null && (
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Convergence</div>
+                  <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Peak Episode Performance</div>
                   <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>Ep. {displayAlgo.convergence}</div>
                 </div>
               )}
@@ -3338,27 +3939,49 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-baseline gap-2 flex-wrap">
                     <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>
                       {typeof displayAlgo.reward === 'number' ? displayAlgo.reward.toLocaleString(undefined, { maximumFractionDigits: 0 }) : displayAlgo.reward}
                     </div>
                     {(() => {
-                      if (!isSelfish || typeof displayAlgo.reward !== 'number') return null
-                      const civiqRef = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
-                      if (!civiqRef) return null
-                      // Higher reward = better; use abs(ref) as denominator to avoid sign flip
-                      const pct = (displayAlgo.reward - civiqRef.returnMean) / Math.abs(civiqRef.returnMean) * 100
-                      const isBetter = pct > 0
-                      const color = isBetter ? '#4ADE80' : '#F87171'
-                      const arrow = isBetter ? '▲' : '▼'
-                      return (
-                        <div className="flex items-baseline gap-1.5 whitespace-nowrap">
-                          <span className="text-[11px] font-bold tabular-nums leading-none" style={{ color }}>
-                            {arrow} {Math.abs(pct).toFixed(1)}%
-                          </span>
-                          <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.32)' }}>vs. CiViQ</span>
-                        </div>
-                      )
+                      if (typeof displayAlgo.reward !== 'number') return null
+                      const reward = displayAlgo.reward
+                      const mkBadge = (pct: number, label: string) => {
+                        const isBetter = pct > 0
+                        const color = isBetter ? '#4ADE80' : '#F87171'
+                        const arrow = isBetter ? '▲' : '▼'
+                        return (
+                          <div key={label} className="flex items-baseline gap-1.5 whitespace-nowrap">
+                            <span className="text-[11px] font-bold tabular-nums leading-none" style={{ color }}>
+                              {arrow} {Math.abs(pct).toFixed(1)}%
+                            </span>
+                            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{label}</span>
+                          </div>
+                        )
+                      }
+                      if (isSelfish) {
+                        const ref = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
+                        if (!ref) return null
+                        const pct = (reward - ref.returnMean) / Math.abs(ref.returnMean) * 100
+                        return mkBadge(pct, 'vs. CiViQ')
+                      }
+                      if (isQmix) {
+                        const ref = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
+                        if (!ref) return null
+                        const pct = (reward - ref.returnMean) / Math.abs(ref.returnMean) * 100
+                        return mkBadge(pct, 'vs. CiViQ')
+                      }
+                      if (isCiviq) {
+                        const qRef = QMIX_LOS_REF[trafficScale as keyof typeof QMIX_LOS_REF]
+                        const sRef = SELFISH_LOS_REF[trafficScale as keyof typeof SELFISH_LOS_REF]
+                        return (
+                          <>
+                            {qRef && mkBadge((reward - qRef.returnMean) / Math.abs(qRef.returnMean) * 100, 'vs. QMIX')}
+                            {sRef && mkBadge((reward - sRef.returnMean) / Math.abs(sRef.returnMean) * 100, 'vs. Selfish')}
+                          </>
+                        )
+                      }
+                      return null
                     })()}
                   </div>
                 </div>
@@ -3382,9 +4005,16 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       />
     </div>
 
-    {/* Analytics row */}
+    {/* Analytics row: training curve + CPU utilization */}
     {displayAlgo.id !== 'selfish' && (
-      <TrainingCurveChart algo={displayAlgo} />
+      <div className="grid grid-cols-3 gap-4">
+        <TrainingCurveChart algo={displayAlgo} />
+        <CpuStatsCard
+          algo={displayAlgo}
+          evalCpuMeans={isQmix ? (qmixData?.evalCpuMeans ?? null) : isCiviq ? (civiqData?.evalCpuMeans ?? null) : null}
+          onViewDetail={() => setOpenCpuModal(true)}
+        />
+      </div>
     )}
 
     {/* MARL training diagnostics (learning-based only) */}

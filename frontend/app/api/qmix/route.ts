@@ -2,9 +2,9 @@
  * GET /api/qmix?scenario=los_a|los_c|los_e
  *
  * Returns real KPIs and training curve data for Monolithic QMIX.
- * LOS A: results/mono-qmix-los-a/ (seed 1801, 1M timesteps, 30 eval episodes)
- * LOS C: results/mono-qmix/mono-qmix-los-c/ (seed 1802, 1M timesteps, 30 eval episodes)
- * LOS E: results/mono-qmix-los-e/ (seed 1803, 1M timesteps, 30 eval episodes)
+ * LOS A: results/mono-qmix-los-a/ (seed 1801, 1M timesteps, 50 eval episodes)
+ * LOS C: results/mono-qmix/mono-qmix-los-c/ (seed 1802, 1M timesteps, 50 eval episodes)
+ * LOS E: results/mono-qmix-los-e/ (seed 1803, 1M timesteps, 50 eval episodes)
  */
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
       evalTravelTimes:  data.evalTravelTimes,
       evalWaitingTimes: data.evalWaitingTimes,
       evalThroughputs:  data.evalThroughputs,
+      evalCpuMeans:     data.evalCpuMeans ?? null,
 
       // Training curve (points depend on log coverage — see meta.training_note)
       training: data.training,

@@ -18,16 +18,17 @@ import os
 import sys
 import time
 import heapq
+from envs.road_blocks import RoadBlockageManager
 import threading
-import numpy as np
+import numpy as np # pyright: ignore[reportMissingImports]
 from typing import Dict, List, Tuple, Optional, Set
 import logging
-import psutil
+import psutil # pyright: ignore[reportMissingModuleSource]
 
 # SUMO imports
 from envs.sumo_backend import backend as traci
 from envs.sumo_backend import set_backend as _set_sumo_backend, is_libsumo as _is_libsumo
-import yaml
+import yaml # pyright: ignore[reportMissingModuleSource]
 import sumolib
 from components.rsu_zone_manager import RSUZoneManager
 
@@ -242,6 +243,14 @@ class SUMOGridRerouteEnv:
                 _rsu_cfg_dict = yaml.safe_load(_f)
             self.zone_manager = RSUZoneManager(_rsu_cfg_dict)
 
+        # Road blockage configuration (random incident injection)
+        self.blockage_enabled = env_args.get("blockage_enabled", False)
+        self.blockage_probability = env_args.get("blockage_probability", 0.003)
+        self.blockage_min_duration = env_args.get("blockage_min_duration", 120.0)
+        self.blockage_max_duration = env_args.get("blockage_max_duration", 600.0)
+        self.blockage_max_concurrent = env_args.get("blockage_max_concurrent", 3)
+        self.blockage_manager = None  # instantiated after network load in reset()
+
         if self.verbose:
             logger.info(f"SUMOGridRerouteEnv initialized:")
             logger.info(f"  los_level={self.los_level}, sumo_cfg={self.sumo_cfg}")
@@ -331,6 +340,21 @@ class SUMOGridRerouteEnv:
         if self.net is None:
             self._load_network()
 
+        # Initialize (or re-initialize) road blockage manager for this episode
+        if self.blockage_enabled:
+            edge_list = list(self.edge_id_to_idx.keys())
+            if self.blockage_manager is None:
+                self.blockage_manager = RoadBlockageManager(
+                    edge_list=edge_list,
+                    block_probability=self.blockage_probability,
+                    min_duration=self.blockage_min_duration,
+                    max_duration=self.blockage_max_duration,
+                    max_concurrent=self.blockage_max_concurrent,
+                    seed=self.sumo_seed,
+                )
+            else:
+                self.blockage_manager.reset(seed=self.sumo_seed)
+        
         # Spawn initial controlled vehicles
         self._spawn_initial_vehicles()
 
@@ -696,6 +720,10 @@ class SUMOGridRerouteEnv:
             traci.simulationStep()
             self.sim_time = traci.simulation.getTime()
 
+            # Inject random road blockages (if enabled)
+            if self.blockage_enabled and self.blockage_manager is not None:
+                self.blockage_manager.step(self.sim_time, self.sumo_step_length)
+            
             # Fetch vehicle list once per sub-step (shared by reward, arrivals, tracking)
             current_vehicles = set(traci.vehicle.getIDList())
 
