@@ -1136,11 +1136,11 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
   type LosMetricKey = 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'
   const LOS_METRICS: { key: LosMetricKey; label: string; unit: string; lowerBetter: boolean; fmt: (v: number) => string }[] = [
-    { key: 'travelTime', label: 'Travel Time',    unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2) },
-    { key: 'waitTime',   label: 'Wait Time',      unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2) },
-    { key: 'throughput', label: 'Throughput',      unit: 'veh/hr',  lowerBetter: false, fmt: v => Math.round(v).toLocaleString() },
-    { key: 'co2',        label: 'CO₂ Emissions',  unit: 'g/km',    lowerBetter: true,  fmt: v => v.toFixed(2) },
-    { key: 'fuel',       label: 'Fuel',            unit: 'L/100km', lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'travelTime', label: 'Avg. Travel Time',  unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'waitTime',   label: 'Avg. Wait Time',    unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'throughput', label: 'Throughput',         unit: 'veh/hr',  lowerBetter: false, fmt: v => Math.round(v).toLocaleString() },
+    { key: 'co2',        label: 'CO₂ Emissions',     unit: 'g/km',    lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'fuel',       label: 'Fuel Consumption',  unit: 'L/100km', lowerBetter: true,  fmt: v => v.toFixed(2) },
   ]
 
   const RANK_META: { label: string; unit: string; key: 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'; fmt: (v: number) => string; lowerBetter: boolean }[] = [
@@ -1332,9 +1332,10 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     </div>
 
     {/* Per-LOS Performance */}
-    <GlassCard className="p-5 flex flex-col">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Per-LOS Performance</h3>
+    <GlassCard className="p-6 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Per-KPI Performance</h3>
         <div className="flex gap-1 p-0.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
           {LOS_TABS.map(t => (
             <button key={t.key} onClick={() => setLosTab(t.key)}
@@ -1349,23 +1350,69 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           ))}
         </div>
       </div>
-      <div className="space-y-4 flex-1">
-        {/* Row 1: Travel Time · Wait Time · Throughput */}
-        <div className="grid grid-cols-3 gap-5">
-          {LOS_METRICS.slice(0, 3).map(m => {
+
+      <div className="space-y-5 flex-1">
+        {/* Avg. Travel Time — full width */}
+        {(() => {
+          const m = LOS_METRICS[0]
+          const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
+          const vals  = rows.map(r => r.val)
+          const best  = Math.min(...vals)
+          const worst = Math.max(...vals)
+          const range = worst - best
+          return (
+            <div className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex justify-between items-baseline mb-3">
+                <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.62)' }}>{m.label}</span>
+                <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
+              </div>
+              <div className="space-y-2.5">
+                {rows.map(({ a, val }) => {
+                  const isWinner = val === best
+                  const barPct = range > 0 ? 50 + 50 * (worst - val) / range : 75
+                  const delta = !isWinner && best !== 0 ? Math.abs((val - best) / best * 100) : 0
+                  return (
+                    <div key={a.id} className="flex items-center gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
+                      <span className="text-[10px] font-semibold w-[108px] flex-shrink-0" style={{ color: a.color }}>{a.label}</span>
+                      <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                        <div className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
+                      </div>
+                      <span className="text-[11px] w-14 text-right tabular-nums font-bold"
+                        style={{ color: isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.42)' }}>
+                        {m.fmt(val)}
+                      </span>
+                      <div className="w-[44px] text-right flex-shrink-0">
+                        {isWinner
+                          ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                              style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>Lowest</span>
+                          : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
+                        }
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Avg. Wait Time | Throughput — 2 cols */}
+        <div className="grid grid-cols-2 gap-4">
+          {LOS_METRICS.slice(1, 3).map(m => {
             const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
             const vals  = rows.map(r => r.val)
             const best  = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
             const worst = m.lowerBetter ? Math.max(...vals) : Math.min(...vals)
             const range = worst - best
-            const winLabel = m.lowerBetter ? 'Lowest' : 'Highest'
             return (
-              <div key={m.key}>
-                <div className="flex justify-between items-baseline mb-1.5">
-                  <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>{m.label}</span>
+              <div key={m.key} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex justify-between items-baseline mb-3">
+                  <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.62)' }}>{m.label}</span>
                   <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2.5">
                   {rows.map(({ a, val }) => {
                     const isWinner = val === best
                     const barPct = range > 0
@@ -1373,20 +1420,22 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                       : 75
                     const delta = !isWinner && best !== 0 ? Math.abs((val - best) / best * 100) : 0
                     return (
-                      <div key={a.id} className="flex items-center gap-2">
+                      <div key={a.id} className="flex items-center gap-3">
                         <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
                         <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
                           <div className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
                         </div>
-                        <span className="text-[10px] w-14 text-right tabular-nums font-semibold"
-                          style={{ color: isWinner ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.42)' }}>
+                        <span className="text-[11px] w-14 text-right tabular-nums font-bold"
+                          style={{ color: isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.42)' }}>
                           {m.fmt(val)}
                         </span>
-                        <div className="w-[42px] text-right flex-shrink-0">
+                        <div className="w-[44px] text-right flex-shrink-0">
                           {isWinner
                             ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
-                                style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>{winLabel}</span>
+                                style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
+                                {m.lowerBetter ? 'Lowest' : 'Highest'}
+                              </span>
                             : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
                           }
                         </div>
@@ -1402,43 +1451,40 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         {/* Divider */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
 
-        {/* Row 2: CO₂ Emissions · Fuel Consumption */}
-        <div className="grid grid-cols-2 gap-5">
+        {/* CO₂ Emissions | Fuel Consumption — 2 cols */}
+        <div className="grid grid-cols-2 gap-4">
           {LOS_METRICS.slice(3).map(m => {
             const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
             const vals  = rows.map(r => r.val)
-            const best  = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
-            const worst = m.lowerBetter ? Math.max(...vals) : Math.min(...vals)
+            const best  = Math.min(...vals)
+            const worst = Math.max(...vals)
             const range = worst - best
-            const winLabel = m.lowerBetter ? 'Lowest' : 'Highest'
             return (
-              <div key={m.key}>
-                <div className="flex justify-between items-baseline mb-1.5">
-                  <span className="text-[10px] font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>{m.label}</span>
+              <div key={m.key} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex justify-between items-baseline mb-3">
+                  <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.62)' }}>{m.label}</span>
                   <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2.5">
                   {rows.map(({ a, val }) => {
                     const isWinner = val === best
-                    const barPct = range > 0
-                      ? (m.lowerBetter ? 50 + 50 * (worst - val) / range : 50 + 50 * (val - worst) / range)
-                      : 75
+                    const barPct = range > 0 ? 50 + 50 * (worst - val) / range : 75
                     const delta = !isWinner && best !== 0 ? Math.abs((val - best) / best * 100) : 0
                     return (
-                      <div key={a.id} className="flex items-center gap-2">
+                      <div key={a.id} className="flex items-center gap-3">
                         <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
                         <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
                           <div className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
                         </div>
-                        <span className="text-[10px] w-14 text-right tabular-nums font-semibold"
-                          style={{ color: isWinner ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.42)' }}>
+                        <span className="text-[11px] w-14 text-right tabular-nums font-bold"
+                          style={{ color: isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.42)' }}>
                           {m.fmt(val)}
                         </span>
-                        <div className="w-[42px] text-right flex-shrink-0">
+                        <div className="w-[44px] text-right flex-shrink-0">
                           {isWinner
                             ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
-                                style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>{winLabel}</span>
+                                style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>Lowest</span>
                             : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
                           }
                         </div>
@@ -3615,8 +3661,12 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       const changePct = (val: number, ref: number) => parseFloat(((val - ref) / ref * 100).toFixed(1))
       const civiqRef  = CIVIQ_LOS_REF[trafficScale as keyof typeof CIVIQ_LOS_REF]
       const trainCurve = qmixData.training?.curve ?? []
+      const peakTrainEp = trainCurve.length > 0
+        ? trainCurve.reduce((a: any, b: any) => b.reward > a.reward ? b : a).episode as number
+        : null
       return {
         ...algo,
+        convergence: peakTrainEp,
         travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
         waitTime:   k.waitTime_s,
         throughput: k.throughput,
@@ -3653,8 +3703,12 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       const qmixRef    = QMIX_LOS_REF[trafficScale as keyof typeof QMIX_LOS_REF]
       const selfishRef = SELFISH_LOS_REF[trafficScale as keyof typeof SELFISH_LOS_REF]
       const trainCurve = civiqData.training?.curve ?? []
+      const peakTrainEp = trainCurve.length > 0
+        ? trainCurve.reduce((a: any, b: any) => b.reward > a.reward ? b : a).episode as number
+        : null
       return {
         ...algo,
+        convergence: peakTrainEp,
         travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
         waitTime:   k.waitTime_s,
         throughput: k.throughput,
@@ -3833,7 +3887,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
             <div className="pt-3 grid grid-cols-2 gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
               {displayAlgo.convergence !== null && (
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Best Episode</div>
+                  <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Peak Episode Performance</div>
                   <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>Ep. {displayAlgo.convergence}</div>
                 </div>
               )}
