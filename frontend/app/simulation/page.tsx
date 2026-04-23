@@ -629,9 +629,17 @@ const RingChart = ({ value, max = 100, color, size = 88 }: {
   )
 }
 
+// ─── Radar helpers ─────────────────────────────────────────────────────────────
+
+function normRadar(vals: number[], higherBetter: boolean): number[] {
+  const mn = Math.min(...vals), mx = Math.max(...vals), range = mx - mn
+  if (range === 0) return vals.map(() => 0.75)
+  return vals.map(v => higherBetter ? 0.5 + 0.5 * (v - mn) / range : 0.5 + 0.5 * (mx - v) / range)
+}
+
 // ─── Radar Chart ───────────────────────────────────────────────────────────────
 
-const RADAR_AXES = ['Throughput', 'Wait Time', 'Travel Time', 'Compute', 'CO₂', 'Fuel', 'RTF']
+const RADAR_AXES = ['Throughput', 'Low Wait', 'Low ATT', 'Compute', 'Low CO₂', 'Low Fuel', 'RTF']
 const RC = { x: 175, y: 175 }
 const RR = 125
 
@@ -645,10 +653,10 @@ function rLabel(i: number) {
   return { x: RC.x + (RR + 22) * Math.cos(a), y: RC.y + (RR + 22) * Math.sin(a) }
 }
 
-function RadarTooltip({ axisIdx }: { axisIdx: number }) {
+function RadarTooltip({ axisIdx, scores }: { axisIdx: number; scores: Record<AlgoKey, number[]> }) {
   const { x: lx, y: ly } = rLabel(axisIdx)
-  const tipW = 108
-  const tipH = 62
+  const tipW = 148
+  const tipH = 68
   const tx = lx > RC.x ? Math.min(lx - tipW - 4, 240) : Math.max(lx + 8, 2)
   const ty = Math.max(8, Math.min(ly - tipH / 2, 350 - tipH - 8))
   return (
@@ -661,7 +669,7 @@ function RadarTooltip({ axisIdx }: { axisIdx: number }) {
         <g key={a.id}>
           <circle cx={tx + 9} cy={ty + 26 + ai * 13} r="3.5" fill={a.color} />
           <text x={tx + 17} y={ty + 30 + ai * 13} fontSize="9" fill="rgba(255,255,255,0.78)" textAnchor="start">
-            {a.sublabel}: {Math.round(a.scores[axisIdx] * 100)}%
+            {a.label}: {Math.round(scores[a.id][axisIdx] * 100)}%
           </text>
         </g>
       ))}
@@ -669,7 +677,7 @@ function RadarTooltip({ axisIdx }: { axisIdx: number }) {
   )
 }
 
-const RadarChart = () => {
+const RadarChart = ({ scores }: { scores: Record<AlgoKey, number[]> }) => {
   const [hoveredAxis, setHoveredAxis] = useState<number | null>(null)
   return (
     <svg viewBox="0 0 350 350" className="w-full max-w-[320px] mx-auto" style={{ overflow: 'visible' }}>
@@ -682,9 +690,9 @@ const RadarChart = () => {
         return <line key={i} x1={RC.x} y1={RC.y} x2={pt.x} y2={pt.y}
           stroke={hoveredAxis === i ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.11)'} strokeWidth="1" />
       })}
-      <polygon points={rPts(ALGO.selfish.scores)} fill="rgba(248,113,113,0.12)" stroke="#F87171" strokeWidth="1.5" strokeLinejoin="round" />
-      <polygon points={rPts(ALGO.qmix.scores)} fill="rgba(167,139,250,0.12)" stroke="#A78BFA" strokeWidth="1.5" strokeLinejoin="round" />
-      <polygon points={rPts(ALGO.civiq.scores)} fill="rgba(56,189,248,0.18)" stroke="#38BDF8" strokeWidth="2" strokeLinejoin="round" />
+      <polygon points={rPts(scores.selfish)} fill="rgba(248,113,113,0.12)" stroke="#F87171" strokeWidth="1.5" strokeLinejoin="round" />
+      <polygon points={rPts(scores.qmix)}    fill="rgba(167,139,250,0.12)" stroke="#A78BFA" strokeWidth="1.5" strokeLinejoin="round" />
+      <polygon points={rPts(scores.civiq)}   fill="rgba(56,189,248,0.18)"  stroke="#38BDF8" strokeWidth="2"   strokeLinejoin="round" />
       {RADAR_AXES.map((label, i) => {
         const { x, y } = rLabel(i)
         const isHovered = hoveredAxis === i
@@ -702,7 +710,7 @@ const RadarChart = () => {
             onMouseLeave={() => setHoveredAxis(null)} />
         )
       })}
-      {hoveredAxis !== null && <RadarTooltip axisIdx={hoveredAxis} />}
+      {hoveredAxis !== null && <RadarTooltip axisIdx={hoveredAxis} scores={scores} />}
     </svg>
   )
 }
@@ -1135,18 +1143,27 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     { key: 'fuel',       label: 'Fuel',            unit: 'L/100km', lowerBetter: true,  fmt: v => v.toFixed(2) },
   ]
 
-  const RANK_META: { label: string; key: 'travelTime' | 'waitTime' | 'throughput' | 'co2'; fmt: (v: number) => string; lowerBetter: boolean }[] = [
-    { label: 'Travel Time', key: 'travelTime', fmt: v => `${(v * 60).toFixed(2)} sec`,               lowerBetter: true  },
-    { label: 'Wait Time',   key: 'waitTime',   fmt: v => `${v.toFixed(2)} sec`,                       lowerBetter: true  },
-    { label: 'Throughput',  key: 'throughput', fmt: v => `${Math.round(v).toLocaleString()} veh/hr`,  lowerBetter: false },
-    { label: 'CO₂',         key: 'co2',        fmt: v => `${v.toFixed(2)} g/km`,                      lowerBetter: true  },
+  const RANK_META: { label: string; unit: string; key: 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'; fmt: (v: number) => string; lowerBetter: boolean }[] = [
+    { label: 'Travel Time', unit: 'sec',     key: 'travelTime', fmt: v => v.toFixed(2),                       lowerBetter: true  },
+    { label: 'Wait Time',   unit: 'sec',     key: 'waitTime',   fmt: v => v.toFixed(2),                       lowerBetter: true  },
+    { label: 'Throughput',  unit: 'veh/hr',  key: 'throughput', fmt: v => Math.round(v).toLocaleString(),      lowerBetter: false },
+    { label: 'CO₂',         unit: 'g/km',    key: 'co2',        fmt: v => v.toFixed(2),                       lowerBetter: true  },
+    { label: 'Fuel',        unit: 'L/100km', key: 'fuel',       fmt: v => v.toFixed(2),                       lowerBetter: true  },
   ]
   const rankNorm = RANK_META.map(m => {
-    const vals  = ALGO_LIST.map(a => a[m.key] as number)
+    const vals  = ALGO_LIST.map(a => perLos(a.id, losTab)[m.key])
     const best  = m.lowerBetter ? Math.min(...vals) : Math.max(...vals)
     const worst = m.lowerBetter ? Math.max(...vals) : Math.min(...vals)
     return { best, worst, range: worst - best }
   })
+
+  // Per-LOS radar scores — axes: Throughput, Wait Time, Travel Time, Compute, CO₂, Fuel, RTF
+  const _rd = (['civiq', 'qmix', 'selfish'] as AlgoKey[]).map(id => perLos(id, losTab))
+  const radarScores: Record<AlgoKey, number[]> = {
+    civiq:   [normRadar(_rd.map(d => d.throughput), true)[0],  normRadar(_rd.map(d => d.waitTime), false)[0],   normRadar(_rd.map(d => d.travelTime), false)[0],  ALGO.civiq.scores[3],   normRadar(_rd.map(d => d.co2), false)[0],  normRadar(_rd.map(d => d.fuel), false)[0],  ALGO.civiq.scores[6]],
+    qmix:    [normRadar(_rd.map(d => d.throughput), true)[1],  normRadar(_rd.map(d => d.waitTime), false)[1],   normRadar(_rd.map(d => d.travelTime), false)[1],  ALGO.qmix.scores[3],    normRadar(_rd.map(d => d.co2), false)[1],  normRadar(_rd.map(d => d.fuel), false)[1],  ALGO.qmix.scores[6]],
+    selfish: [normRadar(_rd.map(d => d.throughput), true)[2],  normRadar(_rd.map(d => d.waitTime), false)[2],   normRadar(_rd.map(d => d.travelTime), false)[2],  ALGO.selfish.scores[3], normRadar(_rd.map(d => d.co2), false)[2],  normRadar(_rd.map(d => d.fuel), false)[2],  ALGO.selfish.scores[6]],
+  }
 
   const KEY_FINDINGS = [
     { tag: 'Throughput',   tagColor: '#22C55E',
@@ -1173,21 +1190,37 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
 
     {/* Header */}
-    <div>
-      <h2 className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>Algorithm Comparison</h2>
-      <div className="flex items-center gap-4 mt-2">
-        {ALGO_LIST.map((a) => (
-          <div key={a.id} className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ background: a.color }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.label}</span>
-          </div>
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <h2 className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>Algorithm Comparison</h2>
+        <div className="flex items-center gap-4 mt-1.5">
+          {ALGO_LIST.map((a) => (
+            <div key={a.id} className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full" style={{ background: a.color }} />
+              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* LOS Selector */}
+      <div className="flex gap-1 p-1 rounded-xl flex-shrink-0" style={{ background: 'rgba(255,255,255,0.05)' }}>
+        {LOS_TABS.map(t => (
+          <button key={t.key} onClick={() => setLosTab(t.key)}
+            className="px-6 py-2 rounded-lg text-[11px] font-semibold transition-all duration-150"
+            style={{
+              background: losTab === t.key ? 'rgba(255,255,255,0.12)' : 'transparent',
+              color:      losTab === t.key ? 'rgba(255,255,255,0.9)'  : 'rgba(255,255,255,0.38)',
+              border:     losTab === t.key ? '1px solid rgba(255,255,255,0.16)' : '1px solid transparent',
+            }}>
+            {t.label}&nbsp;<span style={{ opacity: 0.55 }}>({t.sub})</span>
+          </button>
         ))}
       </div>
     </div>
 
-    {/* Rank cards — click to navigate */}
+    {/* Algorithm KPI cards */}
     <div className="grid grid-cols-3 gap-4">
-      {ALGO_LIST.map((a, i) => (
+      {ALGO_LIST.map((a) => (
         <GlassCard key={a.id} className="p-5 relative overflow-hidden cursor-pointer"
           style={{ border: `1px solid ${a.border}`, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }}
           onClick={() => onNavigate(a.id)}
@@ -1202,19 +1235,31 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: `radial-gradient(ellipse at 80% 0%, ${a.colorDim}, transparent 65%)` }} />
           <div className="relative">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-                style={{ background: rankMeta[i].bg, color: rankMeta[i].color }}>
-                {rankMeta[i].label}
-              </span>
-              <span className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>View Detail →</span>
+            {/* Card header: title + view detail button on the same row */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[14px] font-bold" style={{ color: 'rgba(255,255,255,0.92)' }}>{a.label}</h3>
+              <button
+                className="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-all duration-150"
+                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.1)' }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.background = `${a.color}22`
+                  el.style.color = a.color
+                  el.style.borderColor = `${a.color}55`
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.background = 'rgba(255,255,255,0.07)'
+                  el.style.color = 'rgba(255,255,255,0.45)'
+                  el.style.borderColor = 'rgba(255,255,255,0.1)'
+                }}>
+                View Detail →
+              </button>
             </div>
-            <div className="flex items-center gap-2 mb-4">
-              <h3 className="text-[15px] font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>{a.label}</h3>
-            </div>
-            <div className="space-y-2">
+            {/* KPI metrics */}
+            <div className="space-y-2.5">
               {RANK_META.map((m, mi) => {
-                const val = a[m.key] as number
+                const val = perLos(a.id, losTab)[m.key]
                 const { best, worst, range } = rankNorm[mi]
                 const isBest = val === best
                 const barPct = range > 0
@@ -1222,16 +1267,23 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                   : 75
                 return (
                   <div key={m.label}>
-                    <div className="flex justify-between mb-0.5">
-                      <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.38)' }}>{m.label}</span>
-                      <span className="text-[10px] font-semibold tabular-nums"
-                        style={{ color: isBest ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.55)' }}>
-                        {m.fmt(val)}
-                      </span>
+                    <div className="flex items-baseline justify-between mb-1">
+                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.32)' }}>{m.label}</span>
+                      <div className="flex items-center gap-1.5">
+                        {isBest && (
+                          <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                            style={{ background: 'rgba(34,197,94,0.14)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.25)' }}>
+                            {m.lowerBetter ? 'Lowest' : 'Highest'}
+                          </span>
+                        )}
+                        <span className="text-[11px] font-bold tabular-nums" style={{ color: isBest ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.5)' }}>
+                          {m.fmt(val)}<span className="text-[9px] font-normal ml-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{m.unit}</span>
+                        </span>
+                      </div>
                     </div>
-                    <div className="w-full h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
                       <div className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isBest ? 0.85 : 0.3 }} />
+                        style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isBest ? 0.9 : 0.25 }} />
                     </div>
                   </div>
                 )
@@ -1246,7 +1298,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     <div className="grid grid-cols-5 gap-4">
       <GlassCard className="col-span-2 p-5">
         <h3 className="text-[13px] font-bold mb-3" style={{ color: 'rgba(255,255,255,0.78)' }}>Performance Profile</h3>
-        <RadarChart />
+        <RadarChart scores={radarScores} />
         <div className="flex justify-center gap-5 mt-2">
           {ALGO_LIST.map((a) => (
             <div key={a.id} className="flex items-center gap-1.5">
