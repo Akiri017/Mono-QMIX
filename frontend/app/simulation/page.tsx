@@ -3853,7 +3853,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
               border: qmixLoading ? '1px solid rgba(255,255,255,0.1)' : qmixData ? '1px solid rgba(167,139,250,0.4)' : '1px solid rgba(255,255,255,0.1)',
               color: qmixLoading ? 'rgba(255,255,255,0.3)' : qmixData ? '#A78BFA' : 'rgba(255,255,255,0.3)',
             }}>
-            {qmixLoading ? 'Loading data…' : qmixData ? `Real PyMARL Data · ${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
+            {qmixLoading ? 'Loading data…' : qmixData ? `${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
           </span>
         )}
         {/* Real-data badge for CiViQ */}
@@ -3864,7 +3864,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
               border: civiqLoading ? '1px solid rgba(255,255,255,0.1)' : civiqData ? '1px solid rgba(56,189,248,0.4)' : '1px solid rgba(255,255,255,0.1)',
               color: civiqLoading ? 'rgba(255,255,255,0.3)' : civiqData ? '#38BDF8' : 'rgba(255,255,255,0.3)',
             }}>
-            {civiqLoading ? 'Loading data…' : civiqData ? `Real PyMARL Data · ${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
+            {civiqLoading ? 'Loading data…' : civiqData ? `${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
           </span>
         )}
       </div>
