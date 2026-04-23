@@ -3,7 +3,7 @@
  *
  * Returns real KPIs and time-series data for the Selfish Routing algorithm.
  * Data availability:
- *   2km   (bgc_full)  — free_flow, stable_flow, forced_flow  ✓  (PyMARL pipeline, 30 eps)
+ *   2km   (bgc_full)  — free_flow, stable_flow, forced_flow  ✓  (PyMARL pipeline, 50 eps)
  *   0.75km (bgc_core) — free_flow, stable_flow               ✓  (SUMO stats XML; forced_flow run incomplete)
  *   4x4               — free_flow, stable_flow, forced_flow  ✓  (PyMARL pipeline, 100 eps)
  */

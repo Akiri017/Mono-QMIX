@@ -2218,9 +2218,9 @@ const QMIX_LOS_REF = {
 } as const
 
 const SELFISH_LOS_REF = {
-  free_flow:   { travelTime_s: 120.345, waitTime_s: 7.736,  throughput: 1174.83, returnMean: -45167.61 },
-  stable_flow: { travelTime_s: 122.105, waitTime_s: 10.679, throughput: 1281.64, returnMean: -53838.66 },
-  forced_flow: { travelTime_s: 126.995, waitTime_s: 20.758, throughput: 2177.86, returnMean: -97242.83 },
+  free_flow:   { travelTime_s: 120.8292, waitTime_s: 7.3442,  throughput: 1120.8551, returnMean: -45803.0291 },
+  stable_flow: { travelTime_s: 122.7603, waitTime_s: 10.5173, throughput: 1258.022,  returnMean: -53173.1002 },
+  forced_flow: { travelTime_s: 127.3438, waitTime_s: 20.668,  throughput: 2159.9281, returnMean: -94445.9153 },
 } as const
 
 // ─── Episode Detail Modal ─────────────────────────────────────────────────────
@@ -3468,8 +3468,8 @@ const SELFISH_METRIC_META: Record<SelfishMetricKey, { label: string; unit: strin
   fuel:       { label: 'Avg. Fuel Consumption', unit: 'L/100km', lowerBetter: true  },
 }
 
-const SELFISH_CO2_EPISODES  = makeSeries(485.6, 485.6, 15,  10,  30, 13)
-const SELFISH_FUEL_EPISODES = makeSeries(20.89, 20.89, 0.8, 0.5, 30, 14)
+const SELFISH_CO2_EPISODES  = makeSeries(486.26, 486.26, 15,  10,  50, 13)
+const SELFISH_FUEL_EPISODES = makeSeries(20.914, 20.914, 0.8, 0.5, 50, 14)
 
 const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
   metricKey: SelfishMetricKey
@@ -3766,8 +3766,8 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     )}
     {/* Selfish detail modal */}
     {isSelfish && selfishModal && (() => {
-      const data = selfishModal === 'co2'  ? (realKpis ? makeSeries(realKpis.co2,  realKpis.co2,  15,  10,  30, 13) : SELFISH_CO2_EPISODES)
-                 : selfishModal === 'fuel' ? (realKpis ? makeSeries(realKpis.fuel, realKpis.fuel, 0.8, 0.5, 30, 14) : SELFISH_FUEL_EPISODES)
+      const data = selfishModal === 'co2'  ? (realKpis ? makeSeries(realKpis.co2,  realKpis.co2,  15,  10,  50, 13) : SELFISH_CO2_EPISODES)
+                 : selfishModal === 'fuel' ? (realKpis ? makeSeries(realKpis.fuel, realKpis.fuel, 0.8, 0.5, 50, 14) : SELFISH_FUEL_EPISODES)
                  : displayAlgo.episodes[selfishModal as EpisodeMetricKey]
       return (
         <SelfishDetailModal
