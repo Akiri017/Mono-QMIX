@@ -444,6 +444,8 @@ def main():
         args["env_args"]["los_level"] = args_cmd.los_level
     if args_cmd.sumo_backend is not None:
         args["sumo_backend"] = args_cmd.sumo_backend
+        args["env_args"]["sumo_backend"] = args_cmd.sumo_backend
+    args["env_args"]["sumo_gui"] = args_cmd.use_gui
 
     # Determine policy type and run evaluation
     if args_cmd.model is not None:

@@ -84,11 +84,11 @@ env_args:
   use_reset_mask: true
 
 # Random road blockage configuration (incident injection)
-  blockage_enabled: true
-  blockage_probability: 0.1 # originally 0.003
-  blockage_min_duration: 30
-  blockage_max_duration: 60
-  blockage_max_concurrent: 3
+#  blockage_enabled: true
+#  blockage_probability: 0.1 # originally 0.003
+#  blockage_min_duration: 30
+#  blockage_max_duration: 60
+#  blockage_max_concurrent: 3
 
   # SUMO simulation settings
   sumo_backend: "libsumo"

@@ -1,0 +1,16 @@
+import yaml
+from pathlib import Path
+
+env_file = Path(r"C:\Users\ASUS\Documents\Civiq\Mono-QMIX\pymarl\src\envs\sumo_grid_reroute.py")
+with open(env_file) as f:
+    lines = f.readlines()
+
+# Find the routing/reroute logic
+for i, line in enumerate(lines):
+    if any(kw in line for kw in ["reroute", "setRoute", "no valid route", 
+                                  "time-to-teleport", "teleport", "connection"]):
+        print(f"{i+1:4d}: {line}", end="")
+        
+backend_file = Path(r"C:\Users\ASUS\Documents\Civiq\Mono-QMIX\pymarl\src\envs\sumo_backend.py")
+with open(backend_file) as f:
+    print(f.read())
