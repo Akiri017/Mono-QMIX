@@ -3166,10 +3166,18 @@ interface SelfishTimeseries {
   totalSystemWait: number[]
 }
 
+interface SelfishEvalArrays {
+  evalTravelTimes:  number[]
+  evalWaitingTimes: number[]
+  evalThroughputs:  number[]
+  evalReturns:      number[]
+}
+
 function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: string) {
   const [kpis, setKpis] = useState<SelfishApiKpis | null>(null)
   const [timeseries, setTimeseries] = useState<SelfishTimeseries | null>(null)
   const [civiq, setCiviq] = useState<SelfishCiviqBaseline | null>(null)
+  const [evalArrays, setEvalArrays] = useState<SelfishEvalArrays | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -3177,6 +3185,7 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
     setKpis(null)
     setTimeseries(null)
     setCiviq(null)
+    setEvalArrays(null)
     setLoading(true)
     fetch(`/api/selfish?trafficLevel=${trafficLevel}&map=${mapSize}`)
       .then(r => r.json())
@@ -3185,6 +3194,14 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
           setKpis(data.kpis)
           setTimeseries(data.timeseries)
           setCiviq(data.baselines?.civiq ?? null)
+          if (data.evalTravelTimes && data.evalWaitingTimes && data.evalThroughputs && data.evalReturns) {
+            setEvalArrays({
+              evalTravelTimes:  data.evalTravelTimes,
+              evalWaitingTimes: data.evalWaitingTimes,
+              evalThroughputs:  data.evalThroughputs,
+              evalReturns:      data.evalReturns,
+            })
+          }
         }
         // On error (e.g. 4x4 map, missing forced_flow for bgc_core) silently fall back to static data
       })
@@ -3192,7 +3209,7 @@ function useSelfishRealData(enabled: boolean, trafficLevel: string, mapSize: str
       .finally(() => setLoading(false))
   }, [enabled, trafficLevel, mapSize])
 
-  return { kpis, timeseries, civiq, loading }
+  return { kpis, timeseries, civiq, evalArrays, loading }
 }
 
 // ─── Selfish All-Levels hook ───────────────────────────────────────────────────
@@ -3427,27 +3444,28 @@ function qmixToMarlPoints(curve: QmixTrainingEntry[]): MarlPoint[] {
   return full.filter((_, i) => i % step === 0 || i === full.length - 1)
 }
 
+/** Convert a raw eval array → EpisodePoint[] with moving average and global ±1σ band */
+function evalRawToPoints(raw: number[], scale = 1): EpisodePoint[] {
+  if (!raw.length) return []
+  const W = 10
+  const vals = raw.map(v => v * scale)
+  const mean = vals.reduce((a, b) => a + b, 0) / vals.length
+  const globalStd = Math.sqrt(vals.reduce((s, x) => s + (x - mean) ** 2, 0) / vals.length)
+  const lo = parseFloat((mean - globalStd).toFixed(3))
+  const hi = parseFloat((mean + globalStd).toFixed(3))
+  return vals.map((v, i) => {
+    const win = vals.slice(Math.max(0, i - W), i + 1)
+    const ma  = parseFloat((win.reduce((a, b) => a + b, 0) / win.length).toFixed(3))
+    return { episode: i + 1, value: parseFloat(v.toFixed(3)), lo, hi, ma }
+  })
+}
+
 /** Convert eval episode arrays → EpisodeSeries for detail modal */
 function qmixToEpisodeSeries(data: QmixRealData): EpisodeSeries {
-  const W = 10
-  function evalPoints(raw: number[], scale = 1): EpisodePoint[] {
-    if (!raw.length) return []
-    const vals = raw.map(v => v * scale)
-    // Global mean ± 1σ for a stable, readable confidence band
-    const mean = vals.reduce((a, b) => a + b, 0) / vals.length
-    const globalStd = Math.sqrt(vals.reduce((s, x) => s + (x - mean) ** 2, 0) / vals.length)
-    const lo = parseFloat((mean - globalStd).toFixed(3))
-    const hi = parseFloat((mean + globalStd).toFixed(3))
-    return vals.map((v, i) => {
-      const win = vals.slice(Math.max(0, i - W), i + 1)
-      const ma  = parseFloat((win.reduce((a, b) => a + b, 0) / win.length).toFixed(3))
-      return { episode: i + 1, value: parseFloat(v.toFixed(3)), lo, hi, ma }
-    })
-  }
   return {
-    travelTime: evalPoints(data.evalTravelTimes),
-    waitTime:   evalPoints(data.evalWaitingTimes),
-    throughput: evalPoints(data.evalThroughputs),
+    travelTime: evalRawToPoints(data.evalTravelTimes),
+    waitTime:   evalRawToPoints(data.evalWaitingTimes),
+    throughput: evalRawToPoints(data.evalThroughputs),
     speed:      [],  // RTF has no per-episode variation; modal not shown
   }
 }
@@ -3599,7 +3617,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 
   // For selfish routing, fetch real simulation data and overlay onto static algo object
   const isSelfish = algo.id === 'selfish'
-  const { kpis: realKpis, timeseries: realTimeseries, civiq: selfishCiviq, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale, mapSize)
+  const { kpis: realKpis, timeseries: realTimeseries, civiq: selfishCiviq, evalArrays: selfishEvalArrays, loading: kpisLoading } = useSelfishRealData(isSelfish, trafficScale, mapSize)
   const { levels: selfishAllLevels } = useSelfishAllLevels(isSelfish, mapSize)
 
   // For monolithic QMIX, fetch real training curve and eval data (scenario selected by trafficScale)
@@ -3654,12 +3672,19 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
             speed: 0,
           } : algo.changes
         })(),
-        episodes: {
-          travelTime: makeSeries(travelTime_s, travelTime_s, 3.0, 2.0, 30, 9),
-          waitTime:   makeSeries(realKpis.waitTime, realKpis.waitTime, 1.5, 1.0, 30, 10),
-          throughput: makeSeries(realKpis.throughput, realKpis.throughput, 60, 45, 30, 11),
-          speed:      makeSeries(realKpis.speed, realKpis.speed, 8, 5, 30, 12),
-        },
+        episodes: selfishEvalArrays
+          ? {
+            travelTime: evalRawToPoints(selfishEvalArrays.evalTravelTimes),
+            waitTime:   evalRawToPoints(selfishEvalArrays.evalWaitingTimes),
+            throughput: evalRawToPoints(selfishEvalArrays.evalThroughputs),
+            speed:      [],
+          }
+          : {
+            travelTime: makeSeries(travelTime_s, travelTime_s, 3.0, 2.0, 50, 9),
+            waitTime:   makeSeries(realKpis.waitTime, realKpis.waitTime, 1.5, 1.0, 50, 10),
+            throughput: makeSeries(realKpis.throughput, realKpis.throughput, 60, 45, 50, 11),
+            speed:      makeSeries(realKpis.speed, realKpis.speed, 8, 5, 50, 12),
+          },
       }
     }
     if (isQmix && qmixData) {

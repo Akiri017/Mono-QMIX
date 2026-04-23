@@ -90,6 +90,10 @@ export async function GET(request: NextRequest) {
       map: mapParam,
       vehicles,
       baselines: levelData.baselines ?? null,
+      evalReturns:      levelData.evalReturns      ?? null,
+      evalTravelTimes:  levelData.evalTravelTimes  ?? null,
+      evalWaitingTimes: levelData.evalWaitingTimes ?? null,
+      evalThroughputs:  levelData.evalThroughputs  ?? null,
       kpis: {
         // Primary display KPIs (matching AlgoData fields)
         travelTime: parseFloat(kpis.avg_travel_time_min.toFixed(2)),             // min

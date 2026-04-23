@@ -88,6 +88,12 @@ def update():
                 "time_loss_s":                    None,
                 "returnMean":                     r4(r["mean"]),
             },
+            # Per-episode arrays (50 episodes) from eval run
+            "evalReturns":      [r4(x) for x in r["raw"]],
+            "evalTravelTimes":  [r4(x) for x in m["mean_travel_time"]["raw"]],
+            "evalWaitingTimes": [r4(x) for x in m["mean_waiting_time"]["raw"]],
+            "evalThroughputs":  [r4(x) for x in m["network_throughput"]["raw"]],
+
             # Preserve existing timeseries file references
             "timeseries_file": existing_level.get("timeseries_file", None),
         }
