@@ -17,6 +17,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+[data-theme="light"] body {
+  background-color: #f0f6ff;
+}
+
 * {
   box-sizing: border-box;
 }
