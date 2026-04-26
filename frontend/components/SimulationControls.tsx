@@ -65,11 +65,15 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
 
   const triggerBg = darkMode
     ? isOpen ? 'rgba(6,182,212,0.15)' : 'rgba(255,255,255,0.07)'
-    : isOpen ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)'
+    : isOpen ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.65)'
 
   const triggerBorder = darkMode
-    ? isOpen ? '1px solid rgba(6,182,212,0.5)' : '1px solid rgba(255,255,255,0.12)'
-    : isOpen ? '1.5px solid rgba(6,182,212,0.5)' : '1px solid rgba(255,255,255,0.7)'
+    ? isOpen ? '1px solid rgba(6,182,212,0.5)' : '1px solid rgba(255,255,255,0.14)'
+    : isOpen ? '1px solid rgba(6,182,212,0.45)' : '1px solid rgba(15,23,42,0.14)'
+
+  const triggerShadow = darkMode
+    ? isOpen ? '0 4px 16px rgba(6,182,212,0.15)' : '0 1px 3px rgba(0,0,0,0.2)'
+    : isOpen ? '0 4px 16px rgba(6,182,212,0.12)' : '0 1px 4px rgba(15,23,42,0.08)'
 
   const textColor = darkMode
     ? selectedOption ? '#e2e8f0' : 'rgba(255,255,255,0.35)'
@@ -139,7 +143,7 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
           WebkitBackdropFilter: 'blur(8px)',
           borderRadius: '9999px',
           border: triggerBorder,
-          boxShadow: isOpen ? '0 4px 20px rgba(6,182,212,0.15)' : 'none',
+          boxShadow: triggerShadow,
         }}
       >
         <span className="font-medium text-[12px] select-none truncate" style={{ color: textColor }}>
