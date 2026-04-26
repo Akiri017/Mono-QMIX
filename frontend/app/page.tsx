@@ -6,10 +6,10 @@ import { SimulationControls } from '@/components/SimulationControls'
 import { useTheme } from '@/contexts/ThemeContext'
 
 const researchers = [
-  { name: 'Kristian Bautista', role: 'Project Manager',  email: 'kristiandavidbautista@gmail.com',  avatar: 'http://localhost:3845/assets/f111a4d9e98c2f1849285d198126666303e67f65.png' },
-  { name: 'Angel Letada',      role: 'SUMO Engineer',     email: 'angel.letada1205@gmail.com',        avatar: 'http://localhost:3845/assets/eaa320717b7e77fd08d1bdaf9802cc375eb36366.png' },
-  { name: 'Michael Pascual',   role: 'SUMO Engineer',     email: 'michaelkevinpascual47@gmail.com',   avatar: 'http://localhost:3845/assets/5f8ea6b9caf08d167684ed154ad8a85f97b6913b.png' },
-  { name: 'Marianne Santos',   role: 'Software Engineer', email: 'mariannesantos174@gmail.com',       avatar: 'http://localhost:3845/assets/e61b32a6b96823a8b0214ef17a3aac015a2ed382.png' },
+  { name: 'Kristian Bautista', role: 'Project Manager',  email: 'kristiandavidbautista@gmail.com',  avatar: '/images/researchers/Kristian_David_R_Bautista.jpg' },
+  { name: 'Angel Letada',      role: 'SUMO Engineer',     email: 'angel.letada1205@gmail.com',        avatar: '/images/researchers/Angel_A_Letada.png' },
+  { name: 'Michael Pascual',   role: 'SUMO Engineer',     email: 'michaelkevinpascual47@gmail.com',   avatar: '/images/researchers/Michael_Kevin_D_Pascual.png' },
+  { name: 'Marianne Santos',   role: 'Software Engineer', email: 'mariannesantos174@gmail.com',       avatar: '/images/researchers/Marianne_Angelika_B_Santos.png' },
 ]
 
 // ── Hooks ──────────────────────────────────────────────────────────────────────
@@ -703,28 +703,19 @@ export default function Home() {
               </div>
             </div>
             <div className="flex gap-12 md:gap-16">
-              {[
-                { title: 'Explore', links: [
-                  { label: 'Selfish Routing', href: '/simulation?mapSize=2km&trafficScale=stable_flow&view=focused&algorithm1=selfish_routing' },
-                  { label: 'Monolithic QMIX', href: '/simulation?mapSize=2km&trafficScale=stable_flow&view=focused&algorithm1=monolithic_qmix' },
-                  { label: 'CiViQ',           href: '/simulation?mapSize=2km&trafficScale=stable_flow&view=focused&algorithm1=hierarchical_qmix' },
-                ]},
-                { title: 'Resources', links: [
-                  { label: 'About Civiq',     href: '/#about' },
-                  { label: 'The Researchers', href: '/#researchers' },
-                ]},
-              ].map(({ title, links }) => (
-                <div key={title}>
-                  <h4 className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: c.textMuted }}>{title}</h4>
-                  <ul className="space-y-2.5">
-                    {links.map(({ label, href }) => (
-                      <li key={label}>
-                        <FooterLink label={label} href={href} isDark={isDark} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              <div>
+                <h4 className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: c.textMuted }}>Resources</h4>
+                <ul className="space-y-2.5">
+                  {[
+                    { label: 'About Civiq',     href: '/#about' },
+                    { label: 'The Researchers', href: '/#researchers' },
+                  ].map(({ label, href }) => (
+                    <li key={label}>
+                      <FooterLink label={label} href={href} isDark={isDark} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
           <div style={{ borderTop: `1px solid ${c.sectionBorder}`, paddingTop: '24px' }}>
