@@ -4282,12 +4282,13 @@ const PAGE_COLOR: Record<Page, string> = {
 interface SidebarProps {
   activePage: Page
   setActivePage: (p: Page) => void
+  onRunAlgorithm: (algorithm: string) => void
   mapSize: string
   trafficScale: string
   algorithm1: string
 }
 
-function Sidebar({ activePage, setActivePage, mapSize, trafficScale, algorithm1 }: SidebarProps) {
+function Sidebar({ activePage, setActivePage, onRunAlgorithm, mapSize, trafficScale, algorithm1 }: SidebarProps) {
   const c = useDashColors()
   return (
   <div className="flex flex-col flex-shrink-0 w-full xl:w-[248px]"
@@ -4340,6 +4341,7 @@ function Sidebar({ activePage, setActivePage, mapSize, trafficScale, algorithm1 
         darkMode={c.isDark}
         vertical
         hideHeader
+        onRunAlgorithm={onRunAlgorithm}
         initialMapSize={mapSize}
         initialTrafficScale={trafficScale}
         initialAlgorithm={algorithm1 === 'hierarchical_qmix' ? 'hierarchical_qmix'
@@ -4458,6 +4460,7 @@ function SimulationDashboardContent() {
               <Sidebar
                 activePage={activePage}
                 setActivePage={setActivePage}
+                onRunAlgorithm={(algorithm) => setActivePage(algoToPage(algorithm))}
                 mapSize={mapSize}
                 trafficScale={trafficScale}
                 algorithm1={algorithm1}
