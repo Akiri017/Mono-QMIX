@@ -402,6 +402,8 @@ class SUMOGridRerouteEnv:
         if not self.sumo_warnings:
             sumo_cmd.append("--no-warnings")
 
+        sumo_cmd.extend(["--ignore-route-errors", "true"])
+
         # Start TraCI
         traci.start(sumo_cmd)
         self.traci_connection = traci
