@@ -90,12 +90,12 @@ function buildDashColors(isDark: boolean): DashColors {
     glassBg: 'linear-gradient(155deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.78) 100%)',
     glassBorder: 'rgba(148,163,184,0.42)',
     glassShadow: 'inset 0 1px 0 rgba(255,255,255,0.98), 0 6px 22px rgba(15,23,42,0.1), 0 1px 3px rgba(15,23,42,0.08)',
-    tp: '#0f172a', ts: '#334155', tm: '#475569', tu: '#64748b',
-    divider: 'rgba(15,23,42,0.16)',
+    tp: '#0b1220', ts: '#1f2d3d', tm: '#334155', tu: '#516274',
+    divider: 'rgba(15,23,42,0.2)',
     badgeBg: 'rgba(255,255,255,0.9)', badgeBorder: 'rgba(148,163,184,0.4)', badgeColor: '#334155',
     itemBg: 'rgba(255,255,255,0.82)', itemBgMd: 'rgba(255,255,255,0.9)', itemBgHi: 'rgba(255,255,255,0.98)',
     chartGrid: 'rgba(15,23,42,0.14)',
-    chartAxis: { fill: '#475569', fontSize: 10 },
+    chartAxis: { fill: '#334155', fontSize: 10 },
     chartAxisLine: { stroke: 'rgba(15,23,42,0.2)' },
     chartTickLine: { stroke: 'rgba(15,23,42,0.16)' },
     chartLabel: '#475569',
@@ -110,6 +110,32 @@ function buildDashColors(isDark: boolean): DashColors {
     logoClass: 'opacity-90',
     hoverBg: 'rgba(219,234,254,0.86)', hoverBgMd: 'rgba(191,219,254,0.78)', hoverColor: '#0f172a',
   }
+}
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduced(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+  return reduced
+}
+
+function usePageEntrance() {
+  const reducedMotion = usePrefersReducedMotion()
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    if (reducedMotion) {
+      setReady(true)
+      return
+    }
+    const id = requestAnimationFrame(() => setReady(true))
+    return () => cancelAnimationFrame(id)
+  }, [reducedMotion])
+  return { reducedMotion, ready }
 }
 
 const DashColorsContext = createContext<DashColors>(buildDashColors(true))
@@ -166,7 +192,7 @@ const StatusBar = () => {
       style={{ background: c.statusBg, borderBottom: `1px solid ${c.statusBorder}` }}>
       <button
         onClick={() => router.push('/')}
-        className="flex items-center gap-2.5 transition-opacity duration-150 hover:opacity-80"
+        className="flex items-center gap-2.5 transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md"
       >
         <img src="/icons/civiq-logo.png" alt="Civiq" className={`w-5 h-5 object-contain ${c.logoClass}`} />
         <span className="font-bold text-[13px] tracking-widest" style={{ color: c.tp }}>CIVIQ</span>
@@ -179,7 +205,7 @@ const StatusBar = () => {
           <button
             key={label}
             onClick={() => router.push(href)}
-            className="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150"
+            className="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{ color: c.ts, background: 'transparent' }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.color = c.hoverColor
@@ -1258,6 +1284,7 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
 
 function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const c = useDashColors()
+  const { reducedMotion, ready } = usePageEntrance()
   const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('forced_flow')
 
   type LosKey = 'free_flow' | 'stable_flow' | 'forced_flow'
@@ -1345,12 +1372,17 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   ]
 
   return (
-  <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
+  <div className="p-4 md:p-6 space-y-4 md:space-y-5 overflow-y-auto" style={{
+    height: '100%',
+    opacity: ready ? 1 : 0,
+    transform: ready ? 'none' : 'translateY(8px)',
+    transition: reducedMotion ? 'none' : 'opacity 260ms ease, transform 320ms ease',
+  }}>
 
     {/* Header */}
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
       <div>
-        <h2 className="text-xl font-bold" style={{ color: c.tp }}>Algorithm Comparison</h2>
+        <h2 className="text-xl md:text-2xl font-bold" style={{ color: c.tp }}>Algorithm Comparison</h2>
         <div className="flex items-center gap-4 mt-1.5">
           {ALGO_LIST.map((a) => (
             <div key={a.id} className="flex items-center gap-1.5">
@@ -1361,10 +1393,10 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         </div>
       </div>
       {/* LOS Selector */}
-      <div className="flex gap-1 p-1 rounded-xl flex-shrink-0" style={{ background: c.itemBg }}>
+      <div className="flex flex-wrap gap-1 p-1 rounded-xl flex-shrink-0" style={{ background: c.itemBg }}>
         {LOS_TABS.map(t => (
           <button key={t.key} onClick={() => setLosTab(t.key)}
-            className="px-6 py-2 rounded-lg text-[11px] font-semibold transition-all duration-150"
+            className="px-4 md:px-6 py-2 rounded-lg text-[11px] font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{
               background: losTab === t.key ? c.itemBgMd : 'transparent',
               color:      losTab === t.key ? c.tp       : c.ts,
@@ -1377,7 +1409,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     </div>
 
     {/* Algorithm KPI cards */}
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
       {ALGO_LIST.map((a) => (
         <GlassCard key={a.id} className="p-5 relative overflow-hidden cursor-pointer"
           style={{ border: `1px solid ${a.border}`, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }}
@@ -1453,8 +1485,8 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     </div>
 
     {/* Performance Profile + Key Findings */}
-    <div className="grid grid-cols-5 gap-4">
-      <GlassCard className="col-span-2 p-5">
+    <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
+      <GlassCard className="xl:col-span-2 p-5">
         <h3 className="text-[13px] font-bold mb-3" style={{ color: c.tp }}>Performance Profile</h3>
         <RadarChart scores={radarScores} />
         <div className="flex justify-center gap-5 mt-2">
@@ -1467,9 +1499,9 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         </div>
       </GlassCard>
 
-      <GlassCard className="col-span-3 p-5">
+      <GlassCard className="xl:col-span-3 p-5">
         <h3 className="text-[13px] font-bold mb-4" style={{ color: c.tp }}>Key Findings</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {KEY_FINDINGS.map((f) => (
             <div key={f.headline} className="p-4 rounded-xl"
               style={{ background: c.itemBg, border: `1px solid ${c.divider}` }}>
@@ -1557,7 +1589,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         })()}
 
         {/* Avg. Wait Time | Throughput — 2 cols */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {LOS_METRICS.slice(1, 3).map(m => {
             const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
             const vals  = rows.map(r => r.val)
@@ -1610,7 +1642,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         <div style={{ borderTop: `1px solid ${c.divider}` }} />
 
         {/* CO₂ Emissions | Fuel Consumption — 2 cols */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {LOS_METRICS.slice(3).map(m => {
             const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
             const vals  = rows.map(r => r.val)
@@ -3785,6 +3817,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   algo: AlgoData; mapSize: string; trafficScale: string
 }) => {
   const c = useDashColors()
+  const { reducedMotion, ready } = usePageEntrance()
   const [openModal, setOpenModal] = useState<EpisodeMetricKey | null>(null)
   const [congestionDetail, setCongestionDetail] = useState(false)
   const [selfishModal, setSelfishModal] = useState<SelfishMetricKey | null>(null)
@@ -3955,7 +3988,12 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   })()
 
   return (
-  <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
+  <div className="p-4 md:p-6 space-y-4 md:space-y-5 overflow-y-auto" style={{
+    height: '100%',
+    opacity: ready ? 1 : 0,
+    transform: ready ? 'none' : 'translateY(8px)',
+    transition: reducedMotion ? 'none' : 'opacity 260ms ease, transform 320ms ease',
+  }}>
     {/* Episode detail modal */}
     {openModal && (
       <EpisodeDetailModal
@@ -3992,7 +4030,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     )}
 
     {/* Header */}
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
       <div>
         <h2 className="text-xl font-bold leading-tight" style={{ color: c.tp }}>{displayAlgo.label}</h2>
       </div>
@@ -4043,7 +4081,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     </div>
 
     {/* KPI Row */}
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4">
       <KpiCard label="Avg. Travel Time" abbr="ATT" value={parseFloat((displayAlgo.travelTime * 60).toFixed(2))} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.travelTime} lowerBetter sparkData={displayAlgo.sparklines.travelTime}
@@ -4077,7 +4115,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     </div>
 
     {/* Charts row: left column stack + Map Player */}
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
       {/* Left column: Algorithm Overview + Heatmap stacked */}
       <div className="flex flex-col gap-4">
         <GlassCard className="p-5 flex flex-col gap-3">
@@ -4178,7 +4216,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 
     {/* Analytics row: training curve + CPU utilization */}
     {displayAlgo.id !== 'selfish' && (
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <TrainingCurveChart algo={displayAlgo} />
         <CpuStatsCard
           algo={displayAlgo}
@@ -4233,8 +4271,8 @@ interface SidebarProps {
 function Sidebar({ activePage, setActivePage, mapSize, trafficScale, algorithm1 }: SidebarProps) {
   const c = useDashColors()
   return (
-  <div className="flex flex-col flex-shrink-0"
-    style={{ width: '248px', background: c.sidebarBg, borderRight: `1px solid ${c.sidebarBorder}` }}>
+  <div className="flex flex-col flex-shrink-0 w-full xl:w-[248px]"
+    style={{ background: c.sidebarBg, borderRight: `1px solid ${c.sidebarBorder}`, borderBottom: `1px solid ${c.sidebarBorder}` }}>
 
     {/* Analytics nav */}
     <div className="px-5 pt-6 pb-3 flex-shrink-0">
@@ -4243,13 +4281,13 @@ function Sidebar({ activePage, setActivePage, mapSize, trafficScale, algorithm1 
       </span>
     </div>
 
-    <nav className="px-3 space-y-1 flex-shrink-0">
+    <nav className="px-3 pb-2 xl:pb-0 flex xl:block gap-2 xl:space-y-1 overflow-x-auto flex-shrink-0">
       {NAV.map((item) => {
         const isActive = activePage === item.id
         const col = PAGE_COLOR[item.id]
         return (
           <button key={item.id} onClick={() => setActivePage(item.id)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200"
+            className="w-full min-w-max xl:min-w-0 flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{
               background: isActive ? `${col}18` : 'transparent',
               border: isActive ? `1px solid ${col}40` : '1px solid transparent',
@@ -4278,7 +4316,7 @@ function Sidebar({ activePage, setActivePage, mapSize, trafficScale, algorithm1 
     </div>
 
     {/* Controls */}
-    <div className="px-4 flex-shrink-0">
+    <div className="px-4 pb-4 xl:pb-0 flex-shrink-0">
       <SimulationControls
         darkMode={c.isDark}
         vertical
@@ -4359,11 +4397,11 @@ function SimulationDashboardContent() {
 
       {/* Outer wrapper */}
       <div className="flex items-stretch justify-center"
-        style={{ height: '100vh', padding: 'clamp(10px, 1.2vw, 18px)', zIndex: 2, position: 'relative', overflowX: 'auto' }}>
+        style={{ height: '100vh', padding: 'clamp(8px, 1.2vw, 16px)', zIndex: 2, position: 'relative' }}>
 
         {/* OBU Bezel */}
         <div className="relative w-full flex flex-col" style={{
-          minWidth: '1400px', maxWidth: '1640px',
+          maxWidth: '1640px',
           background: c.obuBg,
           backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)',
           borderRadius: '24px', padding: '12px',
@@ -4397,7 +4435,7 @@ function SimulationDashboardContent() {
             <StatusBar />
 
             {/* Body: Sidebar + Content */}
-            <div className="flex overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
+            <div className="flex flex-col xl:flex-row overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
               <Sidebar
                 activePage={activePage}
                 setActivePage={setActivePage}
