@@ -2073,17 +2073,25 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
 }
 
 // ─── Congestion Heatmap ───────────────────────────────────────────────────────
-// Maps learning-based algos to their representative heatmap image.
-const HEATMAP_IMG: Record<'civiq' | 'qmix', string> = {
-  civiq: '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
-  qmix:  '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+// Maps learning-based algos to their representative heatmap image (non-LOS E).
+const HEATMAP_IMG: Record<'civiq' | 'qmix', Record<string, string>> = {
+  civiq: {
+    free_flow:   '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    stable_flow: '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    forced_flow: '/heatmap_output/policy_comparison/heatmap_high_civiq.png',
+  },
+  qmix: {
+    free_flow:   '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    stable_flow: '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    forced_flow: '/heatmap_output/policy_comparison/heatmap_high_mono_qmix.png',
+  },
 }
 
 // Real selfish routing heatmaps keyed by traffic level
 const SELFISH_HEATMAP: Record<string, string> = {
   free_flow:   '/heatmap_output/bgc_full_actual/heatmap_low.png',
   stable_flow: '/heatmap_output/bgc_full_actual/heatmap_med.png',
-  forced_flow: '/heatmap_output/bgc_full_actual/heatmap_high.png',
+  forced_flow: '/heatmap_output/policy_comparison/heatmap_high_noop.png',
 }
 
 const SELFISH_CONGESTION_LABEL: Record<string, string> = {
@@ -2352,7 +2360,9 @@ function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: 
   congestionLabel?: string
 }) {
   const c = useDashColors()
-  const src = heatmapSrc ?? (algo.id !== 'selfish' ? HEATMAP_IMG[algo.id as 'civiq' | 'qmix'] : SELFISH_HEATMAP.forced_flow)
+  const src = heatmapSrc ?? (algo.id !== 'selfish'
+    ? HEATMAP_IMG[algo.id as 'civiq' | 'qmix']?.free_flow
+    : SELFISH_HEATMAP.free_flow)
   const label = congestionLabel ?? (algo.id === 'selfish' ? 'High Congestion' : 'Low Congestion')
   const labelColor = label === 'Low Congestion' ? '#4ADE80' : label === 'Moderate Congestion' ? '#FACC15' : '#F87171'
   const imgBg = c.isDark ? 'rgba(3,7,18,0.75)' : 'rgba(220,230,245,0.75)'
@@ -4221,7 +4231,9 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         <CongestionHeatmap
           algo={displayAlgo}
           onViewDetail={() => setCongestionDetail(true)}
-          heatmapSrc={isSelfish ? SELFISH_HEATMAP[trafficScale] : undefined}
+          heatmapSrc={isSelfish
+            ? SELFISH_HEATMAP[trafficScale]
+            : HEATMAP_IMG[displayAlgo.id as 'civiq' | 'qmix']?.[trafficScale]}
           congestionLabel={isSelfish ? SELFISH_CONGESTION_LABEL[trafficScale] : undefined}
         />
       </div>
