@@ -2435,6 +2435,7 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
   unitOverride?: string
   onClose: () => void
 }) => {
+  const c = useDashColors()
   const baseMeta = KPI_META[metricKey]
   const meta = {
     ...baseMeta,
@@ -2448,12 +2449,12 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
     if (!active || !payload?.length) return null
     const byKey = Object.fromEntries(payload.map((p: any) => [p.dataKey, p.value]))
     return (
-      <div style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', fontSize: 11 }}>
-        <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Episode {label}</p>
+      <div style={{ background: c.tooltipBg, border: `1px solid ${c.tooltipBorder}`, borderRadius: 10, padding: '8px 12px', fontSize: 11, boxShadow: c.tooltipShadow }}>
+        <p style={{ color: c.tm, marginBottom: 4 }}>Episode {label}</p>
         {byKey.value  !== undefined && <p style={{ color: algo.color }}>Value: <b>{byKey.value.toFixed(2)}</b> {meta.unit}</p>}
-        {byKey.ma     !== undefined && <p style={{ color: 'rgba(255,255,255,0.7)' }}>MA-10: <b>{byKey.ma.toFixed(2)}</b> {meta.unit}</p>}
+        {byKey.ma     !== undefined && <p style={{ color: c.ts }}>MA-10: <b>{byKey.ma.toFixed(2)}</b> {meta.unit}</p>}
         {byKey.hi     !== undefined && byKey.lo !== undefined && (
-          <p style={{ color: 'rgba(255,255,255,0.35)' }}>Band: {byKey.lo.toFixed(2)} – {byKey.hi.toFixed(2)}</p>
+          <p style={{ color: c.tm }}>Band: {byKey.lo.toFixed(2)} – {byKey.hi.toFixed(2)}</p>
         )}
       </div>
     )
@@ -2462,36 +2463,42 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      style={{
+        background: c.isDark ? 'rgba(0,0,0,0.72)' : 'rgba(15,23,42,0.35)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}
       onClick={onClose}
     >
       <div
         className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
         style={{
           maxWidth: '790px',
-          background: 'rgba(4,9,22,0.97)',
-          border: '1px solid rgba(255,255,255,0.13)',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)',
+          background: c.isDark ? 'rgba(4,9,22,0.97)' : 'rgba(255,255,255,0.96)',
+          border: `1px solid ${c.glassBorder}`,
+          boxShadow: c.isDark
+            ? '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)'
+            : '0 24px 64px rgba(15,23,42,0.24), inset 0 1px 0 rgba(255,255,255,0.95)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-[17px] font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
+            <h3 className="text-[17px] font-bold leading-tight" style={{ color: c.tp }}>
               {meta.label}{' '}
               <span style={{ color: algo.color }}>({meta.abbr})</span>
             </h3>
-            <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-[12px] mt-0.5" style={{ color: c.tm }}>
               Per-episode trend · {algo.label} · {data.length} episodes
             </p>
           </div>
           <button
             onClick={onClose}
             className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
+            style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}` }}
           >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)"
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={c.tm}
               strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
@@ -2502,34 +2509,34 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
         <div className="flex items-center gap-5 flex-wrap">
           <div className="flex items-center gap-2">
             <div className="w-6 h-[2px] rounded" style={{ background: algo.color }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Per-episode value</span>
+            <span className="text-[11px]" style={{ color: c.tm }}>Per-episode value</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-[2px] rounded" style={{ background: 'rgba(255,255,255,0.65)', borderTop: '2px dashed rgba(255,255,255,0.65)' }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>10-ep. moving avg.</span>
+            <div className="w-6 h-[2px] rounded" style={{ background: c.ts, borderTop: `2px dashed ${c.ts}` }} />
+            <span className="text-[11px]" style={{ color: c.tm }}>10-ep. moving avg.</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-3.5 rounded-sm" style={{ background: algo.color, opacity: 0.18 }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Confidence band</span>
+            <span className="text-[11px]" style={{ color: c.tm }}>Confidence band</span>
           </div>
         </div>
 
         {/* Chart */}
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 20 }}>
-            <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 4" />
+            <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
             <XAxis
               dataKey="episode"
-              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
-              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+              tick={c.chartAxis}
+              tickLine={c.chartTickLine}
+              axisLine={c.chartAxisLine}
+              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: c.chartLabel, fontSize: 11 }}
               interval={data.length <= 50 ? 0 : Math.floor(data.length / 10)}
             />
             <YAxis
-              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+              tick={c.chartAxis}
+              tickLine={c.chartTickLine}
+              axisLine={c.chartAxisLine}
               tickFormatter={(v) => `${v}`}
               width={52}
               domain={[
@@ -2555,13 +2562,13 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
               activeDot={{ r: 3.5, fill: algo.color }} strokeOpacity={0.85} isAnimationActive={false} />
 
             {/* Moving average overlay */}
-            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.72)" strokeWidth={2}
+            <Line type="monotone" dataKey="ma" stroke={c.ts} strokeWidth={2}
               dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
 
         {/* Summary stats row */}
-        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
           {[
             { label: 'First ep.', value: data[0]?.value.toFixed(2) },
             { label: 'Last ep.',  value: data[data.length - 1]?.value.toFixed(2) },
@@ -2569,9 +2576,9 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
             { label: 'Max',       value: Math.max(...data.map(d => d.value)).toFixed(2) },
           ].map(({ label, value }) => (
             <div key={label} className="text-center">
-              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</div>
+              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: c.tu }}>{label}</div>
               <div className="text-[15px] font-bold tabular-nums" style={{ color: algo.color }}>{value}</div>
-              <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>{meta.unit}</div>
+              <div className="text-[10px]" style={{ color: c.tu }}>{meta.unit}</div>
             </div>
           ))}
         </div>
@@ -3701,18 +3708,19 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
   data: EpisodePoint[]
   onClose: () => void
 }) => {
+  const c = useDashColors()
   const meta = SELFISH_METRIC_META[metricKey]
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null
     const byKey = Object.fromEntries(payload.map((p: any) => [p.dataKey, p.value]))
     return (
-      <div style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', fontSize: 11 }}>
-        <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Episode {label}</p>
+      <div style={{ background: c.tooltipBg, border: `1px solid ${c.tooltipBorder}`, borderRadius: 10, padding: '8px 12px', fontSize: 11, boxShadow: c.tooltipShadow }}>
+        <p style={{ color: c.tm, marginBottom: 4 }}>Episode {label}</p>
         {byKey.value !== undefined && <p style={{ color: algoColor }}>Value: <b>{byKey.value.toFixed(2)}</b> {meta.unit}</p>}
-        {byKey.ma    !== undefined && <p style={{ color: 'rgba(255,255,255,0.7)' }}>MA-10: <b>{byKey.ma.toFixed(2)}</b> {meta.unit}</p>}
+        {byKey.ma    !== undefined && <p style={{ color: c.ts }}>MA-10: <b>{byKey.ma.toFixed(2)}</b> {meta.unit}</p>}
         {byKey.hi    !== undefined && byKey.lo !== undefined && (
-          <p style={{ color: 'rgba(255,255,255,0.35)' }}>Band: {byKey.lo.toFixed(2)} – {byKey.hi.toFixed(2)}</p>
+          <p style={{ color: c.tm }}>Band: {byKey.lo.toFixed(2)} – {byKey.hi.toFixed(2)}</p>
         )}
       </div>
     )
@@ -3723,26 +3731,37 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      style={{
+        background: c.isDark ? 'rgba(0,0,0,0.72)' : 'rgba(15,23,42,0.35)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}
       onClick={onClose}>
       <div className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
-        style={{ maxWidth: '780px', background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.13)', boxShadow: '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)' }}
+        style={{
+          maxWidth: '780px',
+          background: c.isDark ? 'rgba(4,9,22,0.97)' : 'rgba(255,255,255,0.96)',
+          border: `1px solid ${c.glassBorder}`,
+          boxShadow: c.isDark
+            ? '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)'
+            : '0 24px 64px rgba(15,23,42,0.24), inset 0 1px 0 rgba(255,255,255,0.95)',
+        }}
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-[17px] font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
+            <h3 className="text-[17px] font-bold leading-tight" style={{ color: c.tp }}>
               {meta.label} <span style={{ color: algoColor }}>· Selfish Routing</span>
             </h3>
-            <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-[12px] mt-0.5" style={{ color: c.tm }}>
               Per-episode trend · Selfish Routing · {data.length.toLocaleString()} episodes
             </p>
           </div>
           <button onClick={onClose}
             className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}` }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={c.tm} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
@@ -3752,47 +3771,47 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
         <div className="flex items-center gap-5 flex-wrap">
           <div className="flex items-center gap-2">
             <div className="w-6 h-[2px] rounded" style={{ background: algoColor }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Per-episode value</span>
+            <span className="text-[11px]" style={{ color: c.tm }}>Per-episode value</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-[2px] rounded" style={{ background: 'rgba(255,255,255,0.65)', borderTop: '2px dashed rgba(255,255,255,0.65)' }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>10-ep. moving avg.</span>
+            <div className="w-6 h-[2px] rounded" style={{ background: c.ts, borderTop: `2px dashed ${c.ts}` }} />
+            <span className="text-[11px]" style={{ color: c.tm }}>10-ep. moving avg.</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-3.5 rounded-sm" style={{ background: algoColor, opacity: 0.18 }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Confidence band</span>
+            <span className="text-[11px]" style={{ color: c.tm }}>Confidence band</span>
           </div>
         </div>
 
         {/* Chart */}
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={sampled} margin={{ top: 8, right: 12, left: 0, bottom: 20 }}>
-            <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 4" />
+            <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
             <XAxis dataKey="episode"
-              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
-              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+              tick={c.chartAxis}
+              tickLine={c.chartTickLine}
+              axisLine={c.chartAxisLine}
+              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: c.chartLabel, fontSize: 11 }}
               interval={Math.floor(sampled.length / 10)}
             />
-            <YAxis tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+            <YAxis tick={c.chartAxis}
+              tickLine={c.chartTickLine}
+              axisLine={c.chartAxisLine}
               tickFormatter={v => `${v}`} width={52} />
             <Tooltip content={<CustomTooltip />} />
             <Area type="monotone" dataKey="hi" stroke="none"
               fill={algoColor} fillOpacity={0.12} legendType="none" isAnimationActive={false} />
             <Area type="monotone" dataKey="lo" stroke="none"
-              fill="rgba(4,9,22,1)" fillOpacity={1} legendType="none" isAnimationActive={false} />
+              fill={c.isDark ? '#040916' : '#eaf1fb'} fillOpacity={1} legendType="none" isAnimationActive={false} />
             <Line type="monotone" dataKey="value" stroke={algoColor} strokeWidth={1.5}
               dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
-            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.65)" strokeWidth={1.5}
+            <Line type="monotone" dataKey="ma" stroke={c.ts} strokeWidth={1.5}
               dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
           {[
             { label: 'First ep.', value: data[0]?.value.toFixed(2) },
             { label: 'Last ep.',  value: data[data.length - 1]?.value.toFixed(2) },
@@ -3800,9 +3819,9 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
             { label: 'Max',       value: Math.max(...sampled.map(d => d.value)).toFixed(2) },
           ].map(({ label, value }) => (
             <div key={label} className="text-center">
-              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</div>
+              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: c.tu }}>{label}</div>
               <div className="text-[15px] font-bold tabular-nums" style={{ color: algoColor }}>{value}</div>
-              <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>{meta.unit}</div>
+              <div className="text-[10px]" style={{ color: c.tu }}>{meta.unit}</div>
             </div>
           ))}
         </div>
