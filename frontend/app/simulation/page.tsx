@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect, useRef, memo } from 'react'
+import { Suspense, useState, useEffect, useRef, memo, createContext, useContext } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import {
@@ -9,53 +9,217 @@ import {
 } from 'recharts'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { SimulationControls } from '@/components/SimulationControls'
+import { useTheme } from '@/contexts/ThemeContext'
+
+// ─── Dashboard theme context ───────────────────────────────────────────────────
+
+interface DashColors {
+  isDark: boolean
+  pageBg: string; pageBgGrad: string
+  obuBg: string; obuBorder: string; obuShadow: string
+  screenBg: string; screenBorder: string; screenShadow: string; screenGloss: string
+  contentBg: string; contentBorder: string
+  sidebarBg: string; sidebarBorder: string
+  statusBg: string; statusBorder: string
+  glassBg: string; glassBorder: string; glassShadow: string
+  tp: string; ts: string; tm: string; tu: string   // text primary/secondary/muted/ultra-muted
+  divider: string
+  badgeBg: string; badgeBorder: string; badgeColor: string
+  itemBg: string; itemBgMd: string; itemBgHi: string
+  chartGrid: string
+  chartAxis: { fill: string; fontSize: number }
+  chartAxisLine: { stroke: string }
+  chartTickLine: { stroke: string }
+  chartLabel: string
+  barTrack: string; ringTrack: string
+  tooltipBg: string; tooltipBorder: string; tooltipColor: string; tooltipShadow: string
+  screwBg: string; screwShadow: string
+  blob1: string; blob2: string; blob3: string
+  logoClass: string
+  hoverBg: string; hoverBgMd: string; hoverColor: string
+}
+
+function buildDashColors(isDark: boolean): DashColors {
+  return isDark ? {
+    isDark: true,
+    pageBg: '#060112',
+    pageBgGrad: 'linear-gradient(135deg, #060112 0%, #0b0320 40%, #040c1c 100%)',
+    obuBg: 'rgba(8,14,32,0.48)', obuBorder: 'rgba(255,255,255,0.11)',
+    obuShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3)',
+    screenBg: 'rgba(6,11,26,0.45)', screenBorder: 'rgba(255,255,255,0.08)',
+    screenShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+    screenGloss: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%)',
+    contentBg: 'rgba(4,9,22,0.82)', contentBorder: 'rgba(255,255,255,0.07)',
+    sidebarBg: 'rgba(0,0,0,0.2)', sidebarBorder: 'rgba(255,255,255,0.06)',
+    statusBg: 'rgba(0,0,0,0.35)', statusBorder: 'rgba(255,255,255,0.06)',
+    glassBg: 'linear-gradient(155deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
+    glassBorder: 'rgba(255,255,255,0.14)',
+    glassShadow: 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)',
+    tp: 'rgba(255,255,255,0.9)', ts: 'rgba(255,255,255,0.52)',
+    tm: 'rgba(255,255,255,0.35)', tu: 'rgba(255,255,255,0.28)',
+    divider: 'rgba(255,255,255,0.06)',
+    badgeBg: 'rgba(255,255,255,0.07)', badgeBorder: 'rgba(255,255,255,0.1)', badgeColor: 'rgba(255,255,255,0.45)',
+    itemBg: 'rgba(255,255,255,0.04)', itemBgMd: 'rgba(255,255,255,0.07)', itemBgHi: 'rgba(255,255,255,0.12)',
+    chartGrid: 'rgba(255,255,255,0.05)',
+    chartAxis: { fill: 'rgba(255,255,255,0.28)', fontSize: 10 },
+    chartAxisLine: { stroke: 'rgba(255,255,255,0.08)' },
+    chartTickLine: { stroke: 'rgba(255,255,255,0.08)' },
+    chartLabel: 'rgba(255,255,255,0.28)',
+    barTrack: 'rgba(255,255,255,0.1)', ringTrack: 'rgba(255,255,255,0.08)',
+    tooltipBg: 'rgba(4,9,22,0.97)', tooltipBorder: 'rgba(255,255,255,0.12)',
+    tooltipColor: 'rgba(255,255,255,0.88)', tooltipShadow: '0 12px 24px rgba(0,0,0,0.45)',
+    screwBg: 'linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))',
+    screwShadow: 'inset 0 1px 2px rgba(0,0,0,0.6)',
+    blob1: 'radial-gradient(circle at 40% 40%, rgba(6,182,212,0.28) 0%, transparent 70%)',
+    blob2: 'radial-gradient(circle at 60% 55%, rgba(139,92,246,0.24) 0%, transparent 70%)',
+    blob3: 'radial-gradient(circle at 50% 50%, rgba(37,99,235,0.18) 0%, transparent 70%)',
+    logoClass: 'brightness-0 invert opacity-80',
+    hoverBg: 'rgba(255,255,255,0.07)', hoverBgMd: 'rgba(255,255,255,0.14)', hoverColor: 'rgba(255,255,255,0.9)',
+  } : {
+    isDark: false,
+    pageBg: '#e8f0fb',
+    pageBgGrad: 'linear-gradient(135deg, #e8f0fb 0%, #dce8f8 42%, #f1f6fd 100%)',
+    obuBg: 'rgba(255,255,255,0.62)', obuBorder: 'rgba(148,163,184,0.38)',
+    obuShadow: '0 24px 60px rgba(15,23,42,0.14), 0 8px 26px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.95)',
+    screenBg: 'rgba(255,255,255,0.76)', screenBorder: 'rgba(148,163,184,0.32)',
+    screenShadow: 'inset 0 1px 0 rgba(255,255,255,0.94)',
+    screenGloss: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 100%)',
+    contentBg: 'rgba(255,255,255,0.74)', contentBorder: 'rgba(148,163,184,0.35)',
+    sidebarBg: 'rgba(255,255,255,0.68)', sidebarBorder: 'rgba(148,163,184,0.32)',
+    statusBg: 'rgba(255,255,255,0.72)', statusBorder: 'rgba(148,163,184,0.35)',
+    glassBg: 'linear-gradient(155deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.78) 100%)',
+    glassBorder: 'rgba(148,163,184,0.42)',
+    glassShadow: 'inset 0 1px 0 rgba(255,255,255,0.98), 0 6px 22px rgba(15,23,42,0.1), 0 1px 3px rgba(15,23,42,0.08)',
+    tp: '#0b1220', ts: '#1f2d3d', tm: '#334155', tu: '#516274',
+    divider: 'rgba(15,23,42,0.2)',
+    badgeBg: 'rgba(255,255,255,0.9)', badgeBorder: 'rgba(148,163,184,0.4)', badgeColor: '#334155',
+    itemBg: 'rgba(255,255,255,0.82)', itemBgMd: 'rgba(255,255,255,0.9)', itemBgHi: 'rgba(255,255,255,0.98)',
+    chartGrid: 'rgba(15,23,42,0.14)',
+    chartAxis: { fill: '#334155', fontSize: 10 },
+    chartAxisLine: { stroke: 'rgba(15,23,42,0.2)' },
+    chartTickLine: { stroke: 'rgba(15,23,42,0.16)' },
+    chartLabel: '#475569',
+    barTrack: 'rgba(15,23,42,0.08)', ringTrack: 'rgba(15,23,42,0.1)',
+    tooltipBg: 'rgba(15,23,42,0.97)', tooltipBorder: 'rgba(255,255,255,0.08)',
+    tooltipColor: 'rgba(255,255,255,0.88)', tooltipShadow: '0 12px 24px rgba(15,23,42,0.2)',
+    screwBg: 'linear-gradient(135deg,rgba(255,255,255,0.95),rgba(255,255,255,0.62))',
+    screwShadow: 'inset 0 1px 2px rgba(15,23,42,0.14)',
+    blob1: 'radial-gradient(circle at 40% 40%, rgba(6,182,212,0.14) 0%, transparent 70%)',
+    blob2: 'radial-gradient(circle at 60% 55%, rgba(139,92,246,0.12) 0%, transparent 70%)',
+    blob3: 'radial-gradient(circle at 50% 50%, rgba(37,99,235,0.1) 0%, transparent 70%)',
+    logoClass: 'opacity-90',
+    hoverBg: 'rgba(219,234,254,0.86)', hoverBgMd: 'rgba(191,219,254,0.78)', hoverColor: '#0f172a',
+  }
+}
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduced(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+  return reduced
+}
+
+function usePageEntrance() {
+  const reducedMotion = usePrefersReducedMotion()
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    if (reducedMotion) {
+      setReady(true)
+      return
+    }
+    const id = requestAnimationFrame(() => setReady(true))
+    return () => cancelAnimationFrame(id)
+  }, [reducedMotion])
+  return { reducedMotion, ready }
+}
+
+const DashColorsContext = createContext<DashColors>(buildDashColors(true))
+const useDashColors = () => useContext(DashColorsContext)
 
 // react-gauge-chart uses D3 and must be client-only (no SSR)
 const GaugeComponent = dynamic(() => import('react-gauge-chart'), { ssr: false })
 
 // ─── Status Bar ───────────────────────────────────────────────────────────────
 
+function DashThemeToggle() {
+  const { theme, toggle } = useTheme()
+  const c = useDashColors()
+  const isDark = theme === 'dark'
+  const [spinKey, setSpinKey] = useState(0)
+  const handleToggle = () => { setSpinKey(k => k + 1); toggle() }
+  return (
+    <button
+      onClick={handleToggle}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 flex-shrink-0"
+      style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}`, color: c.badgeColor }}
+      onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = c.hoverBgMd; el.style.color = c.hoverColor }}
+      onMouseLeave={(e) => { const el = e.currentTarget as HTMLElement; el.style.background = c.badgeBg; el.style.color = c.badgeColor }}
+    >
+      <div key={spinKey} style={{ animation: spinKey > 0 ? 'spin-icon 0.42s cubic-bezier(0.34,1.3,0.64,1) forwards' : 'none', display: 'flex' }}>
+        {isDark ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        ) : (
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        )}
+      </div>
+    </button>
+  )
+}
+
 const StatusBar = () => {
   const router = useRouter()
+  const c = useDashColors()
   const NAV_LINKS = [
     { label: 'About',        href: '/#about' },
-    { label: 'The Research', href: '/research' },
     { label: 'Contact Us',   href: '/#contact' },
   ]
   return (
     <div className="flex items-center justify-between px-7 py-2.5 flex-shrink-0"
-      style={{ background: 'rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-      {/* Logo — click to go home */}
+      style={{ background: c.statusBg, borderBottom: `1px solid ${c.statusBorder}` }}>
       <button
         onClick={() => router.push('/')}
-        className="flex items-center gap-2.5 transition-opacity duration-150 hover:opacity-80"
+        className="flex items-center gap-2.5 transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md"
       >
-        <img src="/icons/civiq-logo.png" alt="Civiq" className="w-5 h-5 object-contain brightness-0 invert opacity-80" />
-        <span className="font-bold text-[13px] tracking-widest" style={{ color: 'rgba(255,255,255,0.75)' }}>CIVIQ</span>
-        <span className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.3)' }}>
+        <img src="/icons/civiq-logo.png" alt="Civiq" className={`w-5 h-5 object-contain ${c.logoClass}`} />
+        <span className="font-bold text-[13px] tracking-widest" style={{ color: c.tp }}>CIVIQ</span>
+        <span className="text-[10px] font-medium" style={{ color: c.tu }}>
           ·&nbsp; A Hierarchical Multi-Agent Coordination Framework
         </span>
       </button>
-      {/* Nav buttons */}
       <div className="flex items-center gap-1">
         {NAV_LINKS.map(({ label, href }) => (
           <button
             key={label}
             onClick={() => router.push(href)}
-            className="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150"
-            style={{ color: 'rgba(255,255,255,0.52)', background: 'transparent' }}
+            className="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+            style={{ color: c.ts, background: 'transparent' }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.9)'
-              ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'
+              (e.currentTarget as HTMLElement).style.color = c.hoverColor
+              ;(e.currentTarget as HTMLElement).style.background = c.hoverBg
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.52)'
+              (e.currentTarget as HTMLElement).style.color = c.ts
               ;(e.currentTarget as HTMLElement).style.background = 'transparent'
             }}
           >
             {label}
           </button>
         ))}
+        <div className="ml-2"><DashThemeToggle /></div>
       </div>
     </div>
   )
@@ -430,19 +594,22 @@ const ALGO_LIST = [ALGO.civiq, ALGO.qmix, ALGO.selfish]
 
 // ─── Reusable UI primitives ────────────────────────────────────────────────────
 
-const GlassCard = ({
+function GlassCard({
   children, className = '', style = {}, onClick, onMouseEnter, onMouseLeave,
-}: { children: React.ReactNode; className?: string; style?: React.CSSProperties; onClick?: () => void; onMouseEnter?: React.MouseEventHandler<HTMLDivElement>; onMouseLeave?: React.MouseEventHandler<HTMLDivElement> }) => (
-  <div className={className} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{
-    background: 'linear-gradient(155deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
-    backdropFilter: 'blur(24px)',
-    WebkitBackdropFilter: 'blur(24px)',
-    border: '1px solid rgba(255,255,255,0.14)',
-    borderRadius: '16px',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)',
-    ...style,
-  }}>{children}</div>
-)
+}: { children: React.ReactNode; className?: string; style?: React.CSSProperties; onClick?: () => void; onMouseEnter?: React.MouseEventHandler<HTMLDivElement>; onMouseLeave?: React.MouseEventHandler<HTMLDivElement> }) {
+  const c = useDashColors()
+  return (
+    <div className={className} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{
+      background: c.glassBg,
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      border: `1px solid ${c.glassBorder}`,
+      borderRadius: '16px',
+      boxShadow: c.glassShadow,
+      ...style,
+    }}>{children}</div>
+  )
+}
 
 // ─── Sparkline ────────────────────────────────────────────────────────────────
 
@@ -481,14 +648,15 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
-const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right', changeLabel, change2, changeLabel2, valueAlign = 'left' }: {
+function KpiCard({ label, abbr, value, unit, color, colorDim, borderColor, change, lowerBetter, sparkData, onClick, description, descriptionSide = 'right', changeLabel, change2, changeLabel2, valueAlign = 'left' }: {
   label: string; abbr?: string; value: string | number; unit: string
   color: string; colorDim?: string; borderColor?: string
   change?: number; lowerBetter?: boolean; sparkData?: number[]; onClick?: () => void; description?: string; descriptionSide?: 'left' | 'right'
   changeLabel?: string
   change2?: number; changeLabel2?: string
   valueAlign?: 'left' | 'center'
-}) => {
+}) {
+  const c = useDashColors()
   // Green = good outcome, regardless of direction
   const isGood  = change  === undefined ? true : lowerBetter ? change  <= 0 : change  >= 0
   const isGood2 = change2 === undefined ? true : lowerBetter ? change2 <= 0 : change2 >= 0
@@ -500,18 +668,18 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
     <GlassCard className="group relative z-0 hover:z-30 p-4 flex flex-col gap-2 transition-all duration-200"
       onClick={onClick}
       onMouseEnter={onClick ? (e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = borderColor?.replace('0.3', '0.5') ?? 'rgba(255,255,255,0.25)'
-        ;(e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 1px ${borderColor?.replace('0.3', '0.15') ?? 'transparent'}, inset 0 1px 0 rgba(255,255,255,0.16), 0 12px 40px rgba(0,0,0,0.4)`
+        (e.currentTarget as HTMLElement).style.borderColor = borderColor?.replace('0.3', '0.5') ?? c.glassBorder
+        ;(e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 1px ${borderColor?.replace('0.3', '0.15') ?? 'transparent'}, ${c.glassShadow}`
         ;(e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'
       } : undefined}
       onMouseLeave={onClick ? (e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = borderColor?.replace('0.3', '0.25') ?? 'rgba(255,255,255,0.14)'
-        ;(e.currentTarget as HTMLElement).style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)'
+        (e.currentTarget as HTMLElement).style.borderColor = borderColor?.replace('0.3', '0.25') ?? c.glassBorder
+        ;(e.currentTarget as HTMLElement).style.boxShadow = c.glassShadow
         ;(e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
       } : undefined}
       style={{
         background: colorDim
-          ? `linear-gradient(145deg, ${colorDim.replace('0.12', '0.10')} 0%, rgba(255,255,255,0.03) 100%)`
+          ? `linear-gradient(145deg, ${colorDim.replace('0.12', '0.10')} 0%, ${c.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.45)'} 100%)`
           : undefined,
         border: borderColor ? `1px solid ${borderColor.replace('0.3', '0.25')}` : undefined,
         cursor: onClick ? 'pointer' : 'default',
@@ -521,7 +689,7 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
       <div className="flex items-center gap-2 min-w-0 pr-8">
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="text-[11px] font-semibold uppercase tracking-wider leading-none truncate"
-            style={{ color: 'rgba(255,255,255,0.5)' }}>
+            style={{ color: c.ts }}>
             {label}
           </span>
           {onClick && (
@@ -529,7 +697,7 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
               className="flex-shrink-0 text-[9px] font-semibold px-2 py-0.5 rounded-full transition-all duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-[1px]"
               style={{
                 background: 'rgba(56,189,248,0.1)',
-                color: 'rgba(186,230,253,0.7)',
+                color: c.isDark ? 'rgba(186,230,253,0.7)' : 'rgba(3,105,161,0.9)',
                 border: '1px solid rgba(56,189,248,0.22)',
               }}
             >
@@ -547,7 +715,7 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
             style={{
               background: 'rgba(6,182,212,0.2)',
               border: '1px solid rgba(6,182,212,0.65)',
-              color: 'rgba(217,249,255,0.95)',
+              color: c.isDark ? 'rgba(217,249,255,0.95)' : 'rgba(3,105,161,0.95)',
               boxShadow: '0 0 0 1px rgba(0,0,0,0.2) inset',
             }}
           >
@@ -557,10 +725,10 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
             className="pointer-events-none absolute top-[calc(100%+8px)] w-[280px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/info:opacity-100 group-hover/info:translate-y-0"
             style={{
               ...(descriptionSide === 'left' ? { right: 0 } : { right: 0 }),
-              background: 'rgba(4,9,22,0.97)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: 'rgba(255,255,255,0.88)',
-              boxShadow: '0 12px 24px rgba(0,0,0,0.45)',
+              background: c.tooltipBg,
+              border: `1px solid ${c.tooltipBorder}`,
+              color: c.tooltipColor,
+              boxShadow: c.tooltipShadow,
               zIndex: 90,
             }}
           >
@@ -575,7 +743,7 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
           {/* Value + unit */}
           <div className="flex items-baseline gap-1.5">
             <span className="text-[26px] font-bold tabular-nums leading-none" style={{ color }}>{value}</span>
-            <span className="text-[12px] font-medium" style={{ color: 'rgba(255,255,255,0.38)' }}>{unit}</span>
+            <span className="text-[12px] font-medium" style={{ color: c.tm }}>{unit}</span>
           </div>
           {/* Change badges below value */}
           {change !== undefined && (
@@ -584,7 +752,7 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
                 {changeArrow} {Math.abs(change).toFixed(1)}%
               </span>
               {changeLabel && (
-                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{changeLabel}</span>
+                <span className="text-[10px]" style={{ color: c.tu }}>{changeLabel}</span>
               )}
             </div>
           )}
@@ -594,7 +762,7 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
                 {changeArrow2} {Math.abs(change2).toFixed(1)}%
               </span>
               {changeLabel2 && (
-                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{changeLabel2}</span>
+                <span className="text-[10px]" style={{ color: c.tu }}>{changeLabel2}</span>
               )}
             </div>
           )}
@@ -606,22 +774,26 @@ const KpiCard = ({ label, abbr, value, unit, color, colorDim, borderColor, chang
   )
 }
 
-const HBar = ({ value, max, color, dim = false }: { value: number; max: number; color: string; dim?: boolean }) => (
-  <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.25)' }}>
-    <div className="h-full rounded-full transition-all duration-700"
-      style={{ width: `${Math.min(100, (value / max) * 100)}%`, background: color, opacity: dim ? 0.45 : 1 }} />
-  </div>
-)
+function HBar({ value, max, color, dim = false }: { value: number; max: number; color: string; dim?: boolean }) {
+  const c = useDashColors()
+  return (
+    <div className="flex-1 h-1.5 rounded-full" style={{ background: c.barTrack, boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15)' }}>
+      <div className="h-full rounded-full transition-all duration-700"
+        style={{ width: `${Math.min(100, (value / max) * 100)}%`, background: color, opacity: dim ? 0.45 : 1 }} />
+    </div>
+  )
+}
 
-const RingChart = ({ value, max = 100, color, size = 88 }: {
+function RingChart({ value, max = 100, color, size = 88 }: {
   value: number; max?: number; color: string; size?: number
-}) => {
+}) {
+  const c = useDashColors()
   const r = (size - 14) / 2
   const circ = 2 * Math.PI * r
   const dash = (value / max) * circ
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ringTrack} strokeWidth="8" />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="8"
         strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"
         style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }} />
@@ -654,6 +826,7 @@ function rLabel(i: number) {
 }
 
 function RadarTooltip({ axisIdx, scores }: { axisIdx: number; scores: Record<AlgoKey, number[]> }) {
+  const c = useDashColors()
   const { x: lx, y: ly } = rLabel(axisIdx)
   const tipW = 148
   const tipH = 68
@@ -662,13 +835,13 @@ function RadarTooltip({ axisIdx, scores }: { axisIdx: number; scores: Record<Alg
   return (
     <g style={{ pointerEvents: 'none' }}>
       <rect x={tx} y={ty} width={tipW} height={tipH} rx="6"
-        fill="rgba(8,8,24,0.94)" stroke="rgba(255,255,255,0.14)" strokeWidth="1" />
-      <text x={tx + 8} y={ty + 14} fontSize="9.5" fill="rgba(255,255,255,0.65)"
+        fill={c.tooltipBg} stroke={c.tooltipBorder} strokeWidth="1" />
+      <text x={tx + 8} y={ty + 14} fontSize="9.5" fill={c.tooltipColor}
         fontWeight="700" textAnchor="start">{RADAR_AXES[axisIdx]}</text>
       {ALGO_LIST.map((a, ai) => (
         <g key={a.id}>
           <circle cx={tx + 9} cy={ty + 26 + ai * 13} r="3.5" fill={a.color} />
-          <text x={tx + 17} y={ty + 30 + ai * 13} fontSize="9" fill="rgba(255,255,255,0.78)" textAnchor="start">
+          <text x={tx + 17} y={ty + 30 + ai * 13} fontSize="9" fill={c.tooltipColor} textAnchor="start">
             {a.label}: {Math.round(scores[a.id][axisIdx] * 100)}%
           </text>
         </g>
@@ -677,18 +850,24 @@ function RadarTooltip({ axisIdx, scores }: { axisIdx: number; scores: Record<Alg
   )
 }
 
-const RadarChart = ({ scores }: { scores: Record<AlgoKey, number[]> }) => {
+function RadarChart({ scores }: { scores: Record<AlgoKey, number[]> }) {
+  const c = useDashColors()
   const [hoveredAxis, setHoveredAxis] = useState<number | null>(null)
+  const gridStroke = c.chartGrid
+  const axisStrokeBase = c.isDark ? 'rgba(255,255,255,0.11)' : 'rgba(15,23,42,0.1)'
+  const axisStrokeHover = c.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(15,23,42,0.35)'
+  const labelBase = c.isDark ? 'rgba(255,255,255,0.45)' : '#9ca3af'
+  const labelHover = c.tp
   return (
     <svg viewBox="0 0 350 350" className="w-full max-w-[320px] mx-auto" style={{ overflow: 'visible' }}>
       {[0.25, 0.5, 0.75, 1].map((r) => (
         <polygon key={r} points={rPts(Array(7).fill(r))}
-          fill="none" stroke="rgba(255,255,255,0.11)" strokeWidth="1" />
+          fill="none" stroke={gridStroke} strokeWidth="1" />
       ))}
       {RADAR_AXES.map((_, i) => {
         const pt = { x: RC.x + RR * Math.cos(-Math.PI / 2 + (2 * Math.PI * i) / RADAR_AXES.length), y: RC.y + RR * Math.sin(-Math.PI / 2 + (2 * Math.PI * i) / RADAR_AXES.length) }
         return <line key={i} x1={RC.x} y1={RC.y} x2={pt.x} y2={pt.y}
-          stroke={hoveredAxis === i ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.11)'} strokeWidth="1" />
+          stroke={hoveredAxis === i ? axisStrokeHover : axisStrokeBase} strokeWidth="1" />
       })}
       <polygon points={rPts(scores.selfish)} fill="rgba(248,113,113,0.12)" stroke="#F87171" strokeWidth="1.5" strokeLinejoin="round" />
       <polygon points={rPts(scores.qmix)}    fill="rgba(167,139,250,0.12)" stroke="#A78BFA" strokeWidth="1.5" strokeLinejoin="round" />
@@ -698,7 +877,7 @@ const RadarChart = ({ scores }: { scores: Record<AlgoKey, number[]> }) => {
         const isHovered = hoveredAxis === i
         return (
           <text key={i} x={x} y={y} textAnchor="middle" dominantBaseline="middle"
-            fontSize="10" fill={isHovered ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.45)'}
+            fontSize="10" fill={isHovered ? labelHover : labelBase}
             fontWeight={isHovered ? '700' : '500'}>{label}</text>
         )
       })}
@@ -946,32 +1125,33 @@ function MetricRow({ label, unit, lv, rv, lowerBetter, la, ra, intFmt }: {
   label: string; unit: string; lv: number; rv: number
   lowerBetter: boolean; la: AlgoData; ra: AlgoData; intFmt?: boolean
 }) {
+  const c = useDashColors()
   const fmt = (v: number) => intFmt ? String(Math.round(v)) : String(v)
   const d = calcDelta(lv, rv, lowerBetter)
   const leftWins = d.leftWins === true
   const rightWins = d.leftWins === false
   const tie = d.leftWins === null
   const WIN = '#4ADE80'
-  const leftValColor  = leftWins  ? WIN : rightWins ? 'rgba(255,255,255,0.38)' : 'rgba(255,255,255,0.72)'
-  const rightValColor = rightWins ? WIN : leftWins  ? 'rgba(255,255,255,0.38)' : 'rgba(255,255,255,0.72)'
+  const leftValColor  = leftWins  ? WIN : rightWins ? c.tm : c.tp
+  const rightValColor = rightWins ? WIN : leftWins  ? c.tm : c.tp
   const arrow = lv < rv ? '▼' : lv > rv ? '▲' : '—'
-  const deltaColor = tie ? 'rgba(255,255,255,0.35)' : leftWins ? '#4ADE80' : '#F87171'
-  const deltaBg    = tie ? 'rgba(255,255,255,0.05)' : leftWins ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)'
-  const deltaBorder = tie ? 'rgba(255,255,255,0.1)' : leftWins ? 'rgba(74,222,128,0.25)' : 'rgba(248,113,113,0.25)'
+  const deltaColor = tie ? c.tm : leftWins ? '#4ADE80' : '#F87171'
+  const deltaBg    = tie ? c.itemBg : leftWins ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)'
+  const deltaBorder = tie ? c.divider : leftWins ? 'rgba(74,222,128,0.25)' : 'rgba(248,113,113,0.25)'
   const deltaLabel = tie ? '— tied' : `${arrow} ${Math.abs(d.diff) < 1 ? Math.abs(d.diff).toFixed(2) : Math.abs(d.diff).toFixed(1)} (${d.pct.toFixed(1)}%)`
 
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-3"
-      style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      style={{ borderBottom: `1px solid ${c.divider}` }}>
       {/* Left value */}
       <div className="text-right">
         <div className="text-[21px] font-black tabular-nums leading-none" style={{ color: leftValColor }}>{fmt(lv)}</div>
-        <div className="text-[9px] mt-0.5 tabular-nums" style={{ color: 'rgba(255,255,255,0.28)' }}>{unit}</div>
+        <div className="text-[9px] mt-0.5 tabular-nums" style={{ color: c.tu }}>{unit}</div>
         {leftWins && <div className="text-[8px] font-bold mt-1 uppercase tracking-wider" style={{ color: WIN }}>wins</div>}
       </div>
       {/* Center */}
       <div className="text-center" style={{ minWidth: '148px' }}>
-        <div className="text-[10px] font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.52)' }}>{label}</div>
+        <div className="text-[10px] font-semibold mb-1.5" style={{ color: c.ts }}>{label}</div>
         <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold"
           style={{ background: deltaBg, color: deltaColor, border: `1px solid ${deltaBorder}` }}>
           {deltaLabel}
@@ -980,7 +1160,7 @@ function MetricRow({ label, unit, lv, rv, lowerBetter, la, ra, intFmt }: {
       {/* Right value */}
       <div className="text-left">
         <div className="text-[21px] font-black tabular-nums leading-none" style={{ color: rightValColor }}>{fmt(rv)}</div>
-        <div className="text-[9px] mt-0.5 tabular-nums" style={{ color: 'rgba(255,255,255,0.28)' }}>{unit}</div>
+        <div className="text-[9px] mt-0.5 tabular-nums" style={{ color: c.tu }}>{unit}</div>
         {rightWins && <div className="text-[8px] font-bold mt-1 uppercase tracking-wider" style={{ color: WIN }}>wins</div>}
       </div>
     </div>
@@ -988,11 +1168,12 @@ function MetricRow({ label, unit, lv, rv, lowerBetter, la, ra, intFmt }: {
 }
 
 function CompareSection({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  const c = useDashColors()
   return (
     <GlassCard className="p-5">
-      <div className="flex items-center gap-2 mb-1 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="flex items-center gap-2 mb-1 pb-3" style={{ borderBottom: `1px solid ${c.divider}` }}>
         {icon}
-        <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>{title}</h3>
+        <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>{title}</h3>
       </div>
       {children}
     </GlassCard>
@@ -1000,24 +1181,26 @@ function CompareSection({ title, icon, children }: { title: string; icon: React.
 }
 
 function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => void }) {
+  const c = useDashColors()
   const la = ALGO[config.left]
   const ra = ALGO[config.right]
   const bothLearning = la.system.training.length > 0 && ra.system.training.length > 0
   const convL = bothLearning ? detectConvergence(la.system.training) : null
   const convR = bothLearning ? detectConvergence(ra.system.training) : null
 
+  const iconStroke = c.ts
   const routingIcon = (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={iconStroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 12h18M3 6h18M3 18h12" />
     </svg>
   )
   const environIcon = (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={iconStroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2a10 10 0 0 1 0 20 10 10 0 0 1 0-20z" /><path d="M12 8v4l3 3" />
     </svg>
   )
   const computeIcon = (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={iconStroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9h6M9 12h6M9 15h4" />
     </svg>
   )
@@ -1027,9 +1210,9 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
       {/* Back */}
       <button onClick={onBack}
         className="flex items-center gap-1.5 text-[11px] transition-colors"
-        style={{ color: 'rgba(255,255,255,0.38)' }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.78)' }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.38)' }}>
+        style={{ color: c.tm }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = c.tp }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = c.tm }}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
@@ -1040,19 +1223,19 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
       <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
         <div className="rounded-2xl p-4 text-center" style={{ background: la.colorDim, border: `1px solid ${la.border}` }}>
           <div className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: la.color }}>Side A</div>
-          <div className="text-[16px] font-black leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>{la.label}</div>
+          <div className="text-[16px] font-black leading-tight" style={{ color: c.tp }}>{la.label}</div>
           <div className="text-[10px] mt-0.5 font-semibold" style={{ color: la.color }}>{la.sublabel}</div>
         </div>
         <div className="flex flex-col items-center justify-center gap-1 px-2">
-          <div className="text-[13px] font-black" style={{ color: 'rgba(255,255,255,0.28)' }}>VS</div>
-          <div className="text-[9px] text-center mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.22)' }}>
+          <div className="text-[13px] font-black" style={{ color: c.tm }}>VS</div>
+          <div className="text-[9px] text-center mt-1 leading-relaxed" style={{ color: c.tu }}>
             {MAP_LABELS[config.mapSize] || config.mapSize}<br />
             {TRAFFIC_LABELS[config.traffic] || config.traffic}
           </div>
         </div>
         <div className="rounded-2xl p-4 text-center" style={{ background: ra.colorDim, border: `1px solid ${ra.border}` }}>
           <div className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: ra.color }}>Side B</div>
-          <div className="text-[16px] font-black leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>{ra.label}</div>
+          <div className="text-[16px] font-black leading-tight" style={{ color: c.tp }}>{ra.label}</div>
           <div className="text-[10px] mt-0.5 font-semibold" style={{ color: ra.color }}>{ra.sublabel}</div>
         </div>
       </div>
@@ -1100,6 +1283,8 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
 // ─── Summary Page (stateful) ──────────────────────────────────────────────────
 
 function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
+  const c = useDashColors()
+  const { reducedMotion, ready } = usePageEntrance()
   const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('forced_flow')
 
   type LosKey = 'free_flow' | 'stable_flow' | 'forced_flow'
@@ -1187,30 +1372,35 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   ]
 
   return (
-  <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
+  <div className="p-4 md:p-6 space-y-4 md:space-y-5 overflow-y-auto" style={{
+    height: '100%',
+    opacity: ready ? 1 : 0,
+    transform: ready ? 'none' : 'translateY(8px)',
+    transition: reducedMotion ? 'none' : 'opacity 260ms ease, transform 320ms ease',
+  }}>
 
     {/* Header */}
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
       <div>
-        <h2 className="text-xl font-bold" style={{ color: 'rgba(255,255,255,0.9)' }}>Algorithm Comparison</h2>
+        <h2 className="text-xl md:text-2xl font-bold" style={{ color: c.tp }}>Algorithm Comparison</h2>
         <div className="flex items-center gap-4 mt-1.5">
           {ALGO_LIST.map((a) => (
             <div key={a.id} className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full" style={{ background: a.color }} />
-              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.label}</span>
+              <span className="text-[11px]" style={{ color: c.tm }}>{a.label}</span>
             </div>
           ))}
         </div>
       </div>
       {/* LOS Selector */}
-      <div className="flex gap-1 p-1 rounded-xl flex-shrink-0" style={{ background: 'rgba(255,255,255,0.05)' }}>
+      <div className="flex flex-wrap gap-1 p-1 rounded-xl flex-shrink-0" style={{ background: c.itemBg }}>
         {LOS_TABS.map(t => (
           <button key={t.key} onClick={() => setLosTab(t.key)}
-            className="px-6 py-2 rounded-lg text-[11px] font-semibold transition-all duration-150"
+            className="px-4 md:px-6 py-2 rounded-lg text-[11px] font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{
-              background: losTab === t.key ? 'rgba(255,255,255,0.12)' : 'transparent',
-              color:      losTab === t.key ? 'rgba(255,255,255,0.9)'  : 'rgba(255,255,255,0.38)',
-              border:     losTab === t.key ? '1px solid rgba(255,255,255,0.16)' : '1px solid transparent',
+              background: losTab === t.key ? c.itemBgMd : 'transparent',
+              color:      losTab === t.key ? c.tp       : c.ts,
+              border:     losTab === t.key ? `1px solid ${c.glassBorder}` : '1px solid transparent',
             }}>
             {t.label}&nbsp;<span style={{ opacity: 0.55 }}>({t.sub})</span>
           </button>
@@ -1219,7 +1409,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     </div>
 
     {/* Algorithm KPI cards */}
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
       {ALGO_LIST.map((a) => (
         <GlassCard key={a.id} className="p-5 relative overflow-hidden cursor-pointer"
           style={{ border: `1px solid ${a.border}`, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }}
@@ -1230,17 +1420,17 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
-            ;(e.currentTarget as HTMLElement).style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)'
+            ;(e.currentTarget as HTMLElement).style.boxShadow = c.glassShadow
           }}>
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: `radial-gradient(ellipse at 80% 0%, ${a.colorDim}, transparent 65%)` }} />
           <div className="relative">
             {/* Card header: title + view detail button on the same row */}
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[14px] font-bold" style={{ color: 'rgba(255,255,255,0.92)' }}>{a.label}</h3>
+              <h3 className="text-[14px] font-bold" style={{ color: c.tp }}>{a.label}</h3>
               <button
                 className="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-all duration-150"
-                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.1)' }}
+                style={{ background: c.badgeBg, color: c.ts, border: `1px solid ${c.badgeBorder}` }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement
                   el.style.background = `${a.color}22`
@@ -1249,9 +1439,9 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement
-                  el.style.background = 'rgba(255,255,255,0.07)'
-                  el.style.color = 'rgba(255,255,255,0.45)'
-                  el.style.borderColor = 'rgba(255,255,255,0.1)'
+                  el.style.background = c.badgeBg
+                  el.style.color = c.ts
+                  el.style.borderColor = c.badgeBorder
                 }}>
                 View Detail →
               </button>
@@ -1268,7 +1458,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 return (
                   <div key={m.label}>
                     <div className="flex items-baseline justify-between mb-1">
-                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.32)' }}>{m.label}</span>
+                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: c.tu }}>{m.label}</span>
                       <div className="flex items-center gap-1.5">
                         {isBest && (
                           <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
@@ -1276,12 +1466,12 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                             {m.lowerBetter ? 'Lowest' : 'Highest'}
                           </span>
                         )}
-                        <span className="text-[11px] font-bold tabular-nums" style={{ color: isBest ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.5)' }}>
-                          {m.fmt(val)}<span className="text-[9px] font-normal ml-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{m.unit}</span>
+                        <span className="text-[11px] font-bold tabular-nums" style={{ color: isBest ? c.tp : c.ts }}>
+                          {m.fmt(val)}<span className="text-[9px] font-normal ml-0.5" style={{ color: c.tu }}>{m.unit}</span>
                         </span>
                       </div>
                     </div>
-                    <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="w-full h-1.5 rounded-full" style={{ background: c.barTrack }}>
                       <div className="h-full rounded-full transition-all duration-700"
                         style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isBest ? 0.9 : 0.25 }} />
                     </div>
@@ -1295,34 +1485,34 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     </div>
 
     {/* Performance Profile + Key Findings */}
-    <div className="grid grid-cols-5 gap-4">
-      <GlassCard className="col-span-2 p-5">
-        <h3 className="text-[13px] font-bold mb-3" style={{ color: 'rgba(255,255,255,0.78)' }}>Performance Profile</h3>
+    <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
+      <GlassCard className="xl:col-span-2 p-5">
+        <h3 className="text-[13px] font-bold mb-3" style={{ color: c.tp }}>Performance Profile</h3>
         <RadarChart scores={radarScores} />
         <div className="flex justify-center gap-5 mt-2">
           {ALGO_LIST.map((a) => (
             <div key={a.id} className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full" style={{ background: a.color }} />
-              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.45)' }}>{a.label}</span>
+              <span className="text-[10px]" style={{ color: c.tm }}>{a.label}</span>
             </div>
           ))}
         </div>
       </GlassCard>
 
-      <GlassCard className="col-span-3 p-5">
-        <h3 className="text-[13px] font-bold mb-4" style={{ color: 'rgba(255,255,255,0.78)' }}>Key Findings</h3>
-        <div className="grid grid-cols-2 gap-3">
+      <GlassCard className="xl:col-span-3 p-5">
+        <h3 className="text-[13px] font-bold mb-4" style={{ color: c.tp }}>Key Findings</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {KEY_FINDINGS.map((f) => (
             <div key={f.headline} className="p-4 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              style={{ background: c.itemBg, border: `1px solid ${c.divider}` }}>
               <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-2"
                 style={{ background: `${f.tagColor}1a`, color: f.tagColor, border: `1px solid ${f.tagColor}33` }}>
                 {f.tag}
               </span>
-              <p className="text-[12px] font-semibold mb-1.5 leading-snug" style={{ color: 'rgba(255,255,255,0.82)' }}>
+              <p className="text-[12px] font-semibold mb-1.5 leading-snug" style={{ color: c.tp }}>
                 {f.headline}
               </p>
-              <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              <p className="text-[11px] leading-relaxed" style={{ color: c.tm }}>
                 {f.body}
               </p>
             </div>
@@ -1335,15 +1525,15 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     <GlassCard className="p-6 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Per-KPI Performance</h3>
-        <div className="flex gap-1 p-0.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+        <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Per-KPI Performance</h3>
+        <div className="flex gap-1 p-0.5 rounded-xl" style={{ background: c.itemBg }}>
           {LOS_TABS.map(t => (
             <button key={t.key} onClick={() => setLosTab(t.key)}
               className="px-5 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150"
               style={{
-                background: losTab === t.key ? 'rgba(255,255,255,0.12)' : 'transparent',
-                color:      losTab === t.key ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.38)',
-                border:     losTab === t.key ? '1px solid rgba(255,255,255,0.16)' : '1px solid transparent',
+                background: losTab === t.key ? c.itemBgMd : 'transparent',
+                color:      losTab === t.key ? c.tp       : c.ts,
+                border:     losTab === t.key ? `1px solid ${c.glassBorder}` : '1px solid transparent',
               }}>
               {t.sub}
             </button>
@@ -1361,10 +1551,10 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
           const worst = Math.max(...vals)
           const range = worst - best
           return (
-            <div className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="p-4 rounded-xl" style={{ background: c.itemBg, border: `1px solid ${c.divider}` }}>
               <div className="flex justify-between items-baseline mb-3">
-                <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.62)' }}>{m.label}</span>
-                <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
+                <span className="text-[11px] font-bold" style={{ color: c.ts }}>{m.label}</span>
+                <span className="text-[9px]" style={{ color: c.tm }}>{m.unit}</span>
               </div>
               <div className="space-y-2.5">
                 {rows.map(({ a, val }) => {
@@ -1375,19 +1565,19 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                     <div key={a.id} className="flex items-center gap-3">
                       <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
                       <span className="text-[10px] font-semibold w-[108px] flex-shrink-0" style={{ color: a.color }}>{a.label}</span>
-                      <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="flex-1 h-1.5 rounded-full" style={{ background: c.barTrack }}>
                         <div className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
                       </div>
                       <span className="text-[11px] w-14 text-right tabular-nums font-bold"
-                        style={{ color: isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.42)' }}>
+                        style={{ color: isWinner ? c.tp : c.ts }}>
                         {m.fmt(val)}
                       </span>
                       <div className="w-[44px] text-right flex-shrink-0">
                         {isWinner
                           ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
                               style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>Lowest</span>
-                          : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
+                          : <span className="text-[9px]" style={{ color: c.tm }}>+{delta.toFixed(1)}%</span>
                         }
                       </div>
                     </div>
@@ -1399,7 +1589,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         })()}
 
         {/* Avg. Wait Time | Throughput — 2 cols */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {LOS_METRICS.slice(1, 3).map(m => {
             const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
             const vals  = rows.map(r => r.val)
@@ -1407,10 +1597,10 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             const worst = m.lowerBetter ? Math.max(...vals) : Math.min(...vals)
             const range = worst - best
             return (
-              <div key={m.key} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div key={m.key} className="p-4 rounded-xl" style={{ background: c.itemBg, border: `1px solid ${c.divider}` }}>
                 <div className="flex justify-between items-baseline mb-3">
-                  <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.62)' }}>{m.label}</span>
-                  <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
+                  <span className="text-[11px] font-bold" style={{ color: c.ts }}>{m.label}</span>
+                  <span className="text-[9px]" style={{ color: c.tm }}>{m.unit}</span>
                 </div>
                 <div className="space-y-2.5">
                   {rows.map(({ a, val }) => {
@@ -1422,12 +1612,12 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                     return (
                       <div key={a.id} className="flex items-center gap-3">
                         <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
-                        <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                        <div className="flex-1 h-1.5 rounded-full" style={{ background: c.barTrack }}>
                           <div className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
                         </div>
                         <span className="text-[11px] w-14 text-right tabular-nums font-bold"
-                          style={{ color: isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.42)' }}>
+                          style={{ color: isWinner ? c.tp : c.ts }}>
                           {m.fmt(val)}
                         </span>
                         <div className="w-[44px] text-right flex-shrink-0">
@@ -1436,7 +1626,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                                 style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
                                 {m.lowerBetter ? 'Lowest' : 'Highest'}
                               </span>
-                            : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
+                            : <span className="text-[9px]" style={{ color: c.tm }}>+{delta.toFixed(1)}%</span>
                           }
                         </div>
                       </div>
@@ -1449,10 +1639,10 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
         </div>
 
         {/* Divider */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
+        <div style={{ borderTop: `1px solid ${c.divider}` }} />
 
         {/* CO₂ Emissions | Fuel Consumption — 2 cols */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {LOS_METRICS.slice(3).map(m => {
             const rows  = ALGO_LIST.map(a => ({ a, val: perLos(a.id, losTab)[m.key] }))
             const vals  = rows.map(r => r.val)
@@ -1460,10 +1650,10 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             const worst = Math.max(...vals)
             const range = worst - best
             return (
-              <div key={m.key} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div key={m.key} className="p-4 rounded-xl" style={{ background: c.itemBg, border: `1px solid ${c.divider}` }}>
                 <div className="flex justify-between items-baseline mb-3">
-                  <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.62)' }}>{m.label}</span>
-                  <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.22)' }}>{m.unit}</span>
+                  <span className="text-[11px] font-bold" style={{ color: c.ts }}>{m.label}</span>
+                  <span className="text-[9px]" style={{ color: c.tm }}>{m.unit}</span>
                 </div>
                 <div className="space-y-2.5">
                   {rows.map(({ a, val }) => {
@@ -1473,19 +1663,19 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                     return (
                       <div key={a.id} className="flex items-center gap-3">
                         <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: a.color }} />
-                        <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                        <div className="flex-1 h-1.5 rounded-full" style={{ background: c.barTrack }}>
                           <div className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${Math.min(100, Math.max(0, barPct)).toFixed(1)}%`, background: a.color, opacity: isWinner ? 0.9 : 0.28 }} />
                         </div>
                         <span className="text-[11px] w-14 text-right tabular-nums font-bold"
-                          style={{ color: isWinner ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.42)' }}>
+                          style={{ color: isWinner ? c.tp : c.ts }}>
                           {m.fmt(val)}
                         </span>
                         <div className="w-[44px] text-right flex-shrink-0">
                           {isWinner
                             ? <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
                                 style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>Lowest</span>
-                            : <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>+{delta.toFixed(1)}%</span>
+                            : <span className="text-[9px]" style={{ color: c.tm }}>+{delta.toFixed(1)}%</span>
                           }
                         </div>
                       </div>
@@ -1515,17 +1705,18 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
   description?: string
   onClick?: () => void
 }) {
+  const c = useDashColors()
   const percent = Math.min(1, Math.max(0, value / max))
 
   return (
     <GlassCard className="group relative z-0 hover:z-20 flex-1 flex flex-col items-center justify-center py-2 px-2 gap-1"
-      style={{ background: 'rgba(255,255,255,0.045)', minWidth: 0, cursor: onClick ? 'pointer' : undefined }}
+      style={{ minWidth: 0, cursor: onClick ? 'pointer' : undefined }}
       onClick={onClick}>
       {/* Top-right: View detail badge + tooltip, side by side */}
       <div className="absolute top-2 right-2 z-20 flex items-center gap-1">
         {onClick && (
           <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full transition-all duration-200 group-hover:-translate-y-[1px] group-hover:translate-x-0.5 group-hover:scale-[1.03]"
-            style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.22)', color: 'rgba(186,230,253,0.65)', whiteSpace: 'nowrap' }}>
+            style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.22)', color: c.isDark ? 'rgba(186,230,253,0.65)' : 'rgba(3,105,161,0.9)', whiteSpace: 'nowrap' }}>
             View detail ↗
           </span>
         )}
@@ -1536,7 +1727,7 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
               style={{
                 background: 'rgba(6,182,212,0.2)',
                 border: '1px solid rgba(6,182,212,0.65)',
-                color: 'rgba(217,249,255,0.95)',
+                color: c.isDark ? 'rgba(217,249,255,0.95)' : 'rgba(3,105,161,0.95)',
                 boxShadow: '0 0 0 1px rgba(0,0,0,0.2) inset',
               }}
             >
@@ -1544,10 +1735,10 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
             </div>
             <div className="pointer-events-none absolute right-0 top-[calc(100%+8px)] w-[280px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/info:opacity-100 group-hover/info:translate-y-0"
               style={{
-                background: 'rgba(4,9,22,0.97)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                color: 'rgba(255,255,255,0.88)',
-                boxShadow: '0 12px 24px rgba(0,0,0,0.45)',
+                background: c.tooltipBg,
+                border: `1px solid ${c.tooltipBorder}`,
+                color: c.tooltipColor,
+                boxShadow: c.tooltipShadow,
                 zIndex: 85,
               }}>
               {description}
@@ -1571,12 +1762,12 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
       />
       {/* Value + unit centred below arc */}
       <div className="flex flex-col items-center mt-0.5">
-        <span className="text-[20px] font-extrabold tabular-nums leading-none" style={{ color: '#ffffff' }}>
+        <span className="text-[20px] font-extrabold tabular-nums leading-none" style={{ color: c.tp }}>
           {typeof value === 'number' ? parseFloat(value.toFixed(2)) : value}
         </span>
-        <span className="text-[10px] font-semibold mt-0.5" style={{ color: 'rgba(255,255,255,0.75)' }}>{unit}</span>
+        <span className="text-[10px] font-semibold mt-0.5" style={{ color: c.ts }}>{unit}</span>
         <span className="text-[9px] font-bold uppercase tracking-wider mt-1.5 text-center"
-          style={{ color: 'rgba(255,255,255,0.65)' }}>{label}</span>
+          style={{ color: c.tm }}>{label}</span>
       </div>
     </GlassCard>
   )
@@ -1585,6 +1776,7 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
 // ─── Map Player ───────────────────────────────────────────────────────────────
 
 const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData; mapSize: string; onCo2Click?: () => void; onFuelClick?: () => void }) => {
+  const c = useDashColors()
   // Playback
   const videoRef = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(false)
@@ -1709,18 +1901,18 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
     <GlassCard className="p-4 flex flex-col gap-3 col-span-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Map Player</h3>
+        <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Map Player</h3>
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-mono px-2 py-0.5 rounded tabular-nums"
             style={{ background: algo.colorDim, color: algo.color, border: `1px solid ${algo.border}` }}>
             {fmt(currentTime)} / {duration > 0 ? fmt(duration) : '--:--'}
           </span>
           <span className="text-[10px] font-mono px-2 py-0.5 rounded tabular-nums"
-            style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.4)' }}>
+            style={{ background: c.badgeBg, color: c.ts }}>
             {zoom.toFixed(1)}×
           </span>
           <span className="text-[10px] px-2 py-0.5 rounded"
-            style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.35)' }}>
+            style={{ background: c.itemBg, color: c.tu }}>
             {MAP_LABELS[mapSize] || mapSize || '—'}
           </span>
         </div>
@@ -1733,7 +1925,7 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
         style={{
           aspectRatio: '16 / 9',
           background: '#000',
-          border: '1px solid rgba(255,255,255,0.07)',
+          border: `1px solid ${c.divider}`,
           cursor: zoom > 1 ? 'grab' : 'default',
         }}
         onMouseDown={onMouseDown}
@@ -1790,10 +1982,10 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
         {/* Restart */}
         <button onClick={reset}
           className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center transition-all duration-150"
-          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.22)' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)' }}>
-          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)"
+          style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}` }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = c.itemBgMd; (e.currentTarget as HTMLElement).style.borderColor = c.glassBorder }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = c.badgeBg; (e.currentTarget as HTMLElement).style.borderColor = c.badgeBorder }}>
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={c.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(55,65,81,0.6)'}
             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
             <path d="M3 3v5h5"/>
@@ -1825,7 +2017,7 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
           onMouseEnter={(e) => { const bar = e.currentTarget.querySelector('.seek-track') as HTMLElement; if (bar) bar.style.height = '6px' }}
           onMouseLeave={(e) => { const bar = e.currentTarget.querySelector('.seek-track') as HTMLElement; if (bar) bar.style.height = '4px' }}>
           <div className="seek-track absolute inset-x-0 rounded-full overflow-hidden"
-            style={{ height: '4px', background: 'rgba(255,255,255,0.1)', top: '50%', transform: 'translateY(-50%)', transition: 'height 0.12s ease' }}>
+            style={{ height: '4px', background: c.barTrack, top: '50%', transform: 'translateY(-50%)', transition: 'height 0.12s ease' }}>
             <div className="h-full rounded-full" style={{ width: `${pct * 100}%`, background: algo.color }} />
           </div>
           <div className="absolute rounded-full pointer-events-none"
@@ -1844,11 +2036,11 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
               className="text-[9px] font-bold px-1.5 py-0.5 rounded transition-all duration-150"
               style={{
                 background: speed === s ? algo.colorDim : 'transparent',
-                color: speed === s ? algo.color : 'rgba(255,255,255,0.32)',
+                color: speed === s ? algo.color : c.tu,
                 border: speed === s ? `1px solid ${algo.border}` : '1px solid transparent',
               }}
-              onMouseEnter={(e) => { if (s !== speed) { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.65)' } }}
-              onMouseLeave={(e) => { if (s !== speed) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.32)' } }}>
+              onMouseEnter={(e) => { if (s !== speed) { (e.currentTarget as HTMLElement).style.background = c.hoverBg; (e.currentTarget as HTMLElement).style.color = c.tp } }}
+              onMouseLeave={(e) => { if (s !== speed) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = c.tu } }}>
               {s}×
             </button>
           ))}
@@ -1856,7 +2048,7 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
       </div>
 
       {/* Emission gauges — flex-1 so they fill remaining height naturally */}
-      <div className="flex gap-3 pt-5 mt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="flex gap-3 pt-5 mt-2" style={{ borderTop: `1px solid ${c.divider}` }}>
         <GaugeChart
           value={algo.co2}
           max={300}
@@ -1881,17 +2073,25 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
 }
 
 // ─── Congestion Heatmap ───────────────────────────────────────────────────────
-// Maps learning-based algos to their representative heatmap image.
-const HEATMAP_IMG: Record<'civiq' | 'qmix', string> = {
-  civiq: '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
-  qmix:  '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+// Maps learning-based algos to their representative heatmap image (non-LOS E).
+const HEATMAP_IMG: Record<'civiq' | 'qmix', Record<string, string>> = {
+  civiq: {
+    free_flow:   '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    stable_flow: '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    forced_flow: '/heatmap_output/policy_comparison/heatmap_high_civiq.png',
+  },
+  qmix: {
+    free_flow:   '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    stable_flow: '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    forced_flow: '/heatmap_output/policy_comparison/heatmap_high_mono_qmix.png',
+  },
 }
 
 // Real selfish routing heatmaps keyed by traffic level
 const SELFISH_HEATMAP: Record<string, string> = {
   free_flow:   '/heatmap_output/bgc_full_actual/heatmap_low.png',
   stable_flow: '/heatmap_output/bgc_full_actual/heatmap_med.png',
-  forced_flow: '/heatmap_output/bgc_full_actual/heatmap_high.png',
+  forced_flow: '/heatmap_output/policy_comparison/heatmap_high_noop.png',
 }
 
 const SELFISH_CONGESTION_LABEL: Record<string, string> = {
@@ -2159,16 +2359,20 @@ function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: 
   heatmapSrc?: string
   congestionLabel?: string
 }) {
-  const src = heatmapSrc ?? (algo.id !== 'selfish' ? HEATMAP_IMG[algo.id as 'civiq' | 'qmix'] : SELFISH_HEATMAP.forced_flow)
+  const c = useDashColors()
+  const src = heatmapSrc ?? (algo.id !== 'selfish'
+    ? HEATMAP_IMG[algo.id as 'civiq' | 'qmix']?.free_flow
+    : SELFISH_HEATMAP.free_flow)
   const label = congestionLabel ?? (algo.id === 'selfish' ? 'High Congestion' : 'Low Congestion')
   const labelColor = label === 'Low Congestion' ? '#4ADE80' : label === 'Moderate Congestion' ? '#FACC15' : '#F87171'
+  const imgBg = c.isDark ? 'rgba(3,7,18,0.75)' : 'rgba(220,230,245,0.75)'
 
   return (
     <GlassCard className="p-4 flex flex-col gap-2">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-baseline gap-2">
-          <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Congestion Heatmap</h3>
+          <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Congestion Heatmap</h3>
           <span className="text-[11px] font-semibold" style={{ color: labelColor }}>{label}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -2186,16 +2390,16 @@ function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: 
 
       {/* Heatmap image */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <div className="rounded-xl overflow-hidden flex-1" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(3,7,18,0.75)' }}>
+      <div className="rounded-xl overflow-hidden flex-1" style={{ border: `1px solid ${c.divider}`, background: imgBg }}>
         <img src={src} alt={`${algo.label} congestion heatmap`}
           style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
       </div>
 
       {/* Legend */}
       <div className="flex items-center gap-2">
-        <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>Low</span>
+        <span className="text-[9px]" style={{ color: c.tu }}>Low</span>
         <div className="flex-1 h-1.5 rounded-full" style={{ background: 'linear-gradient(to right, #22C55E, #EAB308, #EF4444)', opacity: 0.7 }} />
-        <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>High</span>
+        <span className="text-[9px]" style={{ color: c.tu }}>High</span>
       </div>
     </GlassCard>
   )
@@ -2241,6 +2445,7 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
   unitOverride?: string
   onClose: () => void
 }) => {
+  const c = useDashColors()
   const baseMeta = KPI_META[metricKey]
   const meta = {
     ...baseMeta,
@@ -2254,12 +2459,12 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
     if (!active || !payload?.length) return null
     const byKey = Object.fromEntries(payload.map((p: any) => [p.dataKey, p.value]))
     return (
-      <div style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', fontSize: 11 }}>
-        <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Episode {label}</p>
+      <div style={{ background: c.tooltipBg, border: `1px solid ${c.tooltipBorder}`, borderRadius: 10, padding: '8px 12px', fontSize: 11, boxShadow: c.tooltipShadow }}>
+        <p style={{ color: c.tm, marginBottom: 4 }}>Episode {label}</p>
         {byKey.value  !== undefined && <p style={{ color: algo.color }}>Value: <b>{byKey.value.toFixed(2)}</b> {meta.unit}</p>}
-        {byKey.ma     !== undefined && <p style={{ color: 'rgba(255,255,255,0.7)' }}>MA-10: <b>{byKey.ma.toFixed(2)}</b> {meta.unit}</p>}
+        {byKey.ma     !== undefined && <p style={{ color: c.ts }}>MA-10: <b>{byKey.ma.toFixed(2)}</b> {meta.unit}</p>}
         {byKey.hi     !== undefined && byKey.lo !== undefined && (
-          <p style={{ color: 'rgba(255,255,255,0.35)' }}>Band: {byKey.lo.toFixed(2)} – {byKey.hi.toFixed(2)}</p>
+          <p style={{ color: c.tm }}>Band: {byKey.lo.toFixed(2)} – {byKey.hi.toFixed(2)}</p>
         )}
       </div>
     )
@@ -2268,36 +2473,42 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      style={{
+        background: c.isDark ? 'rgba(0,0,0,0.72)' : 'rgba(15,23,42,0.35)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}
       onClick={onClose}
     >
       <div
         className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
         style={{
           maxWidth: '790px',
-          background: 'rgba(4,9,22,0.97)',
-          border: '1px solid rgba(255,255,255,0.13)',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)',
+          background: c.isDark ? 'rgba(4,9,22,0.97)' : 'rgba(255,255,255,0.96)',
+          border: `1px solid ${c.glassBorder}`,
+          boxShadow: c.isDark
+            ? '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)'
+            : '0 24px 64px rgba(15,23,42,0.24), inset 0 1px 0 rgba(255,255,255,0.95)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-[17px] font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
+            <h3 className="text-[17px] font-bold leading-tight" style={{ color: c.tp }}>
               {meta.label}{' '}
               <span style={{ color: algo.color }}>({meta.abbr})</span>
             </h3>
-            <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-[12px] mt-0.5" style={{ color: c.tm }}>
               Per-episode trend · {algo.label} · {data.length} episodes
             </p>
           </div>
           <button
             onClick={onClose}
             className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
+            style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}` }}
           >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)"
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={c.tm}
               strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
@@ -2308,34 +2519,34 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
         <div className="flex items-center gap-5 flex-wrap">
           <div className="flex items-center gap-2">
             <div className="w-6 h-[2px] rounded" style={{ background: algo.color }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Per-episode value</span>
+            <span className="text-[11px]" style={{ color: c.tm }}>Per-episode value</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-[2px] rounded" style={{ background: 'rgba(255,255,255,0.65)', borderTop: '2px dashed rgba(255,255,255,0.65)' }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>10-ep. moving avg.</span>
+            <div className="w-6 h-[2px] rounded" style={{ background: c.ts, borderTop: `2px dashed ${c.ts}` }} />
+            <span className="text-[11px]" style={{ color: c.tm }}>10-ep. moving avg.</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-3.5 rounded-sm" style={{ background: algo.color, opacity: 0.18 }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Confidence band</span>
+            <span className="text-[11px]" style={{ color: c.tm }}>Confidence band</span>
           </div>
         </div>
 
         {/* Chart */}
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 20 }}>
-            <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 4" />
+            <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
             <XAxis
               dataKey="episode"
-              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
-              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+              tick={c.chartAxis}
+              tickLine={c.chartTickLine}
+              axisLine={c.chartAxisLine}
+              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: c.chartLabel, fontSize: 11 }}
               interval={data.length <= 50 ? 0 : Math.floor(data.length / 10)}
             />
             <YAxis
-              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+              tick={c.chartAxis}
+              tickLine={c.chartTickLine}
+              axisLine={c.chartAxisLine}
               tickFormatter={(v) => `${v}`}
               width={52}
               domain={[
@@ -2361,13 +2572,13 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
               activeDot={{ r: 3.5, fill: algo.color }} strokeOpacity={0.85} isAnimationActive={false} />
 
             {/* Moving average overlay */}
-            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.72)" strokeWidth={2}
+            <Line type="monotone" dataKey="ma" stroke={c.ts} strokeWidth={2}
               dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
 
         {/* Summary stats row */}
-        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
           {[
             { label: 'First ep.', value: data[0]?.value.toFixed(2) },
             { label: 'Last ep.',  value: data[data.length - 1]?.value.toFixed(2) },
@@ -2375,9 +2586,9 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
             { label: 'Max',       value: Math.max(...data.map(d => d.value)).toFixed(2) },
           ].map(({ label, value }) => (
             <div key={label} className="text-center">
-              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</div>
+              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: c.tu }}>{label}</div>
               <div className="text-[15px] font-bold tabular-nums" style={{ color: algo.color }}>{value}</div>
-              <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>{meta.unit}</div>
+              <div className="text-[10px]" style={{ color: c.tu }}>{meta.unit}</div>
             </div>
           ))}
         </div>
@@ -2388,22 +2599,24 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
 
 // ─── Analytics Charts ─────────────────────────────────────────────────────────
 
+// Legacy constants — kept for reference; chart components now use useDashColors()
 const CHART_GRID = 'rgba(255,255,255,0.05)'
 const CHART_AXIS  = { fill: 'rgba(255,255,255,0.28)', fontSize: 10 }
 const CHART_AXIS_LINE = { stroke: 'rgba(255,255,255,0.08)' }
 const CHART_TICK_LINE = { stroke: 'rgba(255,255,255,0.08)' }
 
 // Shared tooltip shell
-const ChartTooltip = ({ active, payload, label, xLabel, rows }: {
+function ChartTooltip({ active, payload, label, xLabel, rows }: {
   active?: boolean; payload?: any[]; label?: any
   xLabel: string
   rows: { key: string; label: string; color: string; unit: string }[]
-}) => {
+}) {
+  const c = useDashColors()
   if (!active || !payload?.length) return null
   const byKey = Object.fromEntries(payload.map((p: any) => [p.dataKey, p.value]))
   return (
-    <div style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', fontSize: 11 }}>
-      <p style={{ color: 'rgba(255,255,255,0.38)', marginBottom: 4 }}>{xLabel} {label}</p>
+    <div style={{ background: c.tooltipBg, border: `1px solid ${c.tooltipBorder}`, borderRadius: 10, padding: '8px 12px', fontSize: 11, boxShadow: c.tooltipShadow }}>
+      <p style={{ color: c.tm, marginBottom: 4 }}>{xLabel} {label}</p>
       {rows.map(({ key, label: rl, color, unit }) =>
         byKey[key] !== undefined
           ? <p key={key} style={{ color }}>{rl}: <b>{Number(byKey[key]).toFixed(2)}</b> {unit}</p>
@@ -2564,36 +2777,38 @@ const CpuDetailModal = ({ algo, evalCpuMeans, onClose }: {
 
 // ─── CPU Utilization Card ─────────────────────────────────────────────────────
 
-const CpuStatsCard = ({ algo, evalCpuMeans, onViewDetail }: {
+function CpuStatsCard({ algo, evalCpuMeans, onViewDetail }: {
   algo: AlgoData
   evalCpuMeans: number[] | null
   onViewDetail: () => void
-}) => {
+}) {
+  const c = useDashColors()
   const mean = algo.cpuMean
   const peak = algo.cpuPeak
   const maxVal = Math.max(peak, mean, 1)
+  const peakBarColor = c.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(55,65,81,0.4)'
 
   return (
     <GlassCard className="p-5 flex flex-col col-span-1">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>CPU Utilization</span>
+          <span className="text-[13px] font-bold" style={{ color: c.tp }}>CPU Utilization</span>
           <InfoBubble text="Per-episode CPU usage across 50 evaluation runs. 100% = one fully utilised core — values above 100% indicate multi-core usage. Average is the mean within each episode; peak is the maximum instantaneous spike observed." />
         </div>
         <button
           onClick={onViewDetail}
           className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.13)', color: 'rgba(255,255,255,0.45)' }}
+          style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}`, color: c.ts }}
           onMouseEnter={(e) => {
             ;(e.currentTarget as HTMLElement).style.background = algo.colorDim
             ;(e.currentTarget as HTMLElement).style.borderColor = algo.border
             ;(e.currentTarget as HTMLElement).style.color = algo.color
           }}
           onMouseLeave={(e) => {
-            ;(e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'
-            ;(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.13)'
-            ;(e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.45)'
+            ;(e.currentTarget as HTMLElement).style.background = c.badgeBg
+            ;(e.currentTarget as HTMLElement).style.borderColor = c.badgeBorder
+            ;(e.currentTarget as HTMLElement).style.color = c.ts
           }}
         >
           View detail ↗
@@ -2602,35 +2817,35 @@ const CpuStatsCard = ({ algo, evalCpuMeans, onViewDetail }: {
 
       {/* Two-column stat layout — flex-1 + justify-center fills remaining card height */}
       <div className="flex-1 flex items-center">
-      <div className="w-full flex items-center gap-0" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.75rem', paddingBottom: '0.75rem' }}>
+      <div className="w-full flex items-center gap-0" style={{ borderTop: `1px solid ${c.divider}`, borderBottom: `1px solid ${c.divider}`, paddingTop: '0.75rem', paddingBottom: '0.75rem' }}>
 
         {/* Average column */}
         <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
-          <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>Average</span>
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: c.tu }}>Average</span>
           <div className="text-[24px] font-bold tabular-nums leading-none" style={{ color: algo.color }}>
-            {mean.toFixed(1)}<span className="text-[13px] font-normal ml-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>%</span>
+            {mean.toFixed(1)}<span className="text-[13px] font-normal ml-0.5" style={{ color: c.tu }}>%</span>
           </div>
-          <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.38)' }}>≈ {(mean / 100).toFixed(2)} cores</div>
+          <div className="text-[10px]" style={{ color: c.ts }}>≈ {(mean / 100).toFixed(2)} cores</div>
           <div className="w-full mt-1.5">
-            <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <div className="w-full h-1.5 rounded-full" style={{ background: c.barTrack }}>
               <div className="h-full rounded-full" style={{ width: `${Math.min(100, (mean / maxVal) * 100).toFixed(1)}%`, background: algo.color, opacity: 0.7 }} />
             </div>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="w-px mx-3 self-stretch" style={{ background: 'rgba(255,255,255,0.08)' }} />
+        <div className="w-px mx-3 self-stretch" style={{ background: c.divider }} />
 
         {/* Peak column */}
         <div className="flex-1 flex flex-col items-center gap-1 min-w-0">
-          <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>Peak</span>
-          <div className="text-[24px] font-bold tabular-nums leading-none" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            {peak.toFixed(1)}<span className="text-[13px] font-normal ml-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>%</span>
+          <span className="text-[10px] uppercase tracking-wider" style={{ color: c.tu }}>Peak</span>
+          <div className="text-[24px] font-bold tabular-nums leading-none" style={{ color: c.tm }}>
+            {peak.toFixed(1)}<span className="text-[13px] font-normal ml-0.5" style={{ color: c.tu }}>%</span>
           </div>
-          <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.38)' }}>≈ {(peak / 100).toFixed(1)} cores</div>
+          <div className="text-[10px]" style={{ color: c.ts }}>≈ {(peak / 100).toFixed(1)} cores</div>
           <div className="w-full mt-1.5">
-            <div className="w-full h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <div className="h-full rounded-full" style={{ width: `${Math.min(100, (peak / maxVal) * 100).toFixed(1)}%`, background: 'rgba(255,255,255,0.4)' }} />
+            <div className="w-full h-1.5 rounded-full" style={{ background: c.barTrack }}>
+              <div className="h-full rounded-full" style={{ width: `${Math.min(100, (peak / maxVal) * 100).toFixed(1)}%`, background: peakBarColor }} />
             </div>
           </div>
         </div>
@@ -2642,15 +2857,18 @@ const CpuStatsCard = ({ algo, evalCpuMeans, onViewDetail }: {
 }
 
 // 1 — Training Curve
-const TrainingCurveChart = ({ algo }: { algo: AlgoData }) => {
+function TrainingCurveChart({ algo }: { algo: AlgoData }) {
+  const c = useDashColors()
   const data = algo.system.training
+  const maLineColor = c.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(55,65,81,0.7)'
+  const confFill = c.isDark ? '#040916' : '#dde9f8'
   if (!data.length) return (
     <GlassCard className="p-5 flex flex-col gap-2 col-span-2">
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Training Curve</span>
+        <span className="text-[13px] font-bold" style={{ color: c.tp }}>Training Curve</span>
         <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(248,113,113,0.12)', color: '#F87171', border: '1px solid rgba(248,113,113,0.25)' }}>No training phase</span>
       </div>
-      <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+      <p className="text-[12px]" style={{ color: c.tm }}>
         {algo.id === 'selfish'
           ? 'Selfish Routing is a rule-based baseline — it requires no training and has no reward curve.'
           : 'Training curve data is not available for this scenario.'}
@@ -2661,43 +2879,43 @@ const TrainingCurveChart = ({ algo }: { algo: AlgoData }) => {
     <GlassCard className="p-5 flex flex-col gap-3 col-span-2">
       <div className="flex items-center justify-between">
         <div>
-          <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Training Curve</span>
-          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.32)' }}>
+          <span className="text-[13px] font-bold" style={{ color: c.tp }}>Training Curve</span>
+          <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>
             Cumulative reward per episode · shaded area = seed confidence band
           </p>
         </div>
         <div className="flex items-center gap-4">
           {[
             { color: algo.color, label: 'Mean reward' },
-            { color: 'rgba(255,255,255,0.6)', label: 'Moving avg.', dashed: true },
+            { color: maLineColor, label: 'Moving avg.', dashed: true },
           ].map(({ color, label, dashed }) => (
             <div key={label} className="flex items-center gap-1.5">
               <svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke={color} strokeWidth="2" strokeDasharray={dashed ? '4 2' : undefined} /></svg>
-              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{label}</span>
+              <span className="text-[10px]" style={{ color: c.tm }}>{label}</span>
             </div>
           ))}
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-3 rounded-sm" style={{ background: algo.color, opacity: 0.18 }} />
-            <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>Conf. band</span>
+            <span className="text-[10px]" style={{ color: c.tm }}>Conf. band</span>
           </div>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={200}>
         <ComposedChart data={data} margin={{ top: 4, right: 12, left: 0, bottom: 20 }}>
-          <CartesianGrid stroke={CHART_GRID} strokeDasharray="3 4" />
-          <XAxis dataKey="episode" tick={CHART_AXIS} tickLine={CHART_TICK_LINE} axisLine={CHART_AXIS_LINE}
-            label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+          <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
+          <XAxis dataKey="episode" tick={c.chartAxis} tickLine={c.chartTickLine} axisLine={c.chartAxisLine}
+            label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: c.chartLabel, fontSize: 11 }}
             interval={Math.floor(data.length / 8)} />
-          <YAxis tick={CHART_AXIS} tickLine={CHART_TICK_LINE} axisLine={CHART_AXIS_LINE} width={52}
-            label={{ value: 'Reward', angle: -90, position: 'insideLeft', offset: 14, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }} />
+          <YAxis tick={c.chartAxis} tickLine={c.chartTickLine} axisLine={c.chartAxisLine} width={52}
+            label={{ value: 'Reward', angle: -90, position: 'insideLeft', offset: 14, fill: c.chartLabel, fontSize: 11 }} />
           <Tooltip content={<ChartTooltip xLabel="Ep." rows={[
             { key: 'reward', label: 'Reward', color: algo.color, unit: '' },
-            { key: 'ma',     label: 'MA-10',  color: 'rgba(255,255,255,0.65)', unit: '' },
+            { key: 'ma',     label: 'MA-10',  color: maLineColor, unit: '' },
           ]} />} />
           <Area type="monotone" dataKey="hi" stroke="none" fill={algo.color} fillOpacity={0.14} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-          <Area type="monotone" dataKey="lo" stroke="none" fill="#040916" fillOpacity={1} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
+          <Area type="monotone" dataKey="lo" stroke="none" fill={confFill} fillOpacity={1} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
           <Line type="monotone" dataKey="reward" stroke={algo.color} strokeWidth={1.5} dot={false} activeDot={{ r: 3 }} strokeOpacity={0.85} isAnimationActive={false} />
-          <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.6)" strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
+          <Line type="monotone" dataKey="ma" stroke={maLineColor} strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
         </ComposedChart>
       </ResponsiveContainer>
     </GlassCard>
@@ -2707,17 +2925,18 @@ const TrainingCurveChart = ({ algo }: { algo: AlgoData }) => {
 // ─── Shared info bubble (matches KpiCard / GaugeChart tooltip style) ──────────
 
 function InfoBubble({ text, side = 'left' }: { text: string; side?: 'left' | 'right' }) {
+  const c = useDashColors()
   return (
     <div className="group/info relative z-20 flex-shrink-0">
       <div className="w-[18px] h-[18px] rounded-full flex items-center justify-center cursor-default"
-        style={{ background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.65)', color: 'rgba(217,249,255,0.95)', boxShadow: '0 0 0 1px rgba(0,0,0,0.2) inset' }}>
+        style={{ background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.65)', color: c.isDark ? 'rgba(217,249,255,0.95)' : 'rgba(3,105,161,0.95)', boxShadow: '0 0 0 1px rgba(0,0,0,0.2) inset' }}>
         <span className="text-[10px] font-bold leading-none">!</span>
       </div>
       <div className="pointer-events-none absolute top-[calc(100%+8px)] w-[260px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/info:opacity-100 group-hover/info:translate-y-0"
         style={{
           ...(side === 'right' ? { right: 0 } : { left: 0 }),
-          background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)',
-          color: 'rgba(255,255,255,0.88)', boxShadow: '0 12px 24px rgba(0,0,0,0.45)', zIndex: 90,
+          background: c.tooltipBg, border: `1px solid ${c.tooltipBorder}`,
+          color: c.tooltipColor, boxShadow: c.tooltipShadow, zIndex: 90,
         }}>
         {text}
       </div>
@@ -2728,12 +2947,15 @@ function InfoBubble({ text, side = 'left' }: { text: string; side?: 'left' | 'ri
 // ─── MARL Training Diagnostics ────────────────────────────────────────────────
 
 function MarlMetricsSection({ algo }: { algo: AlgoData }) {
+  const c = useDashColors()
   const data = algo.marl
   if (!data.length) return null  // not rendered for selfish (no training)
 
+  const maLineColor = c.isDark ? 'rgba(255,255,255,0.65)' : 'rgba(55,65,81,0.7)'
+  const confFill = c.isDark ? '#040916' : '#dde9f8'
   const xAxis = (
-    <XAxis dataKey="episode" tick={{ ...CHART_AXIS, fontSize: 9 }} tickLine={CHART_TICK_LINE} axisLine={CHART_AXIS_LINE}
-      label={{ value: 'Episode', position: 'insideBottom', offset: -10, fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
+    <XAxis dataKey="episode" tick={{ ...c.chartAxis, fontSize: 9 }} tickLine={c.chartTickLine} axisLine={c.chartAxisLine}
+      label={{ value: 'Episode', position: 'insideBottom', offset: -10, fill: c.chartLabel, fontSize: 10 }}
       interval={Math.floor(data.length / 5)} />
   )
 
@@ -2741,8 +2963,8 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
     <>
       {/* Section header */}
       <div className="flex items-center gap-3">
-        <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.55)' }}>{algo.id === 'civiq' ? 'HMARL' : 'MARL'} Training Diagnostics</span>
-        <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+        <span className="text-[13px] font-bold" style={{ color: c.ts }}>{algo.id === 'civiq' ? 'HMARL' : 'MARL'} Training Diagnostics</span>
+        <div className="flex-1 h-px" style={{ background: c.divider }} />
       </div>
 
       {/* ── 1. Episode Cumulative Reward (full-width, prominent) ── */}
@@ -2750,43 +2972,43 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Episode Cumulative Reward</span>
+              <span className="text-[13px] font-bold" style={{ color: c.tp }}>Episode Cumulative Reward</span>
               <InfoBubble text="Total reward earned by all agents during each training episode. A rising curve that plateaus signals policy convergence. The shaded band shows the inter-seed confidence interval; the dashed line is a 10-episode moving average." />
             </div>
-            <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.32)' }}>
+            <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>
               Primary training health indicator · shaded = seed confidence band
             </p>
           </div>
           <div className="flex items-center gap-4 flex-shrink-0">
             {[
               { color: algo.color, label: 'Per-episode reward' },
-              { color: 'rgba(255,255,255,0.65)', label: 'MA-10', dashed: true },
+              { color: maLineColor, label: 'MA-10', dashed: true },
             ].map(({ color, label, dashed }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <svg width="18" height="6"><line x1="0" y1="3" x2="18" y2="3" stroke={color} strokeWidth="2" strokeDasharray={dashed ? '4 2' : undefined} /></svg>
-                <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{label}</span>
+                <span className="text-[10px]" style={{ color: c.tm }}>{label}</span>
               </div>
             ))}
             <div className="flex items-center gap-1.5">
               <div className="w-4 h-3 rounded-sm" style={{ background: algo.color, opacity: 0.18 }} />
-              <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>Conf. band</span>
+              <span className="text-[10px]" style={{ color: c.tm }}>Conf. band</span>
             </div>
           </div>
         </div>
         <ResponsiveContainer width="100%" height={220}>
           <ComposedChart data={data} margin={{ top: 4, right: 12, left: 0, bottom: 20 }}>
-            <CartesianGrid stroke={CHART_GRID} strokeDasharray="3 4" />
+            <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
             {xAxis}
-            <YAxis tick={CHART_AXIS} tickLine={CHART_TICK_LINE} axisLine={CHART_AXIS_LINE} width={52}
-              label={{ value: 'Reward', angle: -90, position: 'insideLeft', offset: 14, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }} />
+            <YAxis tick={c.chartAxis} tickLine={c.chartTickLine} axisLine={c.chartAxisLine} width={52}
+              label={{ value: 'Reward', angle: -90, position: 'insideLeft', offset: 14, fill: c.chartLabel, fontSize: 11 }} />
             <Tooltip content={<ChartTooltip xLabel="Ep." rows={[
               { key: 'reward',    label: 'Reward', color: algo.color, unit: '' },
-              { key: 'rewardMa',  label: 'MA-10',  color: 'rgba(255,255,255,0.65)', unit: '' },
+              { key: 'rewardMa',  label: 'MA-10',  color: maLineColor, unit: '' },
             ]} />} />
             <Area type="monotone" dataKey="rewardHi" stroke="none" fill={algo.color} fillOpacity={0.14} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-            <Area type="monotone" dataKey="rewardLo" stroke="none" fill="#040916" fillOpacity={1} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
+            <Area type="monotone" dataKey="rewardLo" stroke="none" fill={confFill} fillOpacity={1} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
             <Line type="monotone" dataKey="reward" stroke={algo.color} strokeWidth={1.5} dot={false} activeDot={{ r: 3 }} strokeOpacity={0.85} isAnimationActive={false} />
-            <Line type="monotone" dataKey="rewardMa" stroke="rgba(255,255,255,0.65)" strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
+            <Line type="monotone" dataKey="rewardMa" stroke={maLineColor} strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </GlassCard>
@@ -2798,16 +3020,16 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
         <GlassCard className="p-4 flex flex-col gap-2">
           <div className="flex items-start gap-2">
             <div className="flex-1">
-              <span className="text-[12px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>TD Loss</span>
-              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.32)' }}>Log scale · Q-net + mixing network</p>
+              <span className="text-[12px] font-bold" style={{ color: c.tp }}>TD Loss</span>
+              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>Log scale · Q-net + mixing network</p>
             </div>
             <InfoBubble side="right" text="Temporal-difference error used to update the Q-network and QMIX mixing network. Loss drops sharply early then flattens — a log Y-axis keeps the full curve readable instead of a flat line after the initial drop." />
           </div>
           <ResponsiveContainer width="100%" height={170}>
             <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 16 }}>
-              <CartesianGrid stroke={CHART_GRID} strokeDasharray="3 4" />
+              <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
               {xAxis}
-              <YAxis tick={{ ...CHART_AXIS, fontSize: 9 }} tickLine={CHART_TICK_LINE} axisLine={CHART_AXIS_LINE}
+              <YAxis tick={{ ...c.chartAxis, fontSize: 9 }} tickLine={c.chartTickLine} axisLine={c.chartAxisLine}
                 width={44} scale="log" domain={[0.0001, 'auto']}
                 tickFormatter={(v) => v < 0.01 ? v.toExponential(0) : String(+v.toFixed(3))} />
               <Tooltip content={<ChartTooltip xLabel="Ep." rows={[{ key: 'tdLoss', label: 'TD Loss', color: '#FB923C', unit: '' }]} />} />
@@ -2821,8 +3043,8 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
         <GlassCard className="p-4 flex flex-col gap-2">
           <div className="flex items-start gap-2">
             <div className="flex-1">
-              <span className="text-[12px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Q-Value Estimates</span>
-              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.32)' }}>q_taken vs target · ± std band</p>
+              <span className="text-[12px] font-bold" style={{ color: c.tp }}>Q-Value Estimates</span>
+              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>q_taken vs target · ± std band</p>
             </div>
             <InfoBubble side="right" text="q_taken_mean (solid) is the Q-value for actions actually taken; target_mean (dashed) is the Bellman target. A persistent gap between them indicates overestimation bias. The shaded band is ±1 std of q_taken across agents." />
           </div>
@@ -2833,22 +3055,22 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
             ].map(({ color, label, dashed }) => (
               <div key={label} className="flex items-center gap-1">
                 <svg width="14" height="5"><line x1="0" y1="2.5" x2="14" y2="2.5" stroke={color} strokeWidth="1.8" strokeDasharray={dashed ? '3 2' : undefined} /></svg>
-                <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{label}</span>
+                <span className="text-[9px]" style={{ color: c.tu }}>{label}</span>
               </div>
             ))}
           </div>
           <ResponsiveContainer width="100%" height={150}>
             <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 16 }}>
-              <CartesianGrid stroke={CHART_GRID} strokeDasharray="3 4" />
+              <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
               {xAxis}
-              <YAxis tick={{ ...CHART_AXIS, fontSize: 9 }} tickLine={CHART_TICK_LINE} axisLine={CHART_AXIS_LINE} width={40} />
+              <YAxis tick={{ ...c.chartAxis, fontSize: 9 }} tickLine={c.chartTickLine} axisLine={c.chartAxisLine} width={40} />
               <Tooltip content={<ChartTooltip xLabel="Ep." rows={[
                 { key: 'qTakenMean', label: 'q_taken', color: '#A78BFA', unit: '' },
                 { key: 'targetMean', label: 'target',  color: 'rgba(167,139,250,0.6)', unit: '' },
               ]} />} />
               {/* ±std band around q_taken */}
               <Area type="monotone" dataKey="qTakenHi" stroke="none" fill="#A78BFA" fillOpacity={0.14} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-              <Area type="monotone" dataKey="qTakenLo" stroke="none" fill="#040916" fillOpacity={1}  dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
+              <Area type="monotone" dataKey="qTakenLo" stroke="none" fill={confFill} fillOpacity={1}  dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
               <Line type="monotone" dataKey="qTakenMean" stroke="#A78BFA" strokeWidth={2} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
               <Line type="monotone" dataKey="targetMean" stroke="rgba(167,139,250,0.5)" strokeWidth={1.5} dot={false} activeDot={false} strokeDasharray="4 2" isAnimationActive={false} />
             </ComposedChart>
@@ -2859,21 +3081,21 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
         <GlassCard className="p-4 flex flex-col gap-2">
           <div className="flex items-start gap-2">
             <div className="flex-1">
-              <span className="text-[12px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Gradient Norm</span>
-              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.32)' }}>Log scale · instability detector</p>
+              <span className="text-[12px] font-bold" style={{ color: c.tp }}>Gradient Norm</span>
+              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>Log scale · instability detector</p>
             </div>
             <InfoBubble side="right" text="L2 norm of the policy gradient per episode. Large early spikes are expected; values should stabilise as training converges. Persistent large norms indicate instability. The dashed line marks the target healthy threshold." />
           </div>
           <ResponsiveContainer width="100%" height={170}>
             <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 16 }}>
-              <CartesianGrid stroke={CHART_GRID} strokeDasharray="3 4" />
+              <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
               {xAxis}
-              <YAxis tick={{ ...CHART_AXIS, fontSize: 9 }} tickLine={CHART_TICK_LINE} axisLine={CHART_AXIS_LINE}
+              <YAxis tick={{ ...c.chartAxis, fontSize: 9 }} tickLine={c.chartTickLine} axisLine={c.chartAxisLine}
                 width={44} scale="log" domain={[0.0001, 'auto']}
                 tickFormatter={(v) => v < 0.01 ? v.toExponential(0) : String(+v.toFixed(3))} />
               <Tooltip content={<ChartTooltip xLabel="Ep." rows={[{ key: 'gradNorm', label: 'Grad norm', color: '#34D399', unit: '' }]} />} />
-              <ReferenceLine y={0.5} stroke="rgba(255,255,255,0.2)" strokeDasharray="5 3"
-                label={{ value: 'healthy ≤ 0.5', position: 'insideTopRight', fill: 'rgba(255,255,255,0.28)', fontSize: 8 }} />
+              <ReferenceLine y={0.5} stroke={c.tm} strokeDasharray="5 3"
+                label={{ value: 'healthy ≤ 0.5', position: 'insideTopRight', fill: c.chartLabel, fontSize: 8 }} />
               <Area type="monotone" dataKey="gradNorm" stroke="#34D399" strokeWidth={1.5}
                 fill="#34D399" fillOpacity={0.11} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
             </ComposedChart>
@@ -2905,6 +3127,7 @@ function ExportButton({ algo, selfishTimeseries = null }: {
   algo: AlgoData
   selfishTimeseries?: SelfishTimeseries | null
 }) {
+  const c = useDashColors()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const isSelfish = algo.id === 'selfish'
@@ -3077,12 +3300,12 @@ function ExportButton({ algo, selfishTimeseries = null }: {
         onClick={() => setOpen(v => !v)}
         className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all duration-150"
         style={{
-          background: open ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.07)',
-          border: `1px solid ${open ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.12)'}`,
-          color: open ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.62)',
+          background: open ? c.itemBgMd : c.itemBg,
+          border: `1px solid ${open ? c.glassBorder : c.badgeBorder}`,
+          color: open ? c.tp : c.ts,
         }}
-        onMouseEnter={e => { if (!open) { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.82)' } }}
-        onMouseLeave={e => { if (!open) { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.62)' } }}
+        onMouseEnter={e => { if (!open) { (e.currentTarget as HTMLElement).style.background = c.itemBgMd; (e.currentTarget as HTMLElement).style.color = c.tp } }}
+        onMouseLeave={e => { if (!open) { (e.currentTarget as HTMLElement).style.background = c.itemBg; (e.currentTarget as HTMLElement).style.color = c.ts } }}
       >
         {/* Download icon */}
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -3495,18 +3718,19 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
   data: EpisodePoint[]
   onClose: () => void
 }) => {
+  const c = useDashColors()
   const meta = SELFISH_METRIC_META[metricKey]
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null
     const byKey = Object.fromEntries(payload.map((p: any) => [p.dataKey, p.value]))
     return (
-      <div style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 12px', fontSize: 11 }}>
-        <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Episode {label}</p>
+      <div style={{ background: c.tooltipBg, border: `1px solid ${c.tooltipBorder}`, borderRadius: 10, padding: '8px 12px', fontSize: 11, boxShadow: c.tooltipShadow }}>
+        <p style={{ color: c.tm, marginBottom: 4 }}>Episode {label}</p>
         {byKey.value !== undefined && <p style={{ color: algoColor }}>Value: <b>{byKey.value.toFixed(2)}</b> {meta.unit}</p>}
-        {byKey.ma    !== undefined && <p style={{ color: 'rgba(255,255,255,0.7)' }}>MA-10: <b>{byKey.ma.toFixed(2)}</b> {meta.unit}</p>}
+        {byKey.ma    !== undefined && <p style={{ color: c.ts }}>MA-10: <b>{byKey.ma.toFixed(2)}</b> {meta.unit}</p>}
         {byKey.hi    !== undefined && byKey.lo !== undefined && (
-          <p style={{ color: 'rgba(255,255,255,0.35)' }}>Band: {byKey.lo.toFixed(2)} – {byKey.hi.toFixed(2)}</p>
+          <p style={{ color: c.tm }}>Band: {byKey.lo.toFixed(2)} – {byKey.hi.toFixed(2)}</p>
         )}
       </div>
     )
@@ -3517,26 +3741,37 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      style={{
+        background: c.isDark ? 'rgba(0,0,0,0.72)' : 'rgba(15,23,42,0.35)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }}
       onClick={onClose}>
       <div className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
-        style={{ maxWidth: '780px', background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.13)', boxShadow: '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)' }}
+        style={{
+          maxWidth: '780px',
+          background: c.isDark ? 'rgba(4,9,22,0.97)' : 'rgba(255,255,255,0.96)',
+          border: `1px solid ${c.glassBorder}`,
+          boxShadow: c.isDark
+            ? '0 32px 80px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)'
+            : '0 24px 64px rgba(15,23,42,0.24), inset 0 1px 0 rgba(255,255,255,0.95)',
+        }}
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-[17px] font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
+            <h3 className="text-[17px] font-bold leading-tight" style={{ color: c.tp }}>
               {meta.label} <span style={{ color: algoColor }}>· Selfish Routing</span>
             </h3>
-            <p className="text-[12px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-[12px] mt-0.5" style={{ color: c.tm }}>
               Per-episode trend · Selfish Routing · {data.length.toLocaleString()} episodes
             </p>
           </div>
           <button onClick={onClose}
             className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}` }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={c.tm} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
@@ -3546,47 +3781,47 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
         <div className="flex items-center gap-5 flex-wrap">
           <div className="flex items-center gap-2">
             <div className="w-6 h-[2px] rounded" style={{ background: algoColor }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Per-episode value</span>
+            <span className="text-[11px]" style={{ color: c.tm }}>Per-episode value</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-[2px] rounded" style={{ background: 'rgba(255,255,255,0.65)', borderTop: '2px dashed rgba(255,255,255,0.65)' }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>10-ep. moving avg.</span>
+            <div className="w-6 h-[2px] rounded" style={{ background: c.ts, borderTop: `2px dashed ${c.ts}` }} />
+            <span className="text-[11px]" style={{ color: c.tm }}>10-ep. moving avg.</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-3.5 rounded-sm" style={{ background: algoColor, opacity: 0.18 }} />
-            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.38)' }}>Confidence band</span>
+            <span className="text-[11px]" style={{ color: c.tm }}>Confidence band</span>
           </div>
         </div>
 
         {/* Chart */}
         <ResponsiveContainer width="100%" height={300}>
           <ComposedChart data={sampled} margin={{ top: 8, right: 12, left: 0, bottom: 20 }}>
-            <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 4" />
+            <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
             <XAxis dataKey="episode"
-              tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
-              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: 'rgba(255,255,255,0.28)', fontSize: 11 }}
+              tick={c.chartAxis}
+              tickLine={c.chartTickLine}
+              axisLine={c.chartAxisLine}
+              label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: c.chartLabel, fontSize: 11 }}
               interval={Math.floor(sampled.length / 10)}
             />
-            <YAxis tick={{ fill: 'rgba(255,255,255,0.28)', fontSize: 10 }}
-              tickLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-              axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+            <YAxis tick={c.chartAxis}
+              tickLine={c.chartTickLine}
+              axisLine={c.chartAxisLine}
               tickFormatter={v => `${v}`} width={52} />
             <Tooltip content={<CustomTooltip />} />
             <Area type="monotone" dataKey="hi" stroke="none"
               fill={algoColor} fillOpacity={0.12} legendType="none" isAnimationActive={false} />
             <Area type="monotone" dataKey="lo" stroke="none"
-              fill="rgba(4,9,22,1)" fillOpacity={1} legendType="none" isAnimationActive={false} />
+              fill={c.isDark ? '#040916' : '#eaf1fb'} fillOpacity={1} legendType="none" isAnimationActive={false} />
             <Line type="monotone" dataKey="value" stroke={algoColor} strokeWidth={1.5}
               dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
-            <Line type="monotone" dataKey="ma" stroke="rgba(255,255,255,0.65)" strokeWidth={1.5}
+            <Line type="monotone" dataKey="ma" stroke={c.ts} strokeWidth={1.5}
               dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
           {[
             { label: 'First ep.', value: data[0]?.value.toFixed(2) },
             { label: 'Last ep.',  value: data[data.length - 1]?.value.toFixed(2) },
@@ -3594,9 +3829,9 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
             { label: 'Max',       value: Math.max(...sampled.map(d => d.value)).toFixed(2) },
           ].map(({ label, value }) => (
             <div key={label} className="text-center">
-              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>{label}</div>
+              <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: c.tu }}>{label}</div>
               <div className="text-[15px] font-bold tabular-nums" style={{ color: algoColor }}>{value}</div>
-              <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>{meta.unit}</div>
+              <div className="text-[10px]" style={{ color: c.tu }}>{meta.unit}</div>
             </div>
           ))}
         </div>
@@ -3610,6 +3845,8 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
 const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   algo: AlgoData; mapSize: string; trafficScale: string
 }) => {
+  const c = useDashColors()
+  const { reducedMotion, ready } = usePageEntrance()
   const [openModal, setOpenModal] = useState<EpisodeMetricKey | null>(null)
   const [congestionDetail, setCongestionDetail] = useState(false)
   const [selfishModal, setSelfishModal] = useState<SelfishMetricKey | null>(null)
@@ -3780,7 +4017,12 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   })()
 
   return (
-  <div className="p-6 space-y-5 overflow-y-auto" style={{ height: '100%' }}>
+  <div className="p-4 md:p-6 space-y-4 md:space-y-5 overflow-y-auto" style={{
+    height: '100%',
+    opacity: ready ? 1 : 0,
+    transform: ready ? 'none' : 'translateY(8px)',
+    transition: reducedMotion ? 'none' : 'opacity 260ms ease, transform 320ms ease',
+  }}>
     {/* Episode detail modal */}
     {openModal && (
       <EpisodeDetailModal
@@ -3817,31 +4059,27 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     )}
 
     {/* Header */}
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
       <div>
-        <h2 className="text-xl font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.9)' }}>{displayAlgo.label}</h2>
+        <h2 className="text-xl font-bold leading-tight" style={{ color: c.tp }}>{displayAlgo.label}</h2>
       </div>
       <div className="flex items-center gap-2 flex-1">
         {mapSize && (
           <span className="text-[11px] font-medium px-2.5 py-1 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}>
+            style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}`, color: c.ts }}>
             {MAP_LABELS[mapSize] || mapSize}
           </span>
         )}
         {trafficScale && (
           <span className="text-[11px] font-medium px-2.5 py-1 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.55)' }}>
+            style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}`, color: c.ts }}>
             {TRAFFIC_LABELS[trafficScale] || trafficScale}
           </span>
         )}
         {/* Loading indicator for selfish routing */}
         {isSelfish && kpisLoading && (
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: 'rgba(255,255,255,0.3)',
-            }}>
+            style={{ background: c.itemBg, border: `1px solid ${c.divider}`, color: c.tm }}>
             Loading data…
           </span>
         )}
@@ -3849,9 +4087,9 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         {isQmix && (
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
             style={{
-              background: qmixLoading ? 'rgba(255,255,255,0.06)' : qmixData ? 'rgba(167,139,250,0.15)' : 'rgba(255,255,255,0.06)',
-              border: qmixLoading ? '1px solid rgba(255,255,255,0.1)' : qmixData ? '1px solid rgba(167,139,250,0.4)' : '1px solid rgba(255,255,255,0.1)',
-              color: qmixLoading ? 'rgba(255,255,255,0.3)' : qmixData ? '#A78BFA' : 'rgba(255,255,255,0.3)',
+              background: qmixLoading ? c.itemBg : qmixData ? 'rgba(167,139,250,0.15)' : c.itemBg,
+              border: qmixLoading ? `1px solid ${c.divider}` : qmixData ? '1px solid rgba(167,139,250,0.4)' : `1px solid ${c.divider}`,
+              color: qmixLoading ? c.tm : qmixData ? '#A78BFA' : c.tm,
             }}>
             {qmixLoading ? 'Loading data…' : qmixData ? `${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
           </span>
@@ -3860,9 +4098,9 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         {isCiviq && (
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
             style={{
-              background: civiqLoading ? 'rgba(255,255,255,0.06)' : civiqData ? 'rgba(56,189,248,0.15)' : 'rgba(255,255,255,0.06)',
-              border: civiqLoading ? '1px solid rgba(255,255,255,0.1)' : civiqData ? '1px solid rgba(56,189,248,0.4)' : '1px solid rgba(255,255,255,0.1)',
-              color: civiqLoading ? 'rgba(255,255,255,0.3)' : civiqData ? '#38BDF8' : 'rgba(255,255,255,0.3)',
+              background: civiqLoading ? c.itemBg : civiqData ? 'rgba(56,189,248,0.15)' : c.itemBg,
+              border: civiqLoading ? `1px solid ${c.divider}` : civiqData ? '1px solid rgba(56,189,248,0.4)' : `1px solid ${c.divider}`,
+              color: civiqLoading ? c.tm : civiqData ? '#38BDF8' : c.tm,
             }}>
             {civiqLoading ? 'Loading data…' : civiqData ? `${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
           </span>
@@ -3872,7 +4110,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     </div>
 
     {/* KPI Row */}
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4">
       <KpiCard label="Avg. Travel Time" abbr="ATT" value={parseFloat((displayAlgo.travelTime * 60).toFixed(2))} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.travelTime} lowerBetter sparkData={displayAlgo.sparklines.travelTime}
@@ -3906,33 +4144,33 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     </div>
 
     {/* Charts row: left column stack + Map Player */}
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
       {/* Left column: Algorithm Overview + Heatmap stacked */}
       <div className="flex flex-col gap-4">
         <GlassCard className="p-5 flex flex-col gap-3">
-          <h3 className="text-[13px] font-bold" style={{ color: 'rgba(255,255,255,0.78)' }}>Algorithm Overview</h3>
-          <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.52)' }}>
+          <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Algorithm Overview</h3>
+          <p className="text-[12px] leading-relaxed" style={{ color: c.ts }}>
             {displayAlgo.description}
           </p>
           {(displayAlgo.convergence !== null || displayAlgo.reward !== null) && (
-            <div className="pt-3 grid grid-cols-2 gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="pt-3 grid grid-cols-2 gap-3" style={{ borderTop: `1px solid ${c.divider}` }}>
               {displayAlgo.convergence !== null && (
                 <div>
-                  <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.28)' }}>Peak Episode Performance</div>
+                  <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: c.tu }}>Peak Episode Performance</div>
                   <div className="text-[17px] font-bold tabular-nums" style={{ color: displayAlgo.color }}>Ep. {displayAlgo.convergence}</div>
                 </div>
               )}
               {displayAlgo.reward !== null && (
                 <div className={displayAlgo.convergence === null ? 'col-span-2' : ''}>
                   <div className="flex items-center gap-1 mb-1">
-                    <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.28)' }}>Episode Return</span>
+                    <span className="text-[10px] uppercase tracking-wider" style={{ color: c.tu }}>Episode Return</span>
                     <div className="group/tip relative flex-shrink-0">
                       <div className="w-[14px] h-[14px] rounded-full flex items-center justify-center cursor-default"
-                        style={{ background: 'rgba(6,182,212,0.18)', border: '1px solid rgba(6,182,212,0.5)', color: 'rgba(217,249,255,0.9)' }}>
+                        style={{ background: 'rgba(6,182,212,0.18)', border: '1px solid rgba(6,182,212,0.5)', color: c.isDark ? 'rgba(217,249,255,0.9)' : 'rgba(3,105,161,0.9)' }}>
                         <span className="text-[9px] font-bold leading-none">!</span>
                       </div>
                       <div className="pointer-events-none absolute left-0 bottom-[calc(100%+6px)] w-[260px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/tip:opacity-100 group-hover/tip:translate-y-0"
-                        style={{ background: 'rgba(4,9,22,0.97)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.88)', boxShadow: '0 12px 24px rgba(0,0,0,0.45)', zIndex: 90 }}>
+                        style={{ background: c.tooltipBg, border: `1px solid ${c.tooltipBorder}`, color: c.tooltipColor, boxShadow: c.tooltipShadow, zIndex: 90 }}>
                         {isSelfish
                           ? 'Mean cumulative reward per evaluation episode, derived from greedy shortest-path routing (Nash Equilibrium). Negative values reflect the penalty-based reward signal used across all SUMO-MARL experiments — lower (more negative) indicates worse overall traffic performance.'
                           : 'Mean cumulative reward per evaluation episode across all seeds. Negative values reflect the penalty-based reward signal — lower (more negative) indicates worse traffic performance.'}
@@ -3955,7 +4193,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
                             <span className="text-[11px] font-bold tabular-nums leading-none" style={{ color }}>
                               {arrow} {Math.abs(pct).toFixed(1)}%
                             </span>
-                            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.32)' }}>{label}</span>
+                            <span className="text-[9px]" style={{ color: c.tu }}>{label}</span>
                           </div>
                         )
                       }
@@ -3993,7 +4231,9 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         <CongestionHeatmap
           algo={displayAlgo}
           onViewDetail={() => setCongestionDetail(true)}
-          heatmapSrc={isSelfish ? SELFISH_HEATMAP[trafficScale] : undefined}
+          heatmapSrc={isSelfish
+            ? SELFISH_HEATMAP[trafficScale]
+            : HEATMAP_IMG[displayAlgo.id as 'civiq' | 'qmix']?.[trafficScale]}
           congestionLabel={isSelfish ? SELFISH_CONGESTION_LABEL[trafficScale] : undefined}
         />
       </div>
@@ -4007,7 +4247,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 
     {/* Analytics row: training curve + CPU utilization */}
     {displayAlgo.id !== 'selfish' && (
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <TrainingCurveChart algo={displayAlgo} />
         <CpuStatsCard
           algo={displayAlgo}
@@ -4054,36 +4294,39 @@ const PAGE_COLOR: Record<Page, string> = {
 interface SidebarProps {
   activePage: Page
   setActivePage: (p: Page) => void
+  onRunAlgorithm: (algorithm: string) => void
   mapSize: string
   trafficScale: string
   algorithm1: string
 }
 
-const Sidebar = ({ activePage, setActivePage, mapSize, trafficScale, algorithm1 }: SidebarProps) => (
-  <div className="flex flex-col flex-shrink-0"
-    style={{ width: '248px', background: 'rgba(0,0,0,0.2)', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+function Sidebar({ activePage, setActivePage, onRunAlgorithm, mapSize, trafficScale, algorithm1 }: SidebarProps) {
+  const c = useDashColors()
+  return (
+  <div className="flex flex-col flex-shrink-0 w-full xl:w-[248px]"
+    style={{ background: c.sidebarBg, borderRight: `1px solid ${c.sidebarBorder}`, borderBottom: `1px solid ${c.sidebarBorder}` }}>
 
     {/* Analytics nav */}
     <div className="px-5 pt-6 pb-3 flex-shrink-0">
-      <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.28)' }}>
+      <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: c.tu }}>
         Analytics
       </span>
     </div>
 
-    <nav className="px-3 space-y-1 flex-shrink-0">
+    <nav className="px-3 pb-2 xl:pb-0 flex xl:block gap-2 xl:space-y-1 overflow-x-auto flex-shrink-0">
       {NAV.map((item) => {
         const isActive = activePage === item.id
         const col = PAGE_COLOR[item.id]
         return (
           <button key={item.id} onClick={() => setActivePage(item.id)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200"
+            className="w-full min-w-max xl:min-w-0 flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{
               background: isActive ? `${col}18` : 'transparent',
               border: isActive ? `1px solid ${col}40` : '1px solid transparent',
-              color: isActive ? col : 'rgba(255,255,255,0.45)',
+              color: isActive ? col : c.ts,
             }}
-            onMouseEnter={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.72)' } }}
-            onMouseLeave={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.45)' } }}>
+            onMouseEnter={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = c.hoverBg; (e.currentTarget as HTMLElement).style.color = c.hoverColor } }}
+            onMouseLeave={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = c.ts } }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d={item.d} />
@@ -4095,21 +4338,22 @@ const Sidebar = ({ activePage, setActivePage, mapSize, trafficScale, algorithm1 
     </nav>
 
     {/* Divider */}
-    <div className="mx-4 my-4 flex-shrink-0" style={{ height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+    <div className="mx-4 my-4 flex-shrink-0" style={{ height: '1px', background: c.divider }} />
 
     {/* Simulation Controls section label */}
     <div className="px-5 pb-3 flex-shrink-0">
-      <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.28)' }}>
+      <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: c.tu }}>
         Simulation Controls
       </span>
     </div>
 
     {/* Controls */}
-    <div className="px-4 flex-shrink-0">
+    <div className="px-4 pb-4 xl:pb-0 flex-shrink-0">
       <SimulationControls
-        darkMode
+        darkMode={c.isDark}
         vertical
         hideHeader
+        onRunAlgorithm={onRunAlgorithm}
         initialMapSize={mapSize}
         initialTrafficScale={trafficScale}
         initialAlgorithm={algorithm1 === 'hierarchical_qmix' ? 'hierarchical_qmix'
@@ -4120,7 +4364,8 @@ const Sidebar = ({ activePage, setActivePage, mapSize, trafficScale, algorithm1 
     </div>
 
   </div>
-)
+  )
+}
 
 // ─── Labels ────────────────────────────────────────────────────────────────────
 
@@ -4136,6 +4381,9 @@ const TRAFFIC_LABELS: Record<string, string> = {
 function SimulationDashboardContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { theme } = useTheme()
+  const c = buildDashColors(theme === 'dark')
+
   const mapSize = searchParams.get('mapSize') || ''
   const trafficScale = searchParams.get('trafficScale') || ''
   const view = searchParams.get('view') || ''
@@ -4173,31 +4421,32 @@ function SimulationDashboardContent() {
   }, [mapSize, trafficScale, view, algorithm1, algorithm2, router])
 
   return (
+    <DashColorsContext.Provider value={c}>
     <main className="w-full h-screen overflow-hidden" style={{ position: 'relative' }}>
       {/* Base gradient */}
       <div className="fixed inset-0 pointer-events-none"
-        style={{ background: 'linear-gradient(135deg, #060112 0%, #0b0320 40%, #040c1c 100%)', zIndex: -1 }} />
+        style={{ background: c.pageBgGrad, zIndex: -1 }} />
       <AnimatedBackground />
 
       {/* Outer wrapper */}
       <div className="flex items-stretch justify-center"
-        style={{ height: '100vh', padding: 'clamp(10px, 1.2vw, 18px)', zIndex: 2, position: 'relative', overflowX: 'auto' }}>
+        style={{ height: '100vh', padding: 'clamp(8px, 1.2vw, 16px)', zIndex: 2, position: 'relative' }}>
 
         {/* OBU Bezel */}
         <div className="relative w-full flex flex-col" style={{
-          minWidth: '1400px', maxWidth: '1640px',
-          background: 'rgba(8, 14, 32, 0.48)',
+          maxWidth: '1640px',
+          background: c.obuBg,
           backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)',
           borderRadius: '24px', padding: '12px',
-          border: '1px solid rgba(255,255,255,0.11)',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3)',
+          border: `1px solid ${c.obuBorder}`,
+          boxShadow: c.obuShadow,
         }}>
           {/* Side screws */}
           {['left-2', 'right-2'].map((side) => (
             <div key={side} className={`absolute ${side} top-1/2 -translate-y-1/2 flex flex-col gap-2.5 pointer-events-none`}>
               {[0, 1, 2].map((i) => (
                 <div key={i} className="w-2 h-2 rounded-full"
-                  style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.6)' }} />
+                  style={{ background: c.screwBg, boxShadow: c.screwShadow }} />
               ))}
             </div>
           ))}
@@ -4206,23 +4455,24 @@ function SimulationDashboardContent() {
           <div className="relative flex flex-col overflow-hidden"
             style={{
               flex: 1,
-              background: 'rgba(6, 11, 26, 0.45)',
+              background: c.screenBg,
               backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-              borderRadius: '14px', border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+              borderRadius: '14px', border: `1px solid ${c.screenBorder}`,
+              boxShadow: c.screenShadow,
             }}>
             {/* Top gloss */}
             <div className="absolute inset-x-0 top-0 h-20 pointer-events-none rounded-t-[14px]"
-              style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%)' }} />
+              style={{ background: c.screenGloss }} />
 
             {/* Status bar */}
             <StatusBar />
 
             {/* Body: Sidebar + Content */}
-            <div className="flex overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
+            <div className="flex flex-col xl:flex-row overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
               <Sidebar
                 activePage={activePage}
                 setActivePage={setActivePage}
+                onRunAlgorithm={(algorithm) => setActivePage(algoToPage(algorithm))}
                 mapSize={mapSize}
                 trafficScale={trafficScale}
                 algorithm1={algorithm1}
@@ -4231,26 +4481,26 @@ function SimulationDashboardContent() {
               <div className="flex-1 relative" style={{
                 minHeight: 0,
                 overflow: 'hidden',
-                background: 'rgba(4, 9, 22, 0.82)',
+                background: c.contentBg,
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                borderLeft: '1px solid rgba(255,255,255,0.07)',
+                borderLeft: `1px solid ${c.contentBorder}`,
               }}>
                 {/* Animated colour blobs — fixed behind content */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
                   <div className="absolute rounded-full" style={{
                     width: 500, height: 500, top: '-120px', left: '-80px',
-                    background: 'radial-gradient(circle at 40% 40%, rgba(6,182,212,0.28) 0%, transparent 70%)',
+                    background: c.blob1,
                     filter: 'blur(60px)', animation: 'blob1 16s ease-in-out infinite', animationDelay: '-3s',
                   }} />
                   <div className="absolute rounded-full" style={{
                     width: 460, height: 460, bottom: '-100px', right: '-60px',
-                    background: 'radial-gradient(circle at 60% 55%, rgba(139,92,246,0.24) 0%, transparent 70%)',
+                    background: c.blob2,
                     filter: 'blur(60px)', animation: 'blob2 20s ease-in-out infinite', animationDelay: '-8s',
                   }} />
                   <div className="absolute rounded-full" style={{
                     width: 360, height: 360, top: '35%', left: '50%',
-                    background: 'radial-gradient(circle at 50% 50%, rgba(37,99,235,0.18) 0%, transparent 70%)',
+                    background: c.blob3,
                     filter: 'blur(50px)', animation: 'blob3 18s ease-in-out infinite', animationDelay: '-12s',
                   }} />
                 </div>
@@ -4268,6 +4518,7 @@ function SimulationDashboardContent() {
         </div>
       </div>
     </main>
+    </DashColorsContext.Provider>
   )
 }
 
