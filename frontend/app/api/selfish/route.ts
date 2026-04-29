@@ -96,8 +96,8 @@ export async function GET(request: NextRequest) {
       evalThroughputs:  levelData.evalThroughputs  ?? null,
       kpis: {
         // Primary display KPIs (matching AlgoData fields)
-        travelTime: parseFloat(kpis.avg_travel_time_min.toFixed(2)),             // min
-        waitTime:   parseFloat(kpis.avg_waiting_time_s.toFixed(1)),               // sec
+        travelTime: kpis.avg_travel_time_min,                                      // min
+        waitTime:   kpis.avg_waiting_time_s,                                       // sec
         throughput: parseFloat(kpis.network_throughput_veh_h.toFixed(0)),         // veh/hr
         speed:      parseFloat(kpis.real_time_factor.toFixed(2)),                  // real-time factor ×
         co2:        kpis.avg_co2_g_per_km,                                         // g/km

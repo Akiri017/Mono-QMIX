@@ -3925,7 +3925,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       return {
         ...algo,
         convergence: peakTrainEp,
-        travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
+        travelTime: k.travelTime_s / 60,
         waitTime:   k.waitTime_s,
         throughput: k.throughput,
         speed:      k.realTimeFactor ?? algo.speed,
@@ -3967,7 +3967,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       return {
         ...algo,
         convergence: peakTrainEp,
-        travelTime: parseFloat((k.travelTime_s / 60).toFixed(3)),
+        travelTime: k.travelTime_s / 60,
         waitTime:   k.waitTime_s,
         throughput: k.throughput,
         speed:      k.realTimeFactor ?? algo.speed,
