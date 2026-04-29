@@ -2075,24 +2075,24 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
 }
 
 // ─── Congestion Heatmap ───────────────────────────────────────────────────────
-// Maps learning-based algos to their representative heatmap image (non-LOS E).
+// Per-algorithm policy comparison heatmaps for all demand levels.
 const HEATMAP_IMG: Record<'civiq' | 'qmix', Record<string, string>> = {
   civiq: {
-    free_flow:   '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
-    stable_flow: '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    free_flow:   '/heatmap_output/policy_comparison/heatmap_low_civiq.png',
+    stable_flow: '/heatmap_output/policy_comparison/heatmap_med_civiq.png',
     forced_flow: '/heatmap_output/policy_comparison/heatmap_high_civiq.png',
   },
   qmix: {
-    free_flow:   '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
-    stable_flow: '/heatmap_output/bgc_full_intersection_based/heatmap_low.png',
+    free_flow:   '/heatmap_output/policy_comparison/heatmap_low_mono_qmix.png',
+    stable_flow: '/heatmap_output/policy_comparison/heatmap_med_mono_qmix.png',
     forced_flow: '/heatmap_output/policy_comparison/heatmap_high_mono_qmix.png',
   },
 }
 
-// Real selfish routing heatmaps keyed by traffic level
+// Selfish routing (noop) policy comparison heatmaps keyed by traffic level
 const SELFISH_HEATMAP: Record<string, string> = {
-  free_flow:   '/heatmap_output/bgc_full_actual/heatmap_low.png',
-  stable_flow: '/heatmap_output/bgc_full_actual/heatmap_med.png',
+  free_flow:   '/heatmap_output/policy_comparison/heatmap_low_noop.png',
+  stable_flow: '/heatmap_output/policy_comparison/heatmap_med_noop.png',
   forced_flow: '/heatmap_output/policy_comparison/heatmap_high_noop.png',
 }
 
