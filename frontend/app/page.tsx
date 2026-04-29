@@ -490,19 +490,19 @@ export default function Home() {
   const kpiData = [
     {
       rawValue: 2.0, format: (n: number) => n.toFixed(1),
-      unit: 'min', label: 'Average Travel Time', sub: 'Consistent across free-flow to forced-flow',
+      unit: 'min', label: 'Average Travel Time', sub: 'High Demand best: 111.8 sec — 8.4% faster than Moderate',
       darkColor: '#38BDF8', lightColor: '#0369a1', rgb: '56,189,248',
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
     },
     {
       rawValue: 2273, format: (n: number) => Math.round(n).toLocaleString(),
-      unit: 'veh/hr', label: 'Peak Network Throughput', sub: '37.4% more than QMIX at max congestion',
+      unit: 'veh/hr', label: 'Peak Network Throughput', sub: 'High Demand (2,000 veh/hr) · 37.4% more than Mono-QMIX',
       darkColor: '#A78BFA', lightColor: '#6d28d9', rgb: '167,139,250',
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
     },
     {
       rawValue: 19.3, format: (n: number) => n.toFixed(1),
-      unit: 'sec', label: 'Wait Time at Peak Load', sub: '18.8% less waiting than QMIX under congestion',
+      unit: 'sec', label: 'Wait Time at Peak Load', sub: 'High Demand (2,000 veh/hr) · 23.1% less than Mono-QMIX',
       darkColor: '#4ADE80', lightColor: '#15803d', rgb: '74,222,128',
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
     },
@@ -608,7 +608,7 @@ export default function Home() {
               Redefining Urban Traffic Management
             </h2>
             <p className="text-[15px] leading-relaxed max-w-3xl" style={{ color: c.textSecondary }}>
-              Civiq is a hierarchical software framework designed to redefine urban traffic management through cooperative intelligence. Built around the QMIX algorithm, Civiq addresses the scalability challenges of traditional Multi-Agent Reinforcement Learning by utilizing a three-level architecture: individual vehicle agents, local coordination via Roadside Units, and a central server for global optimization. By integrating directly with the SUMO environment, Civiq transforms selfish routing behaviors into a synchronized network, significantly improving throughput and reducing urban congestion.
+              CiViQ is a hierarchical multi-agent reinforcement learning framework for urban traffic management, evaluated on a 2 km² BGC road network simulated in SUMO. It uses a three-level architecture — individual vehicle agents, 6 local RSU coordinators, and a global server — built on the QMIX algorithm. Tested across three demand levels (Low: 1,000 veh/hr; Moderate: 1,200 veh/hr; High: 2,000 veh/hr), CiViQ outperforms Mono-QMIX by 37.4% in throughput and reduces average wait time by 23.1% under peak congestion.
             </p>
           </div>
 
@@ -640,8 +640,8 @@ export default function Home() {
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.78), 0 4px 18px rgba(15,23,42,0.05)',
               } : {}}>
                 <p className="text-[14px] leading-relaxed" style={{ color: c.textSecondary }}>
-                  Civiq transforms congested urban traffic into a coordinated and efficient network by enabling vehicles to operate cooperatively rather than competitively. Under maximum congestion (LOS E), Civiq achieves{' '}
-                  <span className="font-semibold" style={{ color: c.accent }}>2,273 vehicles per hour</span> — a 37.4% improvement over Monolithic QMIX — while keeping average wait time to just 19.3 seconds, 18.8% lower than QMIX at the same conditions. Across all traffic levels, CiViQ maintains a stable average travel time of approximately 2 minutes.
+                  Evaluated on a 2 km² SUMO simulation of BGC, CiViQ coordinates traffic across three demand levels. At{' '}
+                  <span className="font-semibold" style={{ color: c.accent }}>High Demand (2,000 veh/hr)</span>, it achieves 2,273 veh/hr throughput — 37.4% above Mono-QMIX — and reduces average wait time to 19.29 sec (vs. Mono-QMIX's 23.75 sec, a 23.1% reduction). At Moderate Demand (1,200 veh/hr), Mono-QMIX is faster by 11.3% in travel time (108.3 vs. 122.1 sec), showing that hierarchy overhead becomes beneficial only under higher congestion. Average diesel consumption across all demand levels: 21.2 L/100km for CiViQ vs. 23.4 L/100km for Mono-QMIX — a 9.4% reduction.
                 </p>
               </GlassCard>
             </div>

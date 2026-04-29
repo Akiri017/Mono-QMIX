@@ -489,8 +489,8 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Averages across LOS A/C/E on BGC Full (2 km²)
     travelTime: 1.975, waitTime: 12.47, throughput: 1518, speed: 1.24,
     co2: 492.8, fuel: 21.24, computeTime: 22.35, cpuMean: 537.5, cpuPeak: 8597, convergence: 150, reward: -65638,
-    description: 'Civiq employs a hierarchical two-tier coordination mechanism where a global orchestrator assigns zone-level routing goals, while local agents optimize intersection-level decisions using QMIX. This architecture enables scalable, cooperative traffic management that generalizes across varying network topologies and traffic densities.',
-    strengths: ['Lowest travel time across all scenarios', 'Lowest average wait time', 'Best throughput in heavy traffic (LOS E)', 'Scalable to larger road networks'],
+    description: 'CiViQ employs a hierarchical two-tier coordination mechanism: a global orchestrator assigns zone-level routing goals across 6 RSU zones on a 2 km² network, while local agents optimize intersection-level decisions using QMIX. Under High Demand (2,000 veh/hr), CiViQ achieves 2,273 veh/hr throughput and 19.3 sec average wait time — outperforming Mono-QMIX by 37.4% in throughput and 23.1% in wait time at peak congestion.',
+    strengths: ['37.4% higher throughput than QMIX at High Demand', 'Lowest wait time at peak load (19.3 sec)', 'Travel time improves 8.3% from Moderate → High Demand', 'Constant per-decision complexity as agents scale'],
     scores: [0.99, 1.00, 1.00, 0.67, 0.96, 0.96, 0.30],
     sparklines: {
       travelTime:  [1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96],
@@ -523,8 +523,8 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-LOS by useQmixRealData
     travelTime: 1.99, waitTime: 14.1, throughput: 1305, speed: 53.97,
     co2: 538.9, fuel: 23.2, computeTime: 18.20, cpuMean: 93.4, cpuPeak: 702, convergence: 9001, reward: -68798,
-    description: 'Monolithic QMIX applies centralized multi-agent reinforcement learning where all agents share a joint action-value function. While effective at coordination, the monolithic architecture faces scalability limitations as network size grows, requiring more training episodes and compute to converge on larger topologies.',
-    strengths: ['Lighter compute per decision step than CiViQ', 'Good coordination at small scale', 'Solid baseline RL performance', 'Well-established QMIX framework'],
+    description: 'Mono-QMIX applies centralized multi-agent reinforcement learning where all agents share a joint action-value function across the full 2 km² network. It converges in ~9,000 training episodes (vs. CiViQ\'s ~150) and achieves its best result at Moderate Demand (1,200 veh/hr) with a 108.3 sec average travel time — 11.3% better than CiViQ at that level. Under High Demand (2,000 veh/hr), travel time degrades 16.3% to 125.9 sec as the joint action space grows with 28+ simultaneously active agents.',
+    strengths: ['Best travel time at Moderate Demand: 108.3 sec', '11.3% faster than CiViQ at Moderate Demand', 'Lower CPU overhead per decision step', 'Well-established QMIX mixing-network framework'],
     scores: [0.85, 0.87, 0.98, 0.82, 0.87, 0.87, 0.32],
     // Flat sparklines at averaged eval measurement — overridden by useQmixRealData
     sparklines: {
@@ -562,8 +562,8 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-level by useSelfishRealData
     travelTime: 2.05, waitTime: 13.1, throughput: 1545, speed: 248.84,
     co2: 471.2, fuel: 20.3, computeTime: 0, cpuMean: 0, cpuPeak: 0, convergence: null, reward: null,
-    description: 'Selfish Routing models each vehicle independently optimizing its own route via shortest-path algorithms, representing the Nash Equilibrium state of the network. Without coordination, vehicles converge on popular routes causing Braess\'s Paradox — where adding road capacity can paradoxically worsen network-wide performance.',
-    strengths: ['No training or setup required', 'Simple and fully interpretable', 'Establishes the Price of Anarchy baseline', 'Handles novel edge cases naturally'],
+    description: 'Selfish Routing models each vehicle independently optimizing its own route via shortest-path algorithms, representing the Nash Equilibrium. At Low Demand (1,000 veh/hr) it achieves 120.8 sec average travel time — within 0.7% of CiViQ — establishing it as the Price of Anarchy baseline. Under High Demand (2,000 veh/hr), wait time rises to 20.7 sec, 7.2% higher than CiViQ\'s 19.3 sec, as uncoordinated vehicles converge on popular routes.',
+    strengths: ['No training or setup required', 'Within 0.7% of CiViQ travel time at Low Demand', 'Establishes the Price of Anarchy baseline', 'Fully interpretable shortest-path decisions'],
     scores: [1.00, 0.95, 0.95, 1.00, 1.00, 1.00, 1.00],
     // Sparklines: flat at averaged measurement — overridden by real data once loaded
     sparklines: {
@@ -907,7 +907,7 @@ const COMPARE_METRICS = [
   { label: 'Avg. Wait Time', unit: 'sec', key: 'waitTime' as const, max: 20, lowerBetter: true },
   { label: 'Throughput', unit: 'veh/hr', key: 'throughput' as const, max: 2000, lowerBetter: false },
   { label: 'CO₂ Emissions', unit: 'g/km', key: 'co2' as const, max: 600, lowerBetter: true },
-  { label: 'Fuel Consumption', unit: 'L/100km', key: 'fuel' as const, max: 30, lowerBetter: true },
+  { label: 'Diesel Consumption', unit: 'L/100km', key: 'fuel' as const, max: 30, lowerBetter: true },
 ]
 
 // ─── Compare helpers ──────────────────────────────────────────────────────────
@@ -942,9 +942,9 @@ const MAP_OPTIONS = [
   { key: '4x4', label: '4×4 Grid' },
 ]
 const TRAFFIC_OPTIONS = [
-  { key: 'free_flow',   label: 'Free Flow',   sub: 'LOS A' },
-  { key: 'stable_flow', label: 'Stable Flow', sub: 'LOS C' },
-  { key: 'forced_flow', label: 'Forced Flow', sub: 'LOS E' },
+  { key: 'free_flow',   label: 'Low Demand',      sub: '1,000 veh/hr', note: 'light load · minimal queueing' },
+  { key: 'stable_flow', label: 'Moderate Demand',  sub: '1,200 veh/hr', note: 'emerging congestion · queueing onset' },
+  { key: 'forced_flow', label: 'High Demand',       sub: '2,000 veh/hr', note: 'saturated network · significant delay' },
 ]
 
 function CompareModal({ onClose, onConfirm }: {
@@ -1064,6 +1064,7 @@ function CompareModal({ onClose, onConfirm }: {
                   }}>
                   <div className="text-[10px] font-semibold">{o.label}</div>
                   <div className="text-[9px] mt-0.5" style={{ opacity: 0.6 }}>{o.sub}</div>
+                  <div className="text-[8px] mt-0.5" style={{ opacity: 0.4 }}>{o.note}</div>
                 </button>
               ))}
             </div>
@@ -1114,7 +1115,7 @@ const ROUTING_KPI: KpiMetaDef[] = [
 ]
 const ENVIRON_KPI: KpiMetaDef[] = [
   { label: 'Average CO₂ Emissions',    unit: 'g/km',    getValue: a => a.co2,  lowerBetter: true },
-  { label: 'Average Fuel Consumption', unit: 'l/100km', getValue: a => a.fuel, lowerBetter: true },
+  { label: 'Avg. Fuel Consumption (Diesel)', unit: 'L/100km', getValue: a => a.fuel, lowerBetter: true },
 ]
 const COMPUTE_KPI: KpiMetaDef[] = [
   { label: 'Real-time Factor', unit: '×',  getValue: a => a.speed,       lowerBetter: false },
@@ -1288,10 +1289,10 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('forced_flow')
 
   type LosKey = 'free_flow' | 'stable_flow' | 'forced_flow'
-  const LOS_TABS: { key: LosKey; label: string; sub: string }[] = [
-    { key: 'free_flow',   label: 'Free Flow',   sub: 'LOS A' },
-    { key: 'stable_flow', label: 'Stable Flow', sub: 'LOS C' },
-    { key: 'forced_flow', label: 'Forced Flow', sub: 'LOS E' },
+  const LOS_TABS: { key: LosKey; label: string; sub: string; note: string }[] = [
+    { key: 'free_flow',   label: 'Low Demand',      sub: '1,000 veh/hr', note: 'light load · minimal queueing' },
+    { key: 'stable_flow', label: 'Moderate Demand',  sub: '1,200 veh/hr', note: 'emerging congestion · queueing onset' },
+    { key: 'forced_flow', label: 'High Demand',       sub: '2,000 veh/hr', note: 'saturated network · significant delay' },
   ]
 
   function perLos(id: AlgoKey, k: LosKey) {
@@ -1325,7 +1326,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     { key: 'waitTime',   label: 'Avg. Wait Time',    unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2) },
     { key: 'throughput', label: 'Throughput',         unit: 'veh/hr',  lowerBetter: false, fmt: v => Math.round(v).toLocaleString() },
     { key: 'co2',        label: 'CO₂ Emissions',     unit: 'g/km',    lowerBetter: true,  fmt: v => v.toFixed(2) },
-    { key: 'fuel',       label: 'Fuel Consumption',  unit: 'L/100km', lowerBetter: true,  fmt: v => v.toFixed(2) },
+    { key: 'fuel',       label: 'Diesel Consumption', unit: 'L/100km', lowerBetter: true,  fmt: v => v.toFixed(2) },
   ]
 
   const RANK_META: { label: string; unit: string; key: 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'; fmt: (v: number) => string; lowerBetter: boolean }[] = [
@@ -1333,7 +1334,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     { label: 'Wait Time',   unit: 'sec',     key: 'waitTime',   fmt: v => v.toFixed(2),                       lowerBetter: true  },
     { label: 'Throughput',  unit: 'veh/hr',  key: 'throughput', fmt: v => Math.round(v).toLocaleString(),      lowerBetter: false },
     { label: 'CO₂',         unit: 'g/km',    key: 'co2',        fmt: v => v.toFixed(2),                       lowerBetter: true  },
-    { label: 'Fuel',        unit: 'L/100km', key: 'fuel',       fmt: v => v.toFixed(2),                       lowerBetter: true  },
+    { label: 'Diesel',      unit: 'L/100km', key: 'fuel',       fmt: v => v.toFixed(2),                       lowerBetter: true  },
   ]
   const rankNorm = RANK_META.map(m => {
     const vals  = ALGO_LIST.map(a => perLos(a.id, losTab)[m.key])
@@ -1353,22 +1354,22 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const KEY_FINDINGS = [
     { tag: 'Throughput',   tagColor: '#22C55E',
       headline: 'CiViQ delivers 37.4% more throughput under congestion',
-      body: 'At forced-flow (LOS E), CiViQ achieves 2,273 veh/hr vs QMIX\'s 1,654 — a 37.4% lead. The gap narrows to 4.2% at free-flow, showing how hierarchical coordination compounds its benefit as demand rises.' },
+      body: 'At High Demand (2,000 veh/hr), CiViQ achieves 2,273 veh/hr vs. Mono-QMIX\'s 1,654 veh/hr — a 37.4% lead. The gap narrows to 4.2% at Low Demand (1,088 vs. 1,044 veh/hr), showing how hierarchical coordination compounds its advantage as demand rises.' },
     { tag: 'Travel Time',  tagColor: '#38BDF8',
-      headline: 'QMIX edges CiViQ at stable flow by 11.3%',
-      body: 'At LOS C, QMIX records 108.26 sec vs CiViQ\'s 122.07 sec. Monolithic coordination can outperform hierarchical control under moderate, non-saturated traffic where hierarchy overhead exceeds its benefit.' },
+      headline: 'QMIX edges CiViQ at Moderate Demand by 11.3%',
+      body: 'At Moderate Demand (1,200 veh/hr), QMIX records 108.3 sec vs. CiViQ\'s 122.1 sec average travel time. Monolithic coordination outperforms hierarchical control under moderate, non-saturated traffic where hierarchy overhead exceeds its benefit.' },
     { tag: 'Wait Time',    tagColor: '#F59E0B',
-      headline: 'Congestion reveals QMIX\'s coordination ceiling',
-      body: 'At LOS E, QMIX wait time hits 23.75 sec — 23.1% worse than CiViQ\'s 19.29 sec. The joint action-value function struggles to resolve intersection conflicts as demand approaches saturation.' },
+      headline: 'High Demand reveals QMIX\'s coordination ceiling',
+      body: 'At High Demand (2,000 veh/hr), QMIX wait time reaches 23.75 sec — 23.1% worse than CiViQ\'s 19.29 sec. The joint action-value function struggles to resolve intersection conflicts as demand saturates the network with 28+ active agents.' },
     { tag: 'Baseline',     tagColor: '#F87171',
-      headline: 'Selfish Routing closely matches CiViQ at free flow',
-      body: 'At LOS A, Selfish records 120.83 sec vs CiViQ\'s 121.70 sec — within 0.7%. QMIX achieves the best travel time at this level (119.14 sec). Under low demand, Selfish routing offers near-RL performance without any training overhead.' },
+      headline: 'Selfish Routing closely matches CiViQ at Low Demand',
+      body: 'At Low Demand (1,000 veh/hr), Selfish records 120.8 sec vs. CiViQ\'s 121.7 sec — within 0.7%. QMIX achieves the best travel time at this level (119.1 sec). Under low demand, Selfish routing delivers near-RL performance without any training overhead.' },
     { tag: 'Scalability',  tagColor: '#A78BFA',
-      headline: 'Hierarchical architecture scales; monolithic does not',
-      body: 'CiViQ\'s two-tier hierarchy keeps per-decision complexity constant as traffic grows. QMIX\'s joint-action-value network scales quadratically with agent count, explaining its degradation at LOS E.' },
+      headline: 'CiViQ improves under congestion; QMIX degrades',
+      body: 'From Moderate to High Demand, CiViQ\'s travel time improves 8.4% (122.1 → 111.8 sec), exploiting higher vehicle density for more effective routing. Mono-QMIX travel time worsens 16.3% (108.3 → 125.9 sec) as its joint action-value network must reconcile decisions across 28+ active agents.' },
     { tag: 'Coordination', tagColor: '#34D399',
       headline: 'CiViQ consistently reduces wait time vs Selfish Routing',
-      body: 'CiViQ vs Selfish wait-time gap is 2.7% at LOS A (7.15 vs 7.34 sec) and 7.2% at LOS E (19.29 vs 20.67 sec). Multi-agent coordination delivers a consistent queuing reduction across all congestion levels.' },
+      body: 'CiViQ\'s wait-time advantage over Selfish grows with demand: 2.7% at Low Demand (7.15 vs. 7.34 sec) and 7.2% at High Demand (19.29 vs. 20.67 sec). Multi-agent coordination delivers a compounding queuing reduction as the network approaches saturation.' },
   ]
 
   return (
@@ -1403,6 +1404,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
               border:     losTab === t.key ? `1px solid ${c.glassBorder}` : '1px solid transparent',
             }}>
             {t.label}&nbsp;<span style={{ opacity: 0.55 }}>({t.sub})</span>
+            {losTab === t.key && <div className="text-[8px] font-normal mt-0.5" style={{ opacity: 0.5 }}>{t.note}</div>}
           </button>
         ))}
       </div>
@@ -1535,7 +1537,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
                 color:      losTab === t.key ? c.tp       : c.ts,
                 border:     losTab === t.key ? `1px solid ${c.glassBorder}` : '1px solid transparent',
               }}>
-              {t.sub}
+              {t.label}{losTab === t.key && <span style={{ opacity: 0.5 }}> · {t.sub}</span>}
             </button>
           ))}
         </div>
@@ -2061,7 +2063,7 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
         <GaugeChart
           value={algo.fuel}
           max={55}
-          label="Avg Fuel Consumption"
+          label="Avg. Fuel Consumption (Diesel)"
           unit="L/100km"
           accentColor={algo.color}
           description="The mean fuel used per vehicle throughout the simulation, as calculated by SUMO. Reflects the environmental cost of routing behavior."
@@ -2094,10 +2096,10 @@ const SELFISH_HEATMAP: Record<string, string> = {
   forced_flow: '/heatmap_output/policy_comparison/heatmap_high_noop.png',
 }
 
-const SELFISH_CONGESTION_LABEL: Record<string, string> = {
-  free_flow:   'Low Congestion',
-  stable_flow: 'Moderate Congestion',
-  forced_flow: 'High Congestion',
+const CONGESTION_LABEL: Record<string, string> = {
+  free_flow:   'Low Congestion · 1,000 veh/hr',
+  stable_flow: 'Moderate Congestion · 1,200 veh/hr',
+  forced_flow: 'High Congestion · 2,000 veh/hr',
 }
 
 const INT_KEYS = ['int1','int2','int3','int4'] as const
@@ -2363,8 +2365,8 @@ function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: 
   const src = heatmapSrc ?? (algo.id !== 'selfish'
     ? HEATMAP_IMG[algo.id as 'civiq' | 'qmix']?.free_flow
     : SELFISH_HEATMAP.free_flow)
-  const label = congestionLabel ?? (algo.id === 'selfish' ? 'High Congestion' : 'Low Congestion')
-  const labelColor = label === 'Low Congestion' ? '#4ADE80' : label === 'Moderate Congestion' ? '#FACC15' : '#F87171'
+  const label = congestionLabel ?? CONGESTION_LABEL.free_flow
+  const labelColor = label.startsWith('Low') ? '#4ADE80' : label.startsWith('Moderate') ? '#FACC15' : '#F87171'
   const imgBg = c.isDark ? 'rgba(3,7,18,0.75)' : 'rgba(220,230,245,0.75)'
 
   return (
@@ -3696,9 +3698,9 @@ function qmixToEpisodeSeries(data: QmixRealData): EpisodeSeries {
 // ─── Selfish Detail Modal ─────────────────────────────────────────────────────
 
 const LOS_LABELS: Record<string, string> = {
-  free_flow: 'LOS A',
-  stable_flow: 'LOS C',
-  forced_flow: 'LOS E',
+  free_flow:   'Low Demand',
+  stable_flow: 'Moderate Demand',
+  forced_flow: 'High Demand',
 }
 
 const SELFISH_METRIC_META: Record<SelfishMetricKey, { label: string; unit: string; lowerBetter: boolean }> = {
@@ -3706,7 +3708,7 @@ const SELFISH_METRIC_META: Record<SelfishMetricKey, { label: string; unit: strin
   waitTime:   { label: 'Avg. Waiting Time',     unit: 'sec',     lowerBetter: true  },
   throughput: { label: 'Network Throughput',    unit: 'veh/hr',  lowerBetter: false },
   co2:        { label: 'Avg. CO₂ Emissions',    unit: 'g/km',    lowerBetter: true  },
-  fuel:       { label: 'Avg. Fuel Consumption', unit: 'L/100km', lowerBetter: true  },
+  fuel:       { label: 'Avg. Fuel Consumption (Diesel)', unit: 'L/100km', lowerBetter: true  },
 }
 
 const SELFISH_CO2_EPISODES  = makeSeries(486.26, 486.26, 15,  10,  50, 13)
@@ -4091,7 +4093,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
               border: qmixLoading ? `1px solid ${c.divider}` : qmixData ? '1px solid rgba(167,139,250,0.4)' : `1px solid ${c.divider}`,
               color: qmixLoading ? c.tm : qmixData ? '#A78BFA' : c.tm,
             }}>
-            {qmixLoading ? 'Loading data…' : qmixData ? `${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
+            {qmixLoading ? 'Loading data…' : qmixData ? `${trafficScale === 'stable_flow' ? 'Moderate Demand' : trafficScale === 'forced_flow' ? 'High Demand' : 'Low Demand'}` : 'Static Data'}
           </span>
         )}
         {/* Real-data badge for CiViQ */}
@@ -4102,7 +4104,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
               border: civiqLoading ? `1px solid ${c.divider}` : civiqData ? '1px solid rgba(56,189,248,0.4)' : `1px solid ${c.divider}`,
               color: civiqLoading ? c.tm : civiqData ? '#38BDF8' : c.tm,
             }}>
-            {civiqLoading ? 'Loading data…' : civiqData ? `${trafficScale === 'stable_flow' ? 'LOS C' : trafficScale === 'forced_flow' ? 'LOS E' : 'LOS A'}` : 'Static Data'}
+            {civiqLoading ? 'Loading data…' : civiqData ? `${trafficScale === 'stable_flow' ? 'Moderate Demand' : trafficScale === 'forced_flow' ? 'High Demand' : 'Low Demand'}` : 'Static Data'}
           </span>
         )}
       </div>
@@ -4234,7 +4236,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           heatmapSrc={isSelfish
             ? SELFISH_HEATMAP[trafficScale]
             : HEATMAP_IMG[displayAlgo.id as 'civiq' | 'qmix']?.[trafficScale]}
-          congestionLabel={isSelfish ? SELFISH_CONGESTION_LABEL[trafficScale] : undefined}
+          congestionLabel={CONGESTION_LABEL[trafficScale]}
         />
       </div>
 
@@ -4373,7 +4375,9 @@ const MAP_LABELS: Record<string, string> = {
   '2km': '2 km²', '0.75km': '0.75 km²', '4x4': '4×4 Grid (2.25 km²)',
 }
 const TRAFFIC_LABELS: Record<string, string> = {
-  free_flow: 'Free Flow (LOS A)', stable_flow: 'Stable Flow (LOS C)', forced_flow: 'Forced Flow (LOS E)',
+  free_flow:   'Low Demand — 1,000 veh/hr',
+  stable_flow: 'Moderate Demand — 1,200 veh/hr',
+  forced_flow: 'High Demand — 2,000 veh/hr',
 }
 
 // ─── Main Export ───────────────────────────────────────────────────────────────

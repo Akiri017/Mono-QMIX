@@ -12,9 +12,9 @@ interface DropdownOption {
 }
 
 const trafficScaleOptions: DropdownOption[] = [
-  { label: 'Free Flow (LOS A)', value: 'free_flow', description: 'Minimal congestion — vehicles move freely at desired speeds' },
-  { label: 'Stable Flow (LOS C)', value: 'stable_flow', description: 'Moderate traffic density with acceptable delays' },
-  { label: 'Forced Flow (LOS E)', value: 'forced_flow', description: 'Near-capacity traffic with significant congestion' },
+  { label: 'Low Demand',      value: 'free_flow',   description: '1,000 veh/hr — light load on the traffic network; minimal queueing' },
+  { label: 'Moderate Demand', value: 'stable_flow', description: '1,200 veh/hr — emerging congestion; noticeable queueing onset' },
+  { label: 'High Demand',     value: 'forced_flow', description: '2,000 veh/hr — saturated network; significant queueing and delay' },
 ]
 
 const algorithmOptions: DropdownOption[] = [
