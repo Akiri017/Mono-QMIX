@@ -2353,11 +2353,10 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
   )
 }
 
-// ─── Congestion Heatmap card (simple — View Detail opens the modal) ────────────
+// ─── Congestion Heatmap card ──────────────────────────────────────────────────
 
-function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: {
+function CongestionHeatmap({ algo, heatmapSrc, congestionLabel }: {
   algo: AlgoData
-  onViewDetail: () => void
   heatmapSrc?: string
   congestionLabel?: string
 }) {
@@ -2376,17 +2375,6 @@ function CongestionHeatmap({ algo, onViewDetail, heatmapSrc, congestionLabel }: 
         <div className="flex items-baseline gap-2">
           <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Congestion Heatmap</h3>
           <span className="text-[11px] font-semibold" style={{ color: labelColor }}>{label}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onViewDetail}
-            className="text-[9px] font-semibold px-2.5 py-1 rounded-full transition-all duration-150"
-            style={{ color: algo.color, background: algo.colorDim, border: `1px solid ${algo.border}` }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.3)'; (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
-          >
-            View Detail ↗
-          </button>
         </div>
       </div>
 
@@ -4232,7 +4220,6 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 
         <CongestionHeatmap
           algo={displayAlgo}
-          onViewDetail={() => setCongestionDetail(true)}
           heatmapSrc={isSelfish
             ? SELFISH_HEATMAP[trafficScale]
             : HEATMAP_IMG[displayAlgo.id as 'civiq' | 'qmix']?.[trafficScale]}
