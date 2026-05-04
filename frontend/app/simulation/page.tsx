@@ -228,7 +228,7 @@ const StatusBar = () => {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 type AlgoKey = 'civiq' | 'qmix' | 'selfish'
-type Page = 'summary' | AlgoKey
+type Page = 'summary' | AlgoKey | 'road_closures'
 
 // Sparkline series type — swap in real API data once backend is connected
 export interface KpiSeries {
@@ -2417,6 +2417,27 @@ const SELFISH_LOS_REF = {
   forced_flow: { travelTime_s: 127.3438, waitTime_s: 20.668,  throughput: 2159.9281, returnMean: -94445.9153, co2: 486.2586, fuel: 20.914  },
 } as const
 
+// ─── Road Closure Data ────────────────────────────────────────────────────────
+// Low Demand results from road_closure_low_demand_results.txt (50 episodes each).
+// Moderate and High Demand runs are pending — zeroed until data is available.
+const ROAD_CLOSURE_DATA = {
+  free_flow: {
+    selfish: { travelTime: 118.677, waitTime: 7.329,  throughput: 1148.979, co2: 461.301, fuel: 19.909, returnMean: -45897.02 },
+    qmix:    { travelTime: 150.950, waitTime: 12.207, throughput:  605.850, co2: 582.907, fuel: 25.161, returnMean: -48064.06 },
+    civiq:   { travelTime: 150.950, waitTime: 12.207, throughput:  605.850, co2: 582.907, fuel: 25.161, returnMean: -48064.06 },
+  },
+  stable_flow: {
+    selfish: { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
+    qmix:    { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
+    civiq:   { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
+  },
+  forced_flow: {
+    selfish: { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
+    qmix:    { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
+    civiq:   { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
+  },
+} as const
+
 // ─── Episode Detail Modal ─────────────────────────────────────────────────────
 
 type EpisodeMetricKey = keyof EpisodeSeries
@@ -4252,9 +4273,277 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   )
 }
 
+// ─── Road Closures Page ────────────────────────────────────────────────────────
+
+function RoadClosuresPage() {
+  const c = useDashColors()
+  const { reducedMotion, ready } = usePageEntrance()
+  const [demandTab, setDemandTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('free_flow')
+
+  const DEMAND_TABS = [
+    { key: 'free_flow'   as const, label: 'Low Demand',     sub: '1,000 veh/hr' },
+    { key: 'stable_flow' as const, label: 'Moderate Demand', sub: '1,200 veh/hr' },
+    { key: 'forced_flow' as const, label: 'High Demand',      sub: '2,000 veh/hr' },
+  ]
+
+  const hasData = demandTab === 'free_flow'
+
+  const closureData = ROAD_CLOSURE_DATA[demandTab]
+
+  const baseline = {
+    selfish: {
+      travelTime: SELFISH_LOS_REF[demandTab].travelTime_s,
+      waitTime:   SELFISH_LOS_REF[demandTab].waitTime_s,
+      throughput: SELFISH_LOS_REF[demandTab].throughput,
+      co2:        SELFISH_LOS_REF[demandTab].co2,
+      fuel:       SELFISH_LOS_REF[demandTab].fuel,
+    },
+    qmix: {
+      travelTime: QMIX_LOS_REF[demandTab].travelTime_s,
+      waitTime:   QMIX_LOS_REF[demandTab].waitTime_s,
+      throughput: QMIX_LOS_REF[demandTab].throughput,
+      co2:        QMIX_LOS_REF[demandTab].co2,
+      fuel:       QMIX_LOS_REF[demandTab].fuel,
+    },
+    civiq: {
+      travelTime: CIVIQ_LOS_REF[demandTab].travelTime * 60,
+      waitTime:   CIVIQ_LOS_REF[demandTab].waitTime,
+      throughput: CIVIQ_LOS_REF[demandTab].throughput,
+      co2:        CIVIQ_LOS_REF[demandTab].co2,
+      fuel:       CIVIQ_LOS_REF[demandTab].fuel,
+    },
+  }
+
+  type AlgoEntry = { algo: AlgoData; closureKey: 'selfish' | 'qmix' | 'civiq' }
+  const ENTRIES: AlgoEntry[] = [
+    { algo: ALGO.civiq,   closureKey: 'civiq'   },
+    { algo: ALGO.qmix,    closureKey: 'qmix'    },
+    { algo: ALGO.selfish, closureKey: 'selfish' },
+  ]
+
+  type MetaDef = { label: string; unit: string; lowerBetter: boolean; fmt: (v: number) => string; baseKey: 'travelTime' | 'waitTime' | 'throughput' | 'co2' | 'fuel'; closureKey: keyof typeof closureData.selfish }
+  const METRICS: MetaDef[] = [
+    { label: 'Travel Time', unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2), baseKey: 'travelTime', closureKey: 'travelTime' },
+    { label: 'Wait Time',   unit: 'sec',     lowerBetter: true,  fmt: v => v.toFixed(2), baseKey: 'waitTime',   closureKey: 'waitTime'   },
+    { label: 'Throughput',  unit: 'veh/hr',  lowerBetter: false, fmt: v => Math.round(v).toLocaleString(), baseKey: 'throughput', closureKey: 'throughput' },
+    { label: 'CO₂',         unit: 'g/km',    lowerBetter: true,  fmt: v => v.toFixed(2), baseKey: 'co2',        closureKey: 'co2'        },
+    { label: 'Diesel',      unit: 'L/100km', lowerBetter: true,  fmt: v => v.toFixed(2), baseKey: 'fuel',       closureKey: 'fuel'       },
+  ]
+
+  return (
+    <div className="p-4 md:p-6 space-y-4 md:space-y-5 overflow-y-auto" style={{
+      height: '100%',
+      opacity: ready ? 1 : 0,
+      transform: ready ? 'none' : 'translateY(8px)',
+      transition: reducedMotion ? 'none' : 'opacity 260ms ease, transform 320ms ease',
+    }}>
+
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5 mb-1">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: 'rgba(251,146,60,0.15)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FB923C" strokeWidth="2.2"
+                strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold" style={{ color: c.tp }}>Road Closure Analysis</h2>
+          </div>
+          <p className="text-[12px]" style={{ color: c.tm }}>
+            Evaluates algorithm robustness when a subset of road edges is forced closed. Baseline = normal operation.
+          </p>
+        </div>
+
+        {/* Demand selector */}
+        <div className="flex flex-wrap gap-1 p-1 rounded-xl flex-shrink-0" style={{ background: c.itemBg }}>
+          {DEMAND_TABS.map(t => (
+            <button key={t.key} onClick={() => setDemandTab(t.key)}
+              className="px-4 md:px-5 py-2 rounded-lg text-[11px] font-semibold transition-all duration-150 focus-visible:outline-none"
+              style={{
+                background: demandTab === t.key ? c.itemBgMd : 'transparent',
+                color:      demandTab === t.key ? c.tp       : c.ts,
+                border:     demandTab === t.key ? `1px solid ${c.glassBorder}` : '1px solid transparent',
+              }}>
+              <span>{t.label}</span>
+              <span className="block text-[9px] font-normal" style={{ color: c.tu }}>{t.sub}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* No-data banner for non-low-demand tabs */}
+      {!hasData && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
+          style={{ background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.25)' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FB923C" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span className="text-[12px]" style={{ color: '#FB923C' }}>
+            Road closure simulations for this demand level are pending. Values shown are placeholders (0).
+          </span>
+        </div>
+      )}
+
+      {/* Per-algorithm cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {ENTRIES.map(({ algo, closureKey }) => {
+          const rc  = closureData[closureKey]
+          const bl  = baseline[closureKey]
+
+          const allVals = METRICS.map(m => rc[m.closureKey] as number)
+          const allZero = allVals.every(v => v === 0)
+
+          return (
+            <GlassCard key={algo.id} className="p-5 relative overflow-hidden cursor-default transition-all duration-300 hover:scale-[1.01]"
+              style={{ border: `1px solid ${c.glassBorder}`, boxShadow: c.glassShadow }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px) scale(1.01)'
+                ;(e.currentTarget as HTMLElement).style.boxShadow = `0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px ${algo.border}`
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.transform = 'translateY(0) scale(1)'
+                ;(e.currentTarget as HTMLElement).style.boxShadow = c.glassShadow
+              }}>
+              <div className="absolute inset-0 pointer-events-none"
+                style={{ background: `radial-gradient(ellipse at 80% 0%, ${algo.colorDim}, transparent 65%)` }} />
+              <div className="relative">
+                {/* Card header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-[14px] font-bold" style={{ color: c.tp }}>{algo.label}</h3>
+                    <span className="text-[10px]" style={{ color: c.ts }}>{algo.sublabel}</span>
+                  </div>
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                    style={{ background: `${algo.color}18`, color: algo.color, border: `1px solid ${algo.color}40` }}>
+                    {hasData ? 'w/ Closure' : 'No Data'}
+                  </span>
+                </div>
+
+                {/* Metrics */}
+                <div className="space-y-3">
+                  {METRICS.map(m => {
+                    const rcVal  = rc[m.closureKey] as number
+                    const blVal  = bl[m.baseKey]
+                    const isZero = rcVal === 0 && allZero
+
+                    const pct = blVal > 0 && !isZero
+                      ? parseFloat(((rcVal - blVal) / blVal * 100).toFixed(1))
+                      : null
+                    const better = pct !== null && (m.lowerBetter ? pct < 0 : pct > 0)
+                    const worse  = pct !== null && (m.lowerBetter ? pct > 0 : pct < 0)
+                    const pctColor = better ? '#4ADE80' : worse ? '#F87171' : c.ts
+
+                    return (
+                      <div key={m.label}>
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: c.tu }}>{m.label}</span>
+                          <div className="flex items-center gap-1.5">
+                            {pct !== null && (
+                              <span className="text-[9px] font-bold tabular-nums" style={{ color: pctColor }}>
+                                {pct > 0 ? '+' : ''}{pct.toFixed(1)}%
+                              </span>
+                            )}
+                            <span className="text-[11px] font-bold tabular-nums" style={{ color: isZero ? c.tu : c.tp }}>
+                              {isZero ? '—' : m.fmt(rcVal)}
+                              <span className="text-[9px] font-normal ml-0.5" style={{ color: c.tu }}>{m.unit}</span>
+                            </span>
+                          </div>
+                        </div>
+                        {/* Baseline vs closure bar */}
+                        <div className="w-full h-1.5 rounded-full relative" style={{ background: c.barTrack }}>
+                          {/* Baseline marker */}
+                          {!isZero && blVal > 0 && (
+                            <div className="absolute top-0 w-0.5 h-full rounded-full opacity-40"
+                              style={{
+                                left: '50%',
+                                background: c.ts,
+                              }} />
+                          )}
+                          {/* Closure bar */}
+                          <div className="h-full rounded-full transition-all duration-700"
+                            style={{
+                              width: isZero ? '0%' : `${Math.min(100, Math.max(4, 50 + 50 * (
+                                m.lowerBetter
+                                  ? (blVal - rcVal) / (blVal * 0.5)
+                                  : (rcVal - blVal) / (blVal * 0.5)
+                              ))).toFixed(1)}%`,
+                              background: algo.color,
+                              opacity: isZero ? 0 : 0.7,
+                            }} />
+                        </div>
+                        {/* Baseline ref */}
+                        {!isZero && (
+                          <div className="flex justify-between mt-0.5">
+                            <span className="text-[8px]" style={{ color: c.tu }}>Baseline: {m.fmt(blVal)} {m.unit}</span>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Return */}
+                {hasData && (
+                  <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: c.tu }}>Mean Return</span>
+                      <span className="text-[12px] font-bold tabular-nums" style={{ color: algo.color }}>
+                        {rc.returnMean.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </GlassCard>
+          )
+        })}
+      </div>
+
+      {/* Road Closure Map Placeholder */}
+      <GlassCard className="p-5" style={{ border: `1px solid ${c.glassBorder}` }}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Road Closure Map</h3>
+          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+            style={{ background: 'rgba(251,146,60,0.12)', color: '#FB923C', border: '1px solid rgba(251,146,60,0.3)' }}>
+            Low Demand · BGC Full
+          </span>
+        </div>
+        <div className="rounded-xl flex flex-col items-center justify-center gap-3 py-12"
+          style={{
+            border: `2px dashed ${c.divider}`,
+            background: c.itemBg,
+            minHeight: '220px',
+          }}>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={c.tu} strokeWidth="1.5"
+            strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+          </svg>
+          <p className="text-[13px] font-semibold" style={{ color: c.tm }}>Map image with closed edges</p>
+          <p className="text-[11px] text-center max-w-xs leading-relaxed" style={{ color: c.tu }}>
+            Place the road closure map image here. Closed edges should be highlighted on the BGC network.
+          </p>
+          <div className="flex gap-2 mt-1">
+            {['Edge A–B', 'Edge C–D', 'Edge E–F'].map(e => (
+              <span key={e} className="text-[9px] px-2 py-0.5 rounded-full font-semibold"
+                style={{ background: 'rgba(251,146,60,0.12)', color: '#FB923C', border: '1px solid rgba(251,146,60,0.25)' }}>
+                {e}
+              </span>
+            ))}
+          </div>
+        </div>
+      </GlassCard>
+
+    </div>
+  )
+}
+
 // ─── Sidebar ───────────────────────────────────────────────────────────────────
 
-const NAV: { id: Page; label: string; d: string }[] = [
+const NAV: { id: Page; label: string; d: string; hidden?: boolean }[] = [
   {
     id: 'summary', label: 'Summary',
     d: 'M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm14 3.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z',
@@ -4271,13 +4560,19 @@ const NAV: { id: Page; label: string; d: string }[] = [
     id: 'selfish', label: 'Selfish Routing',
     d: 'M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-1.447-.894L15 9m0 8V9m0 0L9 7',
   },
+  {
+    id: 'road_closures', label: 'Road Closures',
+    d: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z',
+    hidden: true,
+  },
 ]
 
 const PAGE_COLOR: Record<Page, string> = {
-  summary: '#60A5FA',
-  civiq: ALGO.civiq.color,
-  selfish: ALGO.selfish.color,
-  qmix: ALGO.qmix.color,
+  summary:       '#60A5FA',
+  civiq:         ALGO.civiq.color,
+  selfish:       ALGO.selfish.color,
+  qmix:          ALGO.qmix.color,
+  road_closures: '#FB923C',
 }
 
 interface SidebarProps {
@@ -4287,10 +4582,12 @@ interface SidebarProps {
   mapSize: string
   trafficScale: string
   algorithm1: string
+  showRoadClosures: boolean
 }
 
-function Sidebar({ activePage, setActivePage, onRunAlgorithm, mapSize, trafficScale, algorithm1 }: SidebarProps) {
+function Sidebar({ activePage, setActivePage, onRunAlgorithm, mapSize, trafficScale, algorithm1, showRoadClosures }: SidebarProps) {
   const c = useDashColors()
+  const visibleNav = NAV.filter(item => !item.hidden || (item.id === 'road_closures' && showRoadClosures))
   return (
   <div className="flex flex-col flex-shrink-0 w-full xl:w-[248px]"
     style={{ background: c.sidebarBg, borderRight: `1px solid ${c.sidebarBorder}`, borderBottom: `1px solid ${c.sidebarBorder}` }}>
@@ -4303,7 +4600,7 @@ function Sidebar({ activePage, setActivePage, onRunAlgorithm, mapSize, trafficSc
     </div>
 
     <nav className="px-3 pb-2 xl:pb-0 flex xl:block gap-2 xl:space-y-1 overflow-x-auto flex-shrink-0">
-      {NAV.map((item) => {
+      {visibleNav.map((item) => {
         const isActive = activePage === item.id
         const col = PAGE_COLOR[item.id]
         return (
@@ -4388,11 +4685,25 @@ function SimulationDashboardContent() {
     return 'summary'
   }
   const [activePage, setActivePage] = useState<Page>(() => algoToPage(algorithm1))
+  const [roadClosuresVisible, setRoadClosuresVisible] = useState(false)
 
   // Keep active tab in sync when URL params change (e.g. Run from sidebar controls)
   useEffect(() => {
     setActivePage(algoToPage(algorithm1))
   }, [algorithm1])
+
+  // Ctrl+Alt+K reveals the Road Closures tab (one-way unlock)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setRoadClosuresVisible(true)
+        setActivePage('road_closures')
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
 
   useEffect(() => {
     if (!mapSize || !trafficScale || !view || !algorithm1) { router.push('/'); return }
@@ -4467,6 +4778,7 @@ function SimulationDashboardContent() {
                 mapSize={mapSize}
                 trafficScale={trafficScale}
                 algorithm1={algorithm1}
+                showRoadClosures={roadClosuresVisible}
               />
               {/* Content pane: fixed blob layer + scrollable content on top */}
               <div className="flex-1 relative" style={{
@@ -4498,10 +4810,11 @@ function SimulationDashboardContent() {
 
                 {/* Scrollable page content */}
                 <div className="absolute inset-0 overflow-y-auto" style={{ zIndex: 1 }}>
-                  {activePage === 'summary' && <SummaryPage onNavigate={setActivePage} />}
-                  {activePage === 'civiq' && <AlgoDetailPage algo={ALGO.civiq} mapSize={mapSize} trafficScale={trafficScale} />}
-                  {activePage === 'selfish' && <AlgoDetailPage algo={ALGO.selfish} mapSize={mapSize} trafficScale={trafficScale} />}
-                  {activePage === 'qmix' && <AlgoDetailPage algo={ALGO.qmix} mapSize={mapSize} trafficScale={trafficScale} />}
+                  {activePage === 'summary'       && <SummaryPage onNavigate={setActivePage} />}
+                  {activePage === 'civiq'          && <AlgoDetailPage algo={ALGO.civiq}   mapSize={mapSize} trafficScale={trafficScale} />}
+                  {activePage === 'selfish'        && <AlgoDetailPage algo={ALGO.selfish} mapSize={mapSize} trafficScale={trafficScale} />}
+                  {activePage === 'qmix'           && <AlgoDetailPage algo={ALGO.qmix}    mapSize={mapSize} trafficScale={trafficScale} />}
+                  {activePage === 'road_closures'  && <RoadClosuresPage />}
                 </div>
               </div>
             </div>
