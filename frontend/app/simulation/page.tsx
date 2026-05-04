@@ -2427,23 +2427,23 @@ const SELFISH_LOS_REF = {
 } as const
 
 // ─── Road Closure Data ────────────────────────────────────────────────────────
-// Low Demand results from road_closure_low_demand_results.txt (50 episodes each).
-// Moderate and High Demand runs are pending — zeroed until data is available.
+// Source: road_closure_{low,med,high}_demand_results.txt — 50 evaluation episodes each.
+// stable_flow: only Selfish Routing results available; QMIX/CiViQ runs pending.
 const ROAD_CLOSURE_DATA = {
   free_flow: {
-    selfish: { travelTime: 118.677, waitTime: 7.329,  throughput: 1148.979, co2: 461.301, fuel: 19.909, returnMean: -45897.02 },
-    qmix:    { travelTime: 150.950, waitTime: 12.207, throughput:  605.850, co2: 582.907, fuel: 25.161, returnMean: -48064.06 },
-    civiq:   { travelTime: 150.950, waitTime: 12.207, throughput:  605.850, co2: 582.907, fuel: 25.161, returnMean: -48064.06 },
+    selfish: { travelTime: 118.677, waitTime:  7.329, throughput: 1148.979, co2: 461.301, fuel: 19.909, returnMean:  -45897.02 },
+    qmix:    { travelTime: 150.950, waitTime: 12.207, throughput:  605.850, co2: 582.907, fuel: 25.161, returnMean:  -48064.06 },
+    civiq:   { travelTime: 150.950, waitTime: 12.207, throughput:  605.850, co2: 582.907, fuel: 25.161, returnMean:  -48064.06 },
   },
   stable_flow: {
-    selfish: { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
+    selfish: { travelTime: 123.671, waitTime: 10.894, throughput: 1225.367, co2: 473.217, fuel: 20.410, returnMean:  -52861.11 },
     qmix:    { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
     civiq:   { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
   },
   forced_flow: {
-    selfish: { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
-    qmix:    { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
-    civiq:   { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
+    selfish: { travelTime: 123.076, waitTime: 10.621, throughput: 1231.696, co2: 470.914, fuel: 20.311, returnMean:  -52879.41 },
+    qmix:    { travelTime: 126.362, waitTime: 21.547, throughput: 2221.930, co2: 490.883, fuel: 21.114, returnMean:  -96035.50 },
+    civiq:   { travelTime: 126.362, waitTime: 21.547, throughput: 2221.930, co2: 490.883, fuel: 21.114, returnMean:  -96035.50 },
   },
 } as const
 
@@ -4295,7 +4295,9 @@ function RoadClosuresPage() {
     { key: 'forced_flow' as const, label: 'High Demand',      sub: '2,000 veh/hr' },
   ]
 
-  const hasData = demandTab === 'free_flow'
+  // stable_flow: only Selfish has results; QMIX/CiViQ pending
+  const hasPartialData = demandTab === 'stable_flow'
+  const hasData = !hasPartialData
 
   const closureData = ROAD_CLOSURE_DATA[demandTab]
 
@@ -4382,8 +4384,8 @@ function RoadClosuresPage() {
         </div>
       </div>
 
-      {/* No-data banner for non-low-demand tabs */}
-      {!hasData && (
+      {/* Partial-data banner for Moderate Demand (QMIX/CiViQ pending) */}
+      {hasPartialData && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
           style={{ background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.25)' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FB923C" strokeWidth="2"
@@ -4391,7 +4393,7 @@ function RoadClosuresPage() {
             <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
           <span className="text-[12px]" style={{ color: '#FB923C' }}>
-            Road closure simulations for this demand level are pending. Values shown are placeholders (0).
+            Selfish Routing results are available. Road closure simulations for Mono-QMIX and CiViQ at this demand level are pending.
           </span>
         </div>
       )}
@@ -4427,7 +4429,7 @@ function RoadClosuresPage() {
                   </div>
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
                     style={{ background: `${algo.color}18`, color: algo.color, border: `1px solid ${algo.color}40` }}>
-                    {hasData ? 'w/ Closure' : 'No Data'}
+                    {allZero ? 'No Data' : 'w/ Closure'}
                   </span>
                 </div>
 
