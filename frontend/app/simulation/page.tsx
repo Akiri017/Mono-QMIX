@@ -2984,7 +2984,7 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[13px] font-bold" style={{ color: c.tp }}>Episode Cumulative Reward</span>
-              <InfoBubble text="Total reward earned by all agents during each training episode. A rising curve that plateaus signals policy convergence. The shaded band shows the inter-seed confidence interval; the dashed line is a 10-episode moving average." />
+              <InfoBubble text="The combined score all agents earned in each training episode. When the score levels off, the agents have learned their best strategy. The shaded area shows the spread across runs; the dashed line smooths out short-term noise." />
             </div>
             <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>
               Primary training health indicator · shaded = seed confidence band
@@ -3032,9 +3032,9 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
           <div className="flex items-start gap-2">
             <div className="flex-1">
               <span className="text-[12px] font-bold" style={{ color: c.tp }}>TD Loss</span>
-              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>Log scale · Q-net + mixing network</p>
+              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>How fast the model is learning</p>
             </div>
-            <InfoBubble side="right" text="Temporal-difference error used to update the Q-network and QMIX mixing network. Loss drops sharply early then flattens — a log Y-axis keeps the full curve readable instead of a flat line after the initial drop." />
+            <InfoBubble side="right" text="How far off the agents' predictions were during training. A lower value means agents are getting better at making decisions. It starts high and drops quickly — the log scale keeps the whole improvement visible at once." />
           </div>
           <ResponsiveContainer width="100%" height={170}>
             <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 16 }}>
@@ -3055,9 +3055,9 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
           <div className="flex items-start gap-2">
             <div className="flex-1">
               <span className="text-[12px] font-bold" style={{ color: c.tp }}>Q-Value Estimates</span>
-              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>q_taken vs target · ± std band</p>
+              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>Expected reward vs. ideal target</p>
             </div>
-            <InfoBubble side="right" text="q_taken_mean (solid) is the Q-value for actions actually taken; target_mean (dashed) is the Bellman target. A persistent gap between them indicates overestimation bias. The shaded band is ±1 std of q_taken across agents." />
+            <InfoBubble side="right" text="Shows how much reward the agents expect from each action (solid line) versus the ideal score they're being trained toward (dashed line). When both lines track closely together, the agents are learning well. The shaded area shows variation across agents." />
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             {[
@@ -3093,9 +3093,9 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
           <div className="flex items-start gap-2">
             <div className="flex-1">
               <span className="text-[12px] font-bold" style={{ color: c.tp }}>Gradient Norm</span>
-              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>Log scale · instability detector</p>
+              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>Stability of learning updates</p>
             </div>
-            <InfoBubble side="right" text="L2 norm of the policy gradient per episode. Large early spikes are expected; values should stabilise as training converges. Persistent large norms indicate instability. The dashed line marks the target healthy threshold." />
+            <InfoBubble side="right" text="Measures how aggressively agents are adjusting their decisions each episode. High values early on are normal — agents are still exploring. Once training settles, this should stay low and steady. The dashed line marks a healthy upper bound." />
           </div>
           <ResponsiveContainer width="100%" height={170}>
             <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 16 }}>
@@ -4692,13 +4692,19 @@ function SimulationDashboardContent() {
     setActivePage(algoToPage(algorithm1))
   }, [algorithm1])
 
-  // Ctrl+Alt+K reveals the Road Closures tab (one-way unlock)
+  // Ctrl+Alt+K toggles the Road Closures tab visibility
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'k') {
         e.preventDefault()
-        setRoadClosuresVisible(true)
-        setActivePage('road_closures')
+        setRoadClosuresVisible(prev => {
+          if (!prev) {
+            setActivePage('road_closures')
+          } else {
+            setActivePage(p => p === 'road_closures' ? 'summary' : p)
+          }
+          return !prev
+        })
       }
     }
     window.addEventListener('keydown', handler)

@@ -5,6 +5,8 @@ import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { SimulationControls } from '@/components/SimulationControls'
 import { useTheme } from '@/contexts/ThemeContext'
 
+const SURVEY_URL = 'https://forms.google.com'  // TODO: replace with actual Google Forms survey URL
+
 const researchers = [
   { name: 'Kristian Bautista', role: 'Project Manager',  email: 'kristiandavidbautista@gmail.com',  avatar: '/images/researchers/Kristian_David_R_Bautista.jpg' },
   { name: 'Angel Letada',      role: 'SUMO Engineer',     email: 'angel.letada1205@gmail.com',        avatar: '/images/researchers/Angel_A_Letada.png' },
@@ -216,6 +218,25 @@ function StickyNav({ visible, activeSection }: { visible: boolean; activeSection
             </a>
           )
         })}
+        <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
+          className="ml-2 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150"
+          style={{
+            background: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
+            color: 'white',
+            boxShadow: '0 2px 12px rgba(6,182,212,0.4)',
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget as HTMLElement
+            el.style.boxShadow = '0 4px 20px rgba(6,182,212,0.6)'
+            el.style.transform = 'translateY(-1px)'
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget as HTMLElement
+            el.style.boxShadow = '0 2px 12px rgba(6,182,212,0.4)'
+            el.style.transform = 'translateY(0)'
+          }}>
+          Evaluate
+        </a>
         <div className="ml-2"><ThemeToggle /></div>
       </div>
     </div>
@@ -271,6 +292,25 @@ function StatusBar({ activeSection }: { activeSection: string }) {
             </a>
           )
         })}
+        <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
+          className="ml-2 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150"
+          style={{
+            background: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
+            color: 'white',
+            boxShadow: '0 2px 12px rgba(6,182,212,0.4)',
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget as HTMLElement
+            el.style.boxShadow = '0 4px 20px rgba(6,182,212,0.6)'
+            el.style.transform = 'translateY(-1px)'
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget as HTMLElement
+            el.style.boxShadow = '0 2px 12px rgba(6,182,212,0.4)'
+            el.style.transform = 'translateY(0)'
+          }}>
+          Evaluate
+        </a>
         <div className="ml-2"><ThemeToggle /></div>
       </div>
     </div>
