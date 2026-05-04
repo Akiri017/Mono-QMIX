@@ -1,0 +1,24 @@
+Selfish Routing:
+============================================================
+Evaluation Results
+============================================================
+Policy       : selfish_routing
+Episodes     : 50
+Mean Return  : -52861.11 ± 906.51
+
+--- Traffic Metrics ---
+  Mean Travel Time (s)               : 123.671 ± 6.233
+  Mean Waiting Time (s)              : 10.894 ± 0.817
+  Network Throughput (veh/h)         : 1225.367 ± 108.416
+  Real-Time Factor                   : 86.278 ± 8.187
+  CO2 Emissions (g/episode)          : 166745.753 ± 2850.452
+  Fuel Consumption (ml/episode)      : 71918.230 ± 1229.052
+  CO2 Emissions (g/km)               : 473.217 ± 9.304
+  Fuel Consumption (L/100km)         : 20.410 ± 0.400
+  Avg Route Length (m)               : 943.492 ± 23.266
+  Total Stops                        : 17144.080 ± 923.611
+  Arrival Rate                       : 0.868 ± 0.008
+  Controlled Mean Travel Time (s)    : 114.230 ± 7.456
+  CPU Usage Mean (%)                 : 98.796 ± 3.326
+  CPU Usage Peak (%)                 : 1163.600 ± 121.753
+  Process CPU Time (s)               : 304.699 ± 171.086
