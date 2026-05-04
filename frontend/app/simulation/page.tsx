@@ -180,6 +180,8 @@ function DashThemeToggle() {
   )
 }
 
+const SURVEY_URL = 'https://forms.google.com'  // TODO: replace with actual Google Forms survey URL
+
 const StatusBar = () => {
   const router = useRouter()
   const c = useDashColors()
@@ -219,6 +221,13 @@ const StatusBar = () => {
             {label}
           </button>
         ))}
+        <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
+          className="ml-2 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150"
+          style={{ background: 'transparent', color: '#06B6D4', border: '1.5px solid #06B6D4' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(6,182,212,0.1)' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
+          Evaluate
+        </a>
         <div className="ml-2"><DashThemeToggle /></div>
       </div>
     </div>
@@ -489,8 +498,8 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Averages across LOS A/C/E on BGC Full (2 km²)
     travelTime: 1.975, waitTime: 12.47, throughput: 1518, speed: 1.24,
     co2: 492.8, fuel: 21.24, computeTime: 22.35, cpuMean: 537.5, cpuPeak: 8597, convergence: 150, reward: -65638,
-    description: 'CiViQ employs a hierarchical two-tier coordination mechanism: a global orchestrator assigns zone-level routing goals across 6 RSU zones on a 2 km² network, while local agents optimize intersection-level decisions using QMIX. Under High Demand (2,000 veh/hr), CiViQ achieves 2,273 veh/hr throughput and 19.3 sec average wait time — outperforming Mono-QMIX by 37.4% in throughput and 23.1% in wait time at peak congestion.',
-    strengths: ['37.4% higher throughput than QMIX at High Demand', 'Lowest wait time at peak load (19.3 sec)', 'Travel time improves 8.3% from Moderate → High Demand', 'Constant per-decision complexity as agents scale'],
+    description: 'CiViQ employs a hierarchical two-tier coordination mechanism: a global orchestrator assigns zone-level routing goals across 17 RSU zones on a 2 km² network, while local agents optimize intersection-level decisions using QMIX. Under High Demand (2,000 veh/hr), CiViQ achieves 2,273 veh/hr throughput and 19.3 sec average wait time — outperforming Mono-QMIX by 37.4% in throughput and 23.1% in wait time at peak congestion.',
+    strengths: ['37.4% higher throughput than QMIX at High Demand', 'Lowest wait time at peak load (19.3 sec)', 'Travel time improves 8.4% from Moderate → High Demand', 'Constant per-decision complexity as agents scale'],
     scores: [0.99, 1.00, 1.00, 0.67, 0.96, 0.96, 0.30],
     sparklines: {
       travelTime:  [1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96, 1.96],
@@ -4157,7 +4166,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     {/* Charts row: left column stack + Map Player */}
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
       {/* Left column: Algorithm Overview + Heatmap stacked */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 relative z-10">
         <GlassCard className="p-5 flex flex-col gap-3">
           <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Algorithm Overview</h3>
           <p className="text-[12px] leading-relaxed" style={{ color: c.ts }}>

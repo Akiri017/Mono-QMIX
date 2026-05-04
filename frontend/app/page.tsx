@@ -221,18 +221,18 @@ function StickyNav({ visible, activeSection }: { visible: boolean; activeSection
         <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
           className="ml-2 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150"
           style={{
-            background: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
-            color: 'white',
-            boxShadow: '0 2px 12px rgba(6,182,212,0.4)',
+            background: 'transparent',
+            color: '#06B6D4',
+            border: '1.5px solid #06B6D4',
           }}
           onMouseEnter={(e) => {
             const el = e.currentTarget as HTMLElement
-            el.style.boxShadow = '0 4px 20px rgba(6,182,212,0.6)'
+            el.style.background = 'rgba(6,182,212,0.1)'
             el.style.transform = 'translateY(-1px)'
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget as HTMLElement
-            el.style.boxShadow = '0 2px 12px rgba(6,182,212,0.4)'
+            el.style.background = 'transparent'
             el.style.transform = 'translateY(0)'
           }}>
           Evaluate
@@ -295,18 +295,18 @@ function StatusBar({ activeSection }: { activeSection: string }) {
         <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
           className="ml-2 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150"
           style={{
-            background: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
-            color: 'white',
-            boxShadow: '0 2px 12px rgba(6,182,212,0.4)',
+            background: 'transparent',
+            color: '#06B6D4',
+            border: '1.5px solid #06B6D4',
           }}
           onMouseEnter={(e) => {
             const el = e.currentTarget as HTMLElement
-            el.style.boxShadow = '0 4px 20px rgba(6,182,212,0.6)'
+            el.style.background = 'rgba(6,182,212,0.1)'
             el.style.transform = 'translateY(-1px)'
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget as HTMLElement
-            el.style.boxShadow = '0 2px 12px rgba(6,182,212,0.4)'
+            el.style.background = 'transparent'
             el.style.transform = 'translateY(0)'
           }}>
           Evaluate
