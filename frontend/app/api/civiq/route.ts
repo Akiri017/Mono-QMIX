@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         avgRouteLength_m: k.avgRouteLength_m,
         totalStops:       k.totalStops,
         returnMean:       k.returnMean,
-        realTimeFactor:   null,
+        realTimeFactor:   k.realTimeFactor ?? null,
       },
 
       baselines: data.baselines,
