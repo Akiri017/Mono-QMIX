@@ -44,22 +44,15 @@
 -->
 
 <statistics xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/statistic_file.xsd">
-<<<<<<< HEAD
-    <performance clockBegin="298059.44" clockEnd="298064.13" clockDuration="4.69" traciDuration="0.00" realTimeFactor="0.00" vehicleUpdatesPerSecond="0.00" personUpdatesPerSecond="0.00" begin="0.00" end="0.00" duration="0.00"/>
-    <vehicles loaded="2" inserted="0" running="0" waiting="0"/>
-=======
+    <!-- NOTE: Simulation halted early (217s / 3600s). RTF=0.02 indicates a TraCI freeze.
+         Only 147 of 574 loaded vehicles completed. This run is incomplete and not used for KPIs. -->
     <performance clockBegin="428650.10" clockEnd="438181.88" clockDuration="9531.78" traciDuration="0.16" realTimeFactor="0.02" vehicleUpdatesPerSecond="2.40" personUpdatesPerSecond="0.00" begin="0.00" end="217.00" duration="217.00"/>
     <vehicles loaded="574" inserted="309" running="162" waiting="0"/>
->>>>>>> 474b73e016da591880f557dd0ef53a9fb2d76c9e
     <teleports total="0" jam="0" yield="0" wrongLane="0"/>
     <safety collisions="0" emergencyStops="0" emergencyBraking="0"/>
     <persons loaded="0" running="0" jammed="0"/>
     <personTeleports total="0" abortWait="0" wrongDest="0"/>
-<<<<<<< HEAD
-    <vehicleTripStatistics count="0" routeLength="0.00" speed="0.00" duration="0.00" waitingTime="0.00" timeLoss="0.00" departDelay="0.00" departDelayWaiting="-1.00" totalTravelTime="0.00" totalDepartDelay="0.00"/>
-=======
     <vehicleTripStatistics count="147" routeLength="520.74" speed="6.94" duration="81.00" waitingTime="22.80" timeLoss="45.54" departDelay="0.60" departDelayWaiting="-1.00" totalTravelTime="11907.00" totalDepartDelay="88.60"/>
->>>>>>> 474b73e016da591880f557dd0ef53a9fb2d76c9e
     <pedestrianStatistics number="0" routeLength="0.00" duration="0.00" timeLoss="0.00"/>
     <rideStatistics number="0"/>
     <transportStatistics number="0"/>

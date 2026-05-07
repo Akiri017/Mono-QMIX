@@ -51,7 +51,13 @@ class EpisodeRunner:
 
         # Use env_args from config if available, otherwise use defaults
         if "env_args" in self.args:
-            env_args = self.args["env_args"]
+            # Copy so we don't mutate the original config
+            env_args = dict(self.args["env_args"])
+            # Forward Civiq-specific keys that live in the alg config but are
+            # needed by the environment (e.g. rsu_config for zone_manager)
+            for key in ("rsu_config", "max_rsus", "max_agents_per_rsu", "obs_dim"):
+                if key in self.args and key not in env_args:
+                    env_args[key] = self.args[key]
         else:
             # Fallback: pass entire args dict to environment
             env_args = self.args
@@ -126,6 +132,15 @@ class EpisodeRunner:
             "obs": [obs]
         }
 
+        # Civiq: collect zone data at ts=0 (zone_manager present when using civiq config)
+        _civiq = hasattr(self.env, "zone_manager") and self.env.zone_manager is not None
+        if _civiq:
+            _zone = self.env.get_zone_assignments()
+            pre_transition_data["agent_masks_per_rsu"] = [self.env.get_agent_masks_padded(_zone)]
+            pre_transition_data["zone_assignments"] = [self.env.get_zone_assignments_flat(_zone)]
+            # rsu_agent_qs is NOT populated here — computed in HierarchicalQLearner.train()
+            # local_states is NOT stored — computed on-the-fly in _build_local_states()
+
         self.batch.update(pre_transition_data, ts=0)
 
         # Run episode
@@ -148,11 +163,15 @@ class EpisodeRunner:
             state = self.env.get_state()
             avail_actions = self.env.get_avail_actions()
 
+            # Collect reset mask before next step() clears it
+            reset_mask = self.env.get_reset_mask()  # list of bool, one per agent
+
             # Store transition data
             post_transition_data = {
                 "actions": actions.cpu(),
                 "reward": [(reward,)],
                 "terminated": [(terminated,)],
+                "reset_mask": [[int(v)] for v in reset_mask],
             }
 
             self.batch.update(post_transition_data, ts=self.t)
@@ -163,6 +182,12 @@ class EpisodeRunner:
                 "avail_actions": [avail_actions],
                 "obs": [obs]
             }
+
+            # Civiq: collect zone data at ts=t+1
+            if _civiq:
+                _zone = self.env.get_zone_assignments()
+                pre_transition_data["agent_masks_per_rsu"] = [self.env.get_agent_masks_padded(_zone)]
+                pre_transition_data["zone_assignments"] = [self.env.get_zone_assignments_flat(_zone)]
 
             self.batch.update(pre_transition_data, ts=self.t + 1)
 
@@ -195,8 +220,19 @@ class EpisodeRunner:
 
         # Log per-episode metrics (Step 6)
         prefix = "test_" if test_mode else "train_"
-        for key in ("mean_travel_time", "mean_waiting_time", "total_stops",
-                    "total_emissions", "arrival_rate", "controlled_mean_travel_time"):
+        for key in (
+            # Core traffic metrics
+            "mean_travel_time", "mean_waiting_time", "total_stops",
+            "total_emissions", "arrival_rate", "controlled_mean_travel_time",
+            # Network-split metrics — controlled vs background
+            "controlled_arrivals", "background_mean_travel_time", "background_arrivals",
+            # Network congestion and flow
+            "mean_vehicle_count", "mean_speed",
+            # Travel time distribution
+            "std_travel_time", "median_travel_time",
+            # Distance and efficiency
+            "total_completed_km",
+        ):
             if key in episode_metrics:
                 self.logger.log_stat(prefix + key, episode_metrics[key], self.t_env)
 

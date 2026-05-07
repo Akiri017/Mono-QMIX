@@ -1,0 +1,59 @@
+{
+  "algorithm": "selfish_routing",
+  "map": "bgc_core",
+  "scenario": "Wardrop User Equilibrium / Selfish Nash Routing",
+  "generated_at": "2026-04-11T12:00:00.000000",
+  "notes": "forced_flow omitted — bgc_core high-traffic run halted at 217s (RTF=0.02, TraCI freeze); both data_selfish_high_stats.xml and data_selfish_high_tripinfo.xml have unresolved merge conflicts. Only free_flow and stable_flow have complete results. CO2/fuel computed from data_selfish_low/med_tripinfo.xml (sum CO2_abs mg / total routeLength km; fuel_abs mg converted via petrol density 0.74 g/ml).",
+  "traffic_levels": {
+    "free_flow": {
+      "source_stats": "bgc_core/data/data_selfish_low_stats.xml",
+      "source_tripinfo": "bgc_core/data/data_selfish_low_tripinfo.xml",
+      "vehicles": {
+        "loaded": 334,
+        "inserted": 334,
+        "completed": 334,
+        "running_at_end": 0
+      },
+      "simulation_duration_s": 1138,
+      "kpis": {
+        "avg_travel_time_min": 1.488,
+        "avg_travel_time_s": 89.25,
+        "avg_waiting_time_s": 24.42,
+        "avg_speed_kmh": 26.46,
+        "avg_speed_ms": 7.35,
+        "throughput": 334,
+        "avg_route_length_m": 629.54,
+        "time_loss_s": 48.04,
+        "real_time_factor": 163.93,
+        "avg_co2_g_per_km": 524.2,
+        "avg_fuel_l_per_100km": 22.6
+      },
+      "timeseries_file": "timeseries_bgc_core_free_flow.csv"
+    },
+    "stable_flow": {
+      "source_stats": "bgc_core/data/data_selfish_med_stats.xml",
+      "source_tripinfo": "bgc_core/data/data_selfish_med_tripinfo.xml",
+      "vehicles": {
+        "loaded": 715,
+        "inserted": 715,
+        "completed": 715,
+        "running_at_end": 0
+      },
+      "simulation_duration_s": 1195,
+      "kpis": {
+        "avg_travel_time_min": 1.596,
+        "avg_travel_time_s": 95.74,
+        "avg_waiting_time_s": 27.90,
+        "avg_speed_kmh": 25.13,
+        "avg_speed_ms": 6.98,
+        "throughput": 715,
+        "avg_route_length_m": 630.50,
+        "time_loss_s": 54.42,
+        "real_time_factor": 225.34,
+        "avg_co2_g_per_km": 541.1,
+        "avg_fuel_l_per_100km": 23.32
+      },
+      "timeseries_file": "timeseries_bgc_core_stable_flow.csv"
+    }
+  }
+}

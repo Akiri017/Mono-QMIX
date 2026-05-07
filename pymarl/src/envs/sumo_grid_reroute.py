@@ -18,15 +18,19 @@ import os
 import sys
 import time
 import heapq
+from envs.road_blocks import RoadBlockageManager
 import threading
-import numpy as np
+import numpy as np # pyright: ignore[reportMissingImports]
 from typing import Dict, List, Tuple, Optional, Set
 import logging
+import psutil # pyright: ignore[reportMissingModuleSource]
 
 # SUMO imports
 from envs.sumo_backend import backend as traci
 from envs.sumo_backend import set_backend as _set_sumo_backend, is_libsumo as _is_libsumo
+import yaml # pyright: ignore[reportMissingModuleSource]
 import sumolib
+from components.rsu_zone_manager import RSUZoneManager
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -63,11 +67,12 @@ class SUMOGridRerouteEnv:
         # File paths (resolve relative to repo root)
         # sumo_cfg may be null/None in the config, in which case it is derived
         # from los_level so callers only need to set one value per run.
-        _LOS_CFG = {
+        # los_cfg in env_args overrides the default 4x4 map sumocfg paths.
+        _LOS_CFG = env_args.get("los_cfg", {
             "low":  "sumo/scenarios/4by4_map/train_low.sumocfg",
             "med":  "sumo/scenarios/4by4_map/train_med.sumocfg",
             "high": "sumo/scenarios/4by4_map/train_high.sumocfg",
-        }
+        })
         self.los_level = env_args.get("los_level", "med")
         _raw_cfg = env_args.get("sumo_cfg") or None  # treat empty string as None
         if _raw_cfg is None:
@@ -169,6 +174,14 @@ class SUMOGridRerouteEnv:
         self.agent_reset_mask = [False] * self.n_agents  # Whether slot was just reset
         self.agent_inactive_since = [0.0] * self.n_agents  # Time when slot became inactive
         self.agent_last_actions = [0] * self.n_agents  # Last action taken per agent
+        # Last confirmed RSU assignment per agent slot (int, -1 = never assigned).
+        # Used as fallback when a replacement vehicle has been scheduled via
+        # traci.vehicle.add() but not yet inserted into the network — such vehicles
+        # are absent from traci.vehicle.getIDList() so zone_assignments won't include
+        # them, yet the slot is logically occupied (agent_active=True).  Retaining the
+        # previous RSU prevents the slot from being silently omitted from the mask,
+        # which would zero out rsu_mask and block gradients to local_mixer.
+        self.agent_last_rsu = [-1] * self.n_agents
 
         # Route candidate cache
         self.route_candidates = {}  # Map agent_id -> list of route candidates
@@ -194,10 +207,12 @@ class SUMOGridRerouteEnv:
         self.sumo_port = None
 
         # Episode metrics tracking (Step 6)
-        self.vehicle_spawn_times = {}  # Map vehicle_id -> spawn time
-        self.vehicle_travel_times = []  # List of completed travel times
-        self.vehicle_waiting_times = []  # List of total waiting times per vehicle
+        self.vehicle_spawn_times = {}       # Map vehicle_id -> spawn time
+        self.vehicle_route_lengths = {}     # Map vehicle_id -> planned route length (m) at spawn
+        self.vehicle_travel_times = []      # List of completed travel times
+        self.vehicle_waiting_times = []     # List of total waiting times per vehicle
         self.vehicle_accumulated_waiting = {}  # Running waiting-time sum per vehicle (seconds)
+        self.completed_route_lengths = []   # Route lengths (m) for completed vehicles only
 
         # Episode-level congestion tracking — used to produce mean_vehicle_count
         # and mean_speed in _compute_episode_metrics so a single episode run can
@@ -207,12 +222,34 @@ class SUMOGridRerouteEnv:
         self._total_speed_sum: float = 0.0     # sum of all vehicle speeds across sub-steps
         self._total_speed_veh_steps: int = 0   # count of (vehicle, sub-step) pairs
         self.episode_stops_count = 0  # Total stop events in episode
-        self.episode_emissions = 0.0  # Total emissions in episode
+        self.episode_emissions = 0.0  # Total CO2 emissions in episode (grams)
+        self.episode_fuel_consumption = 0.0  # Total fuel consumption in episode (ml)
         self.episode_arrivals = 0  # Number of arrivals in episode
         self.total_spawned = 0  # Total vehicles spawned in episode
         self.controlled_travel_times = []  # Travel times for controlled vehicles only
         self.background_travel_times = []  # Travel times for background vehicles only
         self.controlled_vehicle_ids = set()  # Set of controlled vehicle IDs
+        self._episode_wall_start = 0.0  # Wall-clock time at episode start (for real-time factor)
+        self._enable_cpu_monitoring = bool(env_args.get("enable_cpu_monitoring", False))
+        self._proc = psutil.Process(os.getpid()) if self._enable_cpu_monitoring else None
+        self._cpu_samples: list = []              # Per-sub-step CPU usage samples (%)
+
+        # RSU zone manager (Civiq only — instantiated if rsu_config present in env_args)
+        self.zone_manager = None
+        _rsu_cfg_path = env_args.get("rsu_config", None)
+        if _rsu_cfg_path is not None:
+            _rsu_cfg_path = self._resolve_path(_rsu_cfg_path)
+            with open(_rsu_cfg_path) as _f:
+                _rsu_cfg_dict = yaml.safe_load(_f)
+            self.zone_manager = RSUZoneManager(_rsu_cfg_dict)
+
+        # Road blockage configuration (random incident injection)
+        self.blockage_enabled = env_args.get("blockage_enabled", False)
+        self.blockage_probability = env_args.get("blockage_probability", 0.003)
+        self.blockage_min_duration = env_args.get("blockage_min_duration", 120.0)
+        self.blockage_max_duration = env_args.get("blockage_max_duration", 600.0)
+        self.blockage_max_concurrent = env_args.get("blockage_max_concurrent", 3)
+        self.blockage_manager = None  # instantiated after network load in reset()
 
         if self.verbose:
             logger.info(f"SUMOGridRerouteEnv initialized:")
@@ -254,24 +291,32 @@ class SUMOGridRerouteEnv:
         self.agent_reset_mask = [False] * self.n_agents
         self.agent_inactive_since = [0.0] * self.n_agents
         self.agent_last_actions = [0] * self.n_agents
+        self.agent_last_rsu = [-1] * self.n_agents
         self.next_vehicle_id = 0
 
         # Reset episode metrics (Step 6)
         self.vehicle_spawn_times.clear()
+        self.vehicle_route_lengths.clear()
         self.vehicle_travel_times = []
         self.vehicle_waiting_times = []
         self.vehicle_accumulated_waiting.clear()
+        self.completed_route_lengths = []
         self._sub_step_count = 0
         self._total_vehicle_steps = 0
         self._total_speed_sum = 0.0
         self._total_speed_veh_steps = 0
         self.episode_stops_count = 0
         self.episode_emissions = 0.0
+        self.episode_fuel_consumption = 0.0
         self.episode_arrivals = 0
         self.total_spawned = 0
         self.controlled_travel_times = []
         self.background_travel_times = []
         self.controlled_vehicle_ids.clear()
+        self._episode_wall_start = time.monotonic()
+        self._cpu_samples = []
+        if self._enable_cpu_monitoring:
+            self._proc.cpu_percent(interval=None)  # prime — first call always returns 0
 
         # Clear caches
         self.route_candidates.clear()
@@ -295,15 +340,44 @@ class SUMOGridRerouteEnv:
         if self.net is None:
             self._load_network()
 
+        # Initialize (or re-initialize) road blockage manager for this episode
+        if self.blockage_enabled:
+            edge_list = list(self.edge_id_to_idx.keys())
+            if self.blockage_manager is None:
+                self.blockage_manager = RoadBlockageManager(
+                    edge_list=edge_list,
+                    block_probability=self.blockage_probability,
+                    min_duration=self.blockage_min_duration,
+                    max_duration=self.blockage_max_duration,
+                    max_concurrent=self.blockage_max_concurrent,
+                    seed=self.sumo_seed,
+                )
+            else:
+                self.blockage_manager.reset(seed=self.sumo_seed)
+        
         # Spawn initial controlled vehicles
         self._spawn_initial_vehicles()
 
-        # Advance simulation until all vehicles are inserted
+        # Advance simulation until all controlled vehicles have physically entered the
+        # SUMO network (i.e. appear in traci.vehicle.getIDList()).  The previous check
+        # used _count_active_agents() which tests agent_active — set during
+        # _spawn_vehicle() *before* the vehicle enters the sim — so the loop would exit
+        # after a single step even when vehicles were still in SUMO's insertion queue.
+        # This caused get_zone_assignments() at ts=0 to return empty zone lists for
+        # controlled vehicles, producing all-zero agent_masks_per_rsu at the first
+        # timestep.
         max_warmup_steps = 50
         for _ in range(max_warmup_steps):
             traci.simulationStep()
             self.sim_time = traci.simulation.getTime()
-            if self._count_active_agents() >= self.n_agents:
+            # All controlled vehicle IDs that have been assigned to an agent slot
+            active_vids = {vid for vid in self.agent_vehicle_ids if vid is not None}
+            if not active_vids:
+                # No vehicles successfully scheduled — nothing to wait for.
+                break
+            current_vids = set(traci.vehicle.getIDList())
+            # Exit only when every scheduled vehicle is physically in the network
+            if active_vids.issubset(current_vids):
                 break
 
         if self.verbose:
@@ -435,7 +509,7 @@ class SUMOGridRerouteEnv:
             traci.vehicle.add(
                 vehID=vehicle_id,
                 routeID="",  # We'll set route manually
-                typeID="DEFAULT_VEHTYPE",
+                typeID="thesis_car",
                 depart=str(int(depart_time)),
                 departLane="best",
                 departSpeed="max"
@@ -469,8 +543,9 @@ class SUMOGridRerouteEnv:
             from_edge = self.net.getEdge(from_edge_id)
             to_edge = self.net.getEdge(to_edge_id)
 
-            # Use Dijkstra via sumolib
-            result = self.net.getShortestPath(from_edge, to_edge)
+            # Use Dijkstra via sumolib — restrict to passenger edges so the
+            # router never returns paths through pedestrian-only service roads.
+            result = self.net.getShortestPath(from_edge, to_edge, vClass="passenger")
 
             if result is None:
                 return []
@@ -564,6 +639,15 @@ class SUMOGridRerouteEnv:
                     self.agent_last_actions[agent_id] = action_idx
                 except Exception as e:
                     logger.warning(f"Failed to set route for {vehicle_id}: {e}")
+                    # Evict this OD pair from the route cache so the bad candidate
+                    # is not replayed every decision step until episode end.
+                    try:
+                        current_edge_id = traci.vehicle.getRoadID(vehicle_id)
+                        dest_edge = traci.vehicle.getRoute(vehicle_id)[-1]
+                        cache_key = (current_edge_id, dest_edge)
+                        self._yen_cache.pop(cache_key, None)
+                    except Exception:
+                        pass
 
     def _start_watchdog(self) -> None:
         """Start the background watchdog thread for a new episode.
@@ -636,6 +720,10 @@ class SUMOGridRerouteEnv:
             traci.simulationStep()
             self.sim_time = traci.simulation.getTime()
 
+            # Inject random road blockages (if enabled)
+            if self.blockage_enabled and self.blockage_manager is not None:
+                self.blockage_manager.step(self.sim_time, self.sumo_step_length)
+            
             # Fetch vehicle list once per sub-step (shared by reward, arrivals, tracking)
             current_vehicles = set(traci.vehicle.getIDList())
 
@@ -655,9 +743,18 @@ class SUMOGridRerouteEnv:
                         self.vehicle_accumulated_waiting[veh_id] += self.sumo_step_length
                 except Exception:
                     pass
+                try:
+                    # getFuelConsumption returns mg/s; multiply by step length to get mg,
+                    # then divide by petrol density (740 mg/ml) to convert to ml.
+                    fuel_mg_s = traci.vehicle.getFuelConsumption(veh_id)
+                    self.episode_fuel_consumption += (fuel_mg_s * self.sumo_step_length) / 740.0
+                except Exception:
+                    pass
 
             self._sub_step_count += 1
             self._total_vehicle_steps += len(current_vehicles)
+            if self._enable_cpu_monitoring:
+                self._cpu_samples.append(self._proc.cpu_percent(interval=None))
             self._total_speed_sum += speed_sum
             self._total_speed_veh_steps += speed_count
 
@@ -675,6 +772,10 @@ class SUMOGridRerouteEnv:
 
             # Handle vehicle arrivals and replacements
             self._handle_arrivals(current_vehicles)
+
+            # Track background vehicle arrivals (vehicles no longer in simulation
+            # that are not in the controlled agent slots)
+            self._handle_background_arrivals(current_vehicles)
 
         self.last_decision_time = self.sim_time
 
@@ -787,6 +888,10 @@ class SUMOGridRerouteEnv:
                         waiting_time = self.vehicle_accumulated_waiting.pop(vehicle_id, 0.0)
                         self.vehicle_waiting_times.append(waiting_time)
 
+                        rl = self.vehicle_route_lengths.pop(vehicle_id, None)
+                        if rl is not None:
+                            self.completed_route_lengths.append(rl)
+
                         # Clean up
                         del self.vehicle_spawn_times[vehicle_id]
                         if vehicle_id in self.controlled_vehicle_ids:
@@ -802,6 +907,29 @@ class SUMOGridRerouteEnv:
             except:
                 pass
 
+    def _handle_background_arrivals(self, current_vehicles: set) -> None:
+        """Record travel/waiting times for background vehicles that left the simulation."""
+        # IDs currently assigned to controlled agent slots (may be None)
+        controlled_ids = {vid for vid in self.agent_vehicle_ids if vid is not None}
+
+        # Any vehicle we were tracking that is no longer in the simulation
+        # and is not a currently-assigned controlled vehicle has departed.
+        departed = set(self.vehicle_spawn_times.keys()) - current_vehicles - controlled_ids
+
+        for veh_id in departed:
+            spawn_time = self.vehicle_spawn_times.pop(veh_id)
+            travel_time = self.sim_time - spawn_time
+            self.vehicle_travel_times.append(travel_time)
+            self.background_travel_times.append(travel_time)
+            self.episode_arrivals += 1
+
+            waiting_time = self.vehicle_accumulated_waiting.pop(veh_id, 0.0)
+            self.vehicle_waiting_times.append(waiting_time)
+
+            rl = self.vehicle_route_lengths.pop(veh_id, None)
+            if rl is not None:
+                self.completed_route_lengths.append(rl)
+
     def _track_new_vehicles(self, current_vehicles: set) -> None:
         """Track spawn times for newly entered vehicles (Step 6)."""
         for veh_id in current_vehicles:
@@ -816,6 +944,26 @@ class SUMOGridRerouteEnv:
                     # If we can't get departure time, use current sim time
                     self.vehicle_spawn_times[veh_id] = self.sim_time
                     self.total_spawned += 1
+
+                # Record planned route length at entry so we can compute per-km metrics.
+                try:
+                    rl = traci.vehicle.getRouteLength(veh_id)
+                    if rl > 0:
+                        self.vehicle_route_lengths[veh_id] = rl
+                    else:
+                        raise ValueError("getRouteLength returned 0")
+                except Exception:
+                    # Fallback: sum edge lengths from the route edge list
+                    try:
+                        edges = traci.vehicle.getRoute(veh_id)
+                        rl = sum(
+                            traci.lane.getLength(e + "_0")
+                            for e in edges if e
+                        )
+                        if rl > 0:
+                            self.vehicle_route_lengths[veh_id] = rl
+                    except Exception:
+                        pass  # omit this vehicle from route-length stats
 
                 # Initialize waiting-time accumulator so vehicles that never stop
                 # still appear in the denominator when computing mean_waiting_time.
@@ -881,17 +1029,14 @@ class SUMOGridRerouteEnv:
             metrics["background_arrivals"] = 0
 
         # Waiting time metrics.
-        # vehicle_waiting_times holds values for vehicles that arrived during the
-        # episode (flushed in _handle_arrivals).  vehicle_accumulated_waiting holds
-        # values for vehicles still active at episode end.  Both are included so the
-        # mean is over *all* vehicles that appeared in the episode — including those
-        # that never stopped (waiting time = 0.0) so the denominator is correct.
-        all_waiting = list(self.vehicle_waiting_times)
-        all_waiting.extend(self.vehicle_accumulated_waiting.values())
-
-        if len(all_waiting) > 0:
-            metrics["mean_waiting_time"] = float(np.mean(all_waiting))
-            metrics["total_waiting_time"] = float(np.sum(all_waiting))
+        # vehicle_waiting_times holds values for every vehicle that completed its
+        # trip (populated in _handle_arrivals for controlled and
+        # _handle_background_arrivals for background vehicles).  This is the same
+        # population as vehicle_travel_times, so mean_waiting_time and
+        # mean_travel_time are directly comparable.
+        if len(self.vehicle_waiting_times) > 0:
+            metrics["mean_waiting_time"] = float(np.mean(self.vehicle_waiting_times))
+            metrics["total_waiting_time"] = float(np.sum(self.vehicle_waiting_times))
         else:
             metrics["mean_waiting_time"] = 0.0
             metrics["total_waiting_time"] = 0.0
@@ -912,7 +1057,31 @@ class SUMOGridRerouteEnv:
 
         # Stops and emissions
         metrics["total_stops"] = int(self.episode_stops_count)
-        metrics["total_emissions"] = float(self.episode_emissions)
+        metrics["co2_emissions"] = float(self.episode_emissions)  # total grams for episode
+
+        # Fuel consumption (ml)
+        metrics["fuel_consumption"] = float(self.episode_fuel_consumption)
+
+        # Avg route length for completed vehicles (planned path length)
+        if len(self.completed_route_lengths) > 0:
+            metrics["avg_route_length_m"] = float(np.mean(self.completed_route_lengths))
+        else:
+            metrics["avg_route_length_m"] = 0.0
+
+        # Per-km emission metrics.
+        # Denominator: total distance actually driven by ALL vehicles (completed + in-network)
+        # = sum of per-vehicle speeds (m/s) × 1 s step, accumulated in _total_speed_sum.
+        # This matches the emissions numerator which also covers all vehicles every step,
+        # avoiding the inflation that occurs when few vehicles complete their routes.
+        total_driven_km = self._total_speed_sum / 1000.0
+        if total_driven_km > 0:
+            metrics["co2_g_per_km"] = round(self.episode_emissions / total_driven_km, 2)
+            metrics["fuel_l_per_100km"] = round(
+                (self.episode_fuel_consumption / 1000.0) / total_driven_km * 100, 2
+            )
+        else:
+            metrics["co2_g_per_km"] = 0.0
+            metrics["fuel_l_per_100km"] = 0.0
 
         # Arrival rate
         metrics["arrivals"] = self.episode_arrivals
@@ -921,6 +1090,24 @@ class SUMOGridRerouteEnv:
             metrics["arrival_rate"] = float(self.episode_arrivals / self.total_spawned)
         else:
             metrics["arrival_rate"] = 0.0
+
+        # Network throughput: vehicles that completed their trip per simulated hour
+        sim_hours = self.sim_time / 3600.0 if self.sim_time > 0 else 1.0
+        metrics["network_throughput"] = float(self.episode_arrivals / sim_hours)
+
+        # Real-time factor: simulated seconds elapsed per wall-clock second
+        wall_elapsed = time.monotonic() - self._episode_wall_start
+        if wall_elapsed > 0:
+            metrics["real_time_factor"] = float(self.sim_time / wall_elapsed)
+        else:
+            metrics["real_time_factor"] = 0.0
+
+        # CPU utilization (only collected for QMIX / CiViQ — not baselines)
+        if self._enable_cpu_monitoring and self._cpu_samples:
+            metrics["cpu_percent_mean"] = round(float(np.mean(self._cpu_samples)), 2)
+            metrics["cpu_percent_peak"] = round(float(np.max(self._cpu_samples)), 2)
+            cpu_times = self._proc.cpu_times()
+            metrics["process_cpu_s"] = round(float(cpu_times.user + cpu_times.system), 3)
 
         # Episode info
         metrics["episode_steps"] = self.episode_step
@@ -1127,6 +1314,17 @@ class SUMOGridRerouteEnv:
             for next_edge in current.getOutgoing():
                 if next_edge in forbidden_edges:
                     continue
+                # Skip edges that passenger cars cannot use (e.g. pedestrian-only service roads).
+                if not next_edge.allows("passenger"):
+                    continue
+                # Skip edges where the junction turn itself forbids passengers.
+                # sumolib's getOutgoing() is topology-only; the <connection> element
+                # between two edges can have its own allow= list that SUMO enforces
+                # at runtime. Without this check, Yen's generates routes that
+                # traci.vehicle.setRoute() then rejects, spamming the logs.
+                connections = current.getConnections(next_edge)
+                if connections and not any(c.allows("passenger") for c in connections):
+                    continue
                 new_cost = cost + next_edge.getLength() / max(next_edge.getSpeed(), 0.1)
                 if new_cost < dist.get(next_edge, float('inf')):
                     dist[next_edge] = new_cost
@@ -1318,6 +1516,143 @@ class SUMOGridRerouteEnv:
             Array of shape (n_agents,)
         """
         return np.array(self.agent_reset_mask, dtype=np.float32)
+
+    # ------------------------------------------------------------------
+    # Civiq zone observation methods (zone_manager must be present)
+    # ------------------------------------------------------------------
+
+    def _build_agents_per_rsu(self, zone_assignments: Dict) -> Dict[int, List[int]]:
+        """Map rsu_id → list of agent_ids currently in that zone.
+
+        Uses agent_vehicle_ids to map from SUMO vehicle IDs (returned by
+        zone_manager) back to agent slot indices (0..n_agents-1).
+        Background vehicles not tracked in any agent slot are ignored.
+
+        Fallback for replacement vehicles: when traci.vehicle.add() has been
+        called for a replacement vehicle (agent_active=True, vehicle_id set)
+        but the vehicle has not yet entered the SUMO network (absent from
+        getIDList()), we fall back to agent_last_rsu — the last confirmed RSU
+        for that slot.  This prevents the slot from being silently omitted from
+        the mask, which would make rsu_mask all-zero and zero out the gradient
+        path through local_mixer.
+        """
+        veh_to_rsu: Dict[str, int] = {}
+        for rsu_id, veh_ids in zone_assignments.items():
+            for vid in veh_ids:
+                veh_to_rsu[vid] = rsu_id
+
+        agents_per_rsu: Dict[int, List[int]] = {i: [] for i in range(self.zone_manager.n_rsus)}
+        for agent_id in range(self.n_agents):
+            vid = self.agent_vehicle_ids[agent_id]
+            if vid is None:
+                continue
+            if vid in veh_to_rsu:
+                # Normal path: vehicle is active in the simulation.
+                rsu_id = veh_to_rsu[vid]
+                self.agent_last_rsu[agent_id] = rsu_id  # keep cache fresh
+                agents_per_rsu[rsu_id].append(agent_id)
+            elif self.agent_active[agent_id]:
+                # Fallback: vehicle was just scheduled (depart=sim_time) and
+                # has not yet entered the SUMO network.  Use the last known RSU
+                # so the mask slot remains 1 and gradient can flow through
+                # local_mixer for this RSU.
+                fallback_rsu = self.agent_last_rsu[agent_id]
+                if fallback_rsu >= 0:
+                    agents_per_rsu[fallback_rsu].append(agent_id)
+        return agents_per_rsu
+
+    def get_zone_assignments(self) -> Dict:
+        """Get current zone assignments for all vehicles in the simulation.
+
+        Queries vehicle positions from TraCI (via the backend proxy) and
+        delegates assignment to zone_manager.
+
+        Returns:
+            dict {rsu_id (int): [vehicle_id (str), ...]} for all vehicles,
+            including background traffic.
+        """
+        veh_ids = traci.vehicle.getIDList()
+        positions = {v: traci.vehicle.getPosition(v) for v in veh_ids}
+        return self.zone_manager.assign_vehicles_to_zones(positions)
+
+    def get_local_obs_padded(self, zone_assignments: Dict) -> np.ndarray:
+        """Build padded local observation tensor for all RSU zones.
+
+        For each RSU, concatenates observations of its assigned controlled
+        agents (up to max_agents_per_rsu), pads remaining slots with zeros.
+        RSU slots beyond n_rsus are all zeros.
+
+        Args:
+            zone_assignments: dict from get_zone_assignments()
+
+        Returns:
+            np.ndarray shape (max_rsus, max_agents_per_rsu * obs_dim), float32
+        """
+        agents_per_rsu = self._build_agents_per_rsu(zone_assignments)
+        max_rsus = self.zone_manager.max_rsus
+        max_agents = self.zone_manager.max_agents_per_rsu
+        local_state_dim = max_agents * self.obs_dim
+
+        out = np.zeros((max_rsus, local_state_dim), dtype=np.float32)
+        for rsu_id, agent_ids in agents_per_rsu.items():
+            for slot_idx, agent_id in enumerate(agent_ids[:max_agents]):
+                obs = self._get_agent_obs(agent_id)
+                start = slot_idx * self.obs_dim
+                out[rsu_id, start:start + self.obs_dim] = obs
+        return out
+
+    def get_agent_masks_padded(self, zone_assignments: Dict) -> np.ndarray:
+        """Build padded agent mask tensor for all RSU zones.
+
+        1.0 for real agent slots, 0.0 for padding. RSU slots beyond n_rsus
+        remain all zeros.
+
+        Args:
+            zone_assignments: dict from get_zone_assignments()
+
+        Returns:
+            np.ndarray shape (max_rsus, max_agents_per_rsu), float32
+        """
+        agents_per_rsu = self._build_agents_per_rsu(zone_assignments)
+        max_rsus = self.zone_manager.max_rsus
+        max_agents = self.zone_manager.max_agents_per_rsu
+
+        out = np.zeros((max_rsus, max_agents), dtype=np.float32)
+        for rsu_id, agent_ids in agents_per_rsu.items():
+            count = min(len(agent_ids), max_agents)
+            out[rsu_id, :count] = 1.0
+        return out
+
+    def get_zone_assignments_flat(self, zone_assignments: Dict) -> np.ndarray:
+        """Get RSU id for each agent slot.
+
+        Args:
+            zone_assignments: dict from get_zone_assignments()
+
+        Returns:
+            np.ndarray shape (n_agents,), int32 — RSU id per agent slot,
+            -1 for inactive/unassigned agent slots.
+        """
+        veh_to_rsu: Dict[str, int] = {}
+        for rsu_id, veh_ids in zone_assignments.items():
+            for vid in veh_ids:
+                veh_to_rsu[vid] = rsu_id
+
+        result = np.full(self.n_agents, -1, dtype=np.int32)
+        for agent_id in range(self.n_agents):
+            vid = self.agent_vehicle_ids[agent_id]
+            if vid is None:
+                continue
+            if vid in veh_to_rsu:
+                result[agent_id] = veh_to_rsu[vid]
+            elif self.agent_active[agent_id]:
+                # Fallback: mirrors _build_agents_per_rsu — replacement vehicle
+                # scheduled but not yet in SUMO. Use last confirmed RSU so
+                # zone_assignments stays consistent with agent_masks_per_rsu.
+                fallback_rsu = self.agent_last_rsu[agent_id]
+                if fallback_rsu >= 0:
+                    result[agent_id] = fallback_rsu
+        return result
 
     def get_obs_size(self) -> int:
         """Get observation dimension."""

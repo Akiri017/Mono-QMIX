@@ -6,7 +6,7 @@ env_args:
   # los_level selects the background traffic demand: "low" (~562 veh/hr),
   # "med" (~1125 veh/hr), or "high" (~1406 veh/hr). The env resolves the
   # matching sumocfg automatically. Override sumo_cfg directly to bypass.
-  los_level: "low"
+  los_level: "high"
   sumo_cfg: null  # if null, derived from los_level
   network_file: "4by4_map/final_map.net.xml"
   controlled_routes: "sumo/scenarios/4by4_map/controlled_init.rou.xml"
@@ -27,7 +27,7 @@ env_args:
 
   # Episode configuration
   max_episode_steps: 1000  # T_max: maximum simulation time in seconds
-  episode_limit: 1000  # PyMARL episode limit (same as max_episode_steps for SUMO)
+  episode_limit: 100  # agent decision steps = max_episode_steps / decision_period = 1000 / 10
 
   # Replacement/lifelong agent configuration
   replacement_enabled: true
@@ -83,7 +83,6 @@ env_args:
   render_mode: null  # "human" for visualization, null for headless
 
 # Additional PyMARL environment info
-episode_limit: 1000  # redundant but PyMARL expects this at top level
 obs_shape: 65  # will be computed dynamically, this is an example
 state_shape: 2080  # n_agents * obs_shape (32 * 65)
 n_actions: 2

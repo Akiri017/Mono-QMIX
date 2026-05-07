@@ -1,0 +1,89 @@
+{
+  "algorithm": "selfish_routing",
+  "map": "bgc_full",
+  "scenario": "Wardrop User Equilibrium / Selfish Nash Routing",
+  "simulation_duration_s": 3600,
+  "generated_at": "2026-04-11T11:44:00.000000",
+  "notes": {
+    "kpis_source": "Travel time, speed, wait time, throughput, route length, time loss, RTF come directly from the March 2026 Wardrop-route SUMO runs (stats_low/med/highEnough.xml).",
+    "co2_fuel_source": "CO2 and fuel values are computed from the February 2026 non-Wardrop tripinfo XMLs (data_selfish_*_tripinfo.xml). No tripinfo was produced for the March 2026 Wardrop runs. Values are real SUMO emission output but from a different demand configuration on the same map.",
+    "timeseries_source": "Timeseries CSVs (active_vehicles, total_system_wait) are from the February 2026 runs via baseline_results_*.csv. The March 2026 Wardrop runs produced no summary XML, so timeseries vehicle counts do not match the KPI vehicle counts."
+  },
+  "traffic_levels": {
+    "free_flow": {
+      "source_stats": "stats_low.xml",
+      "source_tripinfo": "data_selfish_low_tripinfo.xml",
+      "source_csv": "baseline_results_low.csv",
+      "vehicles": {
+        "loaded": 900,
+        "inserted": 900,
+        "completed": 840,
+        "running_at_end": 60
+      },
+      "kpis": {
+        "avg_travel_time_min": 3.682,
+        "avg_travel_time_s": 220.89,
+        "avg_waiting_time_s": 40.88,
+        "avg_speed_kmh": 36.97,
+        "avg_speed_ms": 10.27,
+        "throughput": 840,
+        "avg_route_length_m": 2237.08,
+        "time_loss_s": 91.29,
+        "real_time_factor": 139.76,
+        "avg_co2_g_per_km": 386.0,
+        "avg_fuel_l_per_100km": 16.64
+      },
+      "timeseries_file": "timeseries_free_flow.csv"
+    },
+    "stable_flow": {
+      "source_stats": "stats_med.xml",
+      "source_tripinfo": null,
+      "source_csv": "baseline_results_med.csv",
+      "vehicles": {
+        "loaded": 1800,
+        "inserted": 1800,
+        "completed": 1679,
+        "running_at_end": 121
+      },
+      "kpis": {
+        "avg_travel_time_min": 3.684,
+        "avg_travel_time_s": 221.07,
+        "avg_waiting_time_s": 38.53,
+        "avg_speed_kmh": 36.36,
+        "avg_speed_ms": 10.10,
+        "throughput": 1679,
+        "avg_route_length_m": 2217.29,
+        "time_loss_s": 90.05,
+        "real_time_factor": 96.03,
+        "avg_co2_g_per_km": 399.2,
+        "avg_fuel_l_per_100km": 17.21
+      },
+      "timeseries_file": "timeseries_stable_flow.csv"
+    },
+    "forced_flow": {
+      "source_stats": "stats_highEnough.xml",
+      "source_tripinfo": null,
+      "source_csv": "baseline_results_highEnough.csv",
+      "vehicles": {
+        "loaded": 6819,
+        "inserted": 6294,
+        "completed": 4255,
+        "running_at_end": 2039
+      },
+      "kpis": {
+        "avg_travel_time_min": 4.607,
+        "avg_travel_time_s": 276.42,
+        "avg_waiting_time_s": 76.80,
+        "avg_speed_kmh": 29.38,
+        "avg_speed_ms": 8.16,
+        "throughput": 4255,
+        "avg_route_length_m": 2035.10,
+        "time_loss_s": 149.61,
+        "real_time_factor": 36.41,
+        "avg_co2_g_per_km": 431.9,
+        "avg_fuel_l_per_100km": 18.61
+      },
+      "timeseries_file": "timeseries_forced_flow.csv"
+    }
+  }
+}

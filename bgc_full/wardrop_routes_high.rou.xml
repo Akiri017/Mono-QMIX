@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-04-13T16:27:17.861693+08:00 by Eclipse SUMO marouter 1.25.0
+<marouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/marouterConfiguration.xsd">
+
+    <input>
+        <net-file value="C:\Users\Ianne\Mono_QMIX\bgc_full\final_map.net.xml"/>
+        <additional-files value="C:\Users\Ianne\Mono_QMIX\bgc_full\vtypes.add.xml"/>
+        <route-files value="C:\Users\Ianne\Mono_QMIX\bgc_full\trips_high.xml"/>
+    </input>
+
+    <output>
+        <output-file value="C:\Users\Ianne\Mono_QMIX\bgc_full\wardrop_routes_high.rou.xml"/>
+    </output>
+
+    <processing>
+        <max-alternatives value="5"/>
+        <vtype value="thesis_car"/>
+        <assignment-method value="SUE"/>
+    </processing>
+
+    <report>
+        <verbose value="true"/>
+        <ignore-errors value="true"/>
+    </report>
+
+</marouterConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+</routes>

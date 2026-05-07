@@ -5,8 +5,12 @@ Evaluates trained QMIX models or baseline policies on the SUMO environment,
 collecting comprehensive metrics for comparison.
 
 Usage:
-    # Evaluate trained QMIX model
+    # Evaluate trained QMIX model (4x4 default)
     python evaluate.py --model results/models/final --episodes 100 --seed 42
+
+    # Evaluate on BGC Full with Civiq
+    python evaluate.py --alg_config civiq_sumo --env_config sumo_bgc_full \
+                       --model results/models/final --episodes 20 --seed 1
 
     # Evaluate baseline policies
     python evaluate.py --baseline noop --episodes 100 --seed 42
@@ -40,10 +44,19 @@ from utils.logging import Logger
 METRIC_KEYS = [
     "mean_travel_time",
     "mean_waiting_time",
+    "network_throughput",
+    "real_time_factor",
+    "co2_emissions",
+    "fuel_consumption",
+    "co2_g_per_km",
+    "fuel_l_per_100km",
+    "avg_route_length_m",
     "total_stops",
-    "total_emissions",
     "arrival_rate",
     "controlled_mean_travel_time",
+    "cpu_percent_mean",
+    "cpu_percent_peak",
+    "process_cpu_s",
 ]
 
 
@@ -94,18 +107,50 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
     print(f"  obs_shape: {env_info['obs_shape']}")
     print(f"  state_shape: {env_info['state_shape']}")
 
-    # Create data scheme
+    # Create data scheme.
+    # reset_mask must be included: the runner always stores it in post_transition_data,
+    # and BasicMAC.forward() reads it to zero-out hidden states after mid-episode slot
+    # resets. Without it the tensor is never allocated, the guard in forward() sees
+    # False, and hidden states are never reset — silently degrading eval fidelity.
     scheme = {
         "state": {"vshape": env_info["state_shape"]},
         "obs": {"vshape": env_info["obs_shape"], "group": "agents"},
         "actions": {"vshape": (1,), "group": "agents", "dtype": torch.long},
         "avail_actions": {"vshape": (env_info["n_actions"],), "group": "agents", "dtype": torch.int},
+        "reset_mask": {"vshape": (1,), "group": "agents", "dtype": torch.uint8},
         "reward": {"vshape": (1,)},
         "terminated": {"vshape": (1,), "dtype": torch.uint8},
-        "filled": {"vshape": (1,), "dtype": torch.uint8}
+        "filled": {"vshape": (1,), "dtype": torch.uint8},
     }
+
+    # Civiq: add hierarchical mixing fields so the runner can write zone data into
+    # the batch without them being silently dropped. local_states is NOT included —
+    # it is computed on-the-fly in HierarchicalQLearner._build_local_states() and
+    # never stored in the buffer (avoids ~25–50 GB allocation overhead).
+    if args.get("mixer") == "civiq":
+        max_rsus = args["max_rsus"]
+        max_agents_per_rsu = args["max_agents_per_rsu"]
+        n_agents = env_info["n_agents"]
+        scheme.update({
+            "zone_assignments": {
+                "vshape": (n_agents,),
+                "dtype": torch.int32,
+            },
+            "rsu_agent_qs": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+            "agent_masks_per_rsu": {
+                "vshape": (max_rsus, max_agents_per_rsu),
+                "dtype": torch.float32,
+            },
+        })
+
     groups = {"agents": args["n_agents"]}
     preprocess = {}
+
+    # Enable CPU monitoring only for learned policies (QMIX / CiViQ), not baselines
+    args["enable_cpu_monitoring"] = (policy_type == "qmix")
 
     # Create MAC based on policy type
     if policy_type == "qmix":
@@ -166,8 +211,12 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
         # Progress line
         metric_str = ""
         if "mean_travel_time" in ep_metrics:
-            metric_str = (f", tt={ep_metrics['mean_travel_time']:.0f}s"
-                          f", arr={ep_metrics.get('arrival_rate', 0):.2f}")
+            metric_str = (
+                f", tt={ep_metrics['mean_travel_time']:.0f}s"
+                f", arr={ep_metrics.get('arrival_rate', 0):.2f}"
+                f", tput={ep_metrics.get('network_throughput', 0):.0f}veh/h"
+                f", rtf={ep_metrics.get('real_time_factor', 0):.1f}"
+            )
         print(f"  Episode {ep+1}/{args['eval_episodes']}: "
               f"return={ep_return:.2f}, length={ep_length}{metric_str}")
 
@@ -204,14 +253,25 @@ def evaluate_policy(args, policy_type="qmix", model_path=None, baseline_type=Non
 
     print("\n--- Traffic Metrics ---")
     labels = {
-        "mean_travel_time":          "Mean Travel Time (s)",
-        "mean_waiting_time":         "Mean Waiting Time (s)",
-        "total_stops":               "Total Stops",
-        "total_emissions":           "Total Emissions",
-        "arrival_rate":              "Arrival Rate",
+        "mean_travel_time":            "Mean Travel Time (s)",
+        "mean_waiting_time":           "Mean Waiting Time (s)",
+        "network_throughput":          "Network Throughput (veh/h)",
+        "real_time_factor":            "Real-Time Factor",
+        "co2_emissions":               "CO2 Emissions (g/episode)",
+        "fuel_consumption":            "Fuel Consumption (ml/episode)",
+        "co2_g_per_km":                "CO2 Emissions (g/km)",
+        "fuel_l_per_100km":            "Fuel Consumption (L/100km)",
+        "avg_route_length_m":          "Avg Route Length (m)",
+        "total_stops":                 "Total Stops",
+        "arrival_rate":                "Arrival Rate",
         "controlled_mean_travel_time": "Controlled Mean Travel Time (s)",
+        "cpu_percent_mean":            "CPU Usage Mean (%)",
+        "cpu_percent_peak":            "CPU Usage Peak (%)",
+        "process_cpu_s":               "Process CPU Time (s)",
     }
     for key in METRIC_KEYS:
+        if key not in results["metrics"]:
+            continue  # metric not collected for this policy (e.g. CPU metrics on baselines)
         stats = results["metrics"][key]
         if stats["mean"] is not None:
             print(f"  {labels[key]:<35}: {stats['mean']:.3f} ± {stats['std']:.3f}")
@@ -298,14 +358,21 @@ def compare_results(result_files):
                         d2 = r2['metrics'][key]['raw']
 
                     if len(d1) >= 2 and len(d2) >= 2 and d1 and d2:
-                        t_stat, p_val = scipy_stats.ttest_ind(d1, d2)
+                        # Use paired t-test when episode counts match (same seed = same scenarios).
+                        # Fall back to unpaired if counts differ (e.g. a run was cut short).
+                        if len(d1) == len(d2):
+                            t_stat, p_val = scipy_stats.ttest_rel(d1, d2)
+                            test_name = "paired"
+                        else:
+                            t_stat, p_val = scipy_stats.ttest_ind(d1, d2)
+                            test_name = "unpaired"
                         sig = "***" if p_val < 0.001 else ("**" if p_val < 0.01 else ("*" if p_val < 0.05 else "ns"))
                         better = n1 if np.mean(d1) > np.mean(d2) else n2
                         # For travel time, lower is better
                         if key == "mean_travel_time":
                             better = n1 if np.mean(d1) < np.mean(d2) else n2
                         print(f"  [{metric_label}] {n1} vs {n2}: "
-                              f"t={t_stat:.3f}, p={p_val:.4f} {sig}  => better: {better}")
+                              f"t={t_stat:.3f}, p={p_val:.4f} {sig} ({test_name})  => better: {better}")
                 print()
 
 
@@ -317,7 +384,7 @@ def main():
     parser.add_argument("--model", type=str, default=None,
                        help="Path to trained QMIX model directory")
     parser.add_argument("--baseline", type=str, default=None,
-                       choices=["noop", "greedy_shortest", "random"],
+                       choices=["noop", "greedy_shortest", "random", "selfish_routing"],
                        help="Baseline policy type")
 
     # Evaluation settings
@@ -332,9 +399,21 @@ def main():
     parser.add_argument("--compare", nargs='+', default=None,
                        help="Compare multiple result JSON files")
 
+    # Config selection
+    parser.add_argument("--alg_config", type=str, default="qmix_sumo",
+                       help="Algorithm config name (without .yaml), e.g. civiq_sumo")
+    parser.add_argument("--env_config", type=str, default="sumo_grid4x4",
+                       help="Environment config name (without .yaml), e.g. sumo_bgc_full")
+
     # SUMO settings
     parser.add_argument("--use_gui", action="store_true",
                        help="Use SUMO GUI for visualization")
+    parser.add_argument("--los_level", type=str, default=None,
+                       choices=["low", "med", "high"],
+                       help="Override los_level in env_args (low/med/high)")
+    parser.add_argument("--sumo_backend", type=str, default=None,
+                       choices=["libsumo", "traci"],
+                       help="Override SUMO backend (default: use env config value)")
 
     args_cmd = parser.parse_args()
 
@@ -351,8 +430,8 @@ def main():
 
     # Load configs
     script_dir = Path(__file__).parent
-    alg_config_path = script_dir / "config" / "algs" / "qmix_sumo.yaml"
-    env_config_path = script_dir / "config" / "envs" / "sumo_grid4x4.yaml"
+    alg_config_path = script_dir / "config" / "algs" / f"{args_cmd.alg_config}.yaml"
+    env_config_path = script_dir / "config" / "envs" / f"{args_cmd.env_config}.yaml"
 
     if not alg_config_path.exists() or not env_config_path.exists():
         print(f"Error: Config files not found")
@@ -368,6 +447,10 @@ def main():
     args["eval_episodes"] = args_cmd.episodes
     args["use_cuda"] = False  # Evaluation on CPU
     args["use_tensorboard"] = False
+    if args_cmd.los_level is not None:
+        args["env_args"]["los_level"] = args_cmd.los_level
+    if args_cmd.sumo_backend is not None:
+        args["sumo_backend"] = args_cmd.sumo_backend
 
     # Determine policy type and run evaluation
     if args_cmd.model is not None:
@@ -375,7 +458,17 @@ def main():
         policy_stem = args_cmd.output or "qmix"
     else:
         results = evaluate_policy(args, policy_type="baseline", baseline_type=args_cmd.baseline)
-        policy_stem = args_cmd.output or args_cmd.baseline
+        if args_cmd.output:
+            policy_stem = args_cmd.output
+        else:
+            # Build stem: <baseline>[_<env>][_<los>]
+            # Include env name for non-default maps and LOS when explicitly set,
+            # so runs on different maps/LOS levels don't overwrite each other.
+            env_tag = ""
+            if args_cmd.env_config != "sumo_grid4x4":
+                env_tag = "_" + args_cmd.env_config.replace("sumo_", "")
+            los_tag = f"_{args_cmd.los_level}" if args_cmd.los_level else ""
+            policy_stem = f"{args_cmd.baseline}{env_tag}{los_tag}"
 
     # Save results. If an explicit --output stem was provided by the caller
     # (e.g. "qmix_seed0"), use it directly — the seed is already embedded.

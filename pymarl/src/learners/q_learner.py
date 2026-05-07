@@ -191,13 +191,14 @@ class QLearner:
         # Pick Q-values for chosen actions
         chosen_action_qvals = torch.gather(mac_out[:, :-1], dim=3, index=actions).squeeze(3)  # (batch, T, n_agents)
 
-        # Calculate target Q-values
-        target_mac_out = []
-        self.target_mac.init_hidden(batch_size)
-        for t in range(max_t + 1):
-            target_agent_qs = self.target_mac.forward(batch, t)
-            target_mac_out.append(target_agent_qs)
-        target_mac_out = torch.stack(target_mac_out, dim=1)  # (batch, T+1, n_agents, n_actions)
+        # Calculate target Q-values (no gradients needed — target net is updated via weight copy)
+        with torch.no_grad():
+            target_mac_out = []
+            self.target_mac.init_hidden(batch_size)
+            for t in range(max_t + 1):
+                target_agent_qs = self.target_mac.forward(batch, t)
+                target_mac_out.append(target_agent_qs)
+            target_mac_out = torch.stack(target_mac_out, dim=1)  # (batch, T+1, n_agents, n_actions)
 
         # Mask out unavailable actions for target network
         target_mac_out[avail_actions == 0] = -1e10

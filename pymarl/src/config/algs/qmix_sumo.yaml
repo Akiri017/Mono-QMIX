@@ -43,14 +43,14 @@ target_update_mode: "hard"  # "hard" or "soft" update
 tau: 0.001  # Soft update coefficient (if soft update)
 
 # Training schedule
-t_max: 2000000  # Total training timesteps (2M steps)
+t_max: 1000000  # Total training timesteps (2M steps)
 test_interval: 10000  # Test every N training steps
 test_nepisode: 5  # Number of test episodes
 save_model_interval: 50000  # Save model every N steps
 log_interval: 5000  # Log metrics every N steps
 
 # Episode configuration
-episode_limit: 1000  # Max steps per episode (matches env config)
+episode_limit: 100  # Max steps per episode (matches env config)
 
 # Reward configuration
 reward_standardization: false  # PyMARL flag — not implemented; running normalisation is handled directly in QLearner

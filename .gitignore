@@ -17,6 +17,10 @@ Thumbs.db
 tripinfo*.xml
 summary*.xml
 
+# Large generated data files (regenerate with block_a / block_b scripts)
+scripts/bgc/vehicle_positions_*.csv
+scripts/bgc/bgc_full_los_e_routed.rou.xml
+
 # Training artifacts (large, not for version control)
 pymarl/src/results/models/
 pymarl/src/results/experiments/

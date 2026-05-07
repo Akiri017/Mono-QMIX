@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #060112;
+  color: #1e293b;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ── Animated blob keyframes ── */
+@keyframes blob1 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  20%       { transform: translate(60px, -80px) scale(1.12); }
+  45%       { transform: translate(-40px, -50px) scale(0.94); }
+  70%       { transform: translate(70px, 50px) scale(1.08); }
+}
+
+@keyframes blob2 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  25%       { transform: translate(-70px, 60px) scale(1.1); }
+  55%       { transform: translate(50px, 30px) scale(0.92); }
+  80%       { transform: translate(-30px, -60px) scale(1.05); }
+}
+
+@keyframes blob3 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  30%       { transform: translate(50px, 70px) scale(0.9); }
+  60%       { transform: translate(-60px, 20px) scale(1.15); }
+  85%       { transform: translate(30px, -50px) scale(1.02); }
+}
+
+@keyframes blob4 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  35%       { transform: translate(-50px, -40px) scale(1.1); }
+  65%       { transform: translate(60px, 60px) scale(0.93); }
+  90%       { transform: translate(-20px, 30px) scale(1.07); }
+}
+
+@keyframes blob5 {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  30%       { transform: translate(40px, -60px) scale(1.08); }
+  60%       { transform: translate(-50px, 40px) scale(0.95); }
+  85%       { transform: translate(20px, 70px) scale(1.04); }
+}

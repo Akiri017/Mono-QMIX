@@ -1,0 +1,15 @@
+<configuration>
+    <input>
+        <net-file value="final_map.net.xml"/>
+        <route-files value="trips_high.xml"/>
+        <additional-files value="vtypes.add.xml"/>
+    </input>
+    <processing>
+        <ignore-route-errors value="true"/>
+        <time-to-teleport value="300"/>
+    </processing>
+    <report>
+        <no-step-log value="true"/>
+        <no-warnings value="true"/>
+    </report>
+</configuration>

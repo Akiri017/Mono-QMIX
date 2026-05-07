@@ -1,0 +1,112 @@
+{
+  "algorithm": "selfish_routing",
+  "map": "bgc_full",
+  "map_label": "BGC Full (2 km)",
+  "scenario": "Wardrop User Equilibrium / Selfish Nash Routing (noop controlled agents)",
+  "simulation_duration_s": 1000,
+  "seed": 5,
+  "generated_at": "2026-04-14T08:06:42.000000",
+  "traffic_levels": {
+    "free_flow": {
+      "source": "pymarl_evaluate",
+      "n_episodes": 30,
+      "los_label": "LOS A \u2014 Free Flow",
+      "vehicles": {
+        "completed_approx": 326,
+        "arrival_rate_mean": 0.8757,
+        "arrival_rate_std": 0.005
+      },
+      "kpis": {
+        "avg_travel_time_s": 120.345,
+        "avg_travel_time_s_std": 6.601,
+        "avg_travel_time_min": 2.006,
+        "avg_waiting_time_s": 7.736,
+        "avg_waiting_time_s_std": 2.275,
+        "network_throughput_veh_h": 1174.83,
+        "throughput": 326,
+        "avg_speed_kmh": 27.99,
+        "avg_route_length_m": 935.84,
+        "avg_route_length_m_std": 8.382,
+        "real_time_factor": 307.68,
+        "co2_emissions_g_episode": 145989.03,
+        "fuel_consumption_ml_episode": 63003.24,
+        "avg_co2_g_per_km": 463.51,
+        "avg_co2_g_per_km_std": 16.289,
+        "avg_fuel_l_per_100km": 20.004,
+        "avg_fuel_l_per_100km_std": 0.7,
+        "controlled_mean_travel_time_s": 111.366,
+        "total_stops_mean": 14751.8,
+        "time_loss_s": null
+      },
+      "timeseries_file": null,
+      "data_quality_note": "co2_g_per_km and fuel_l_per_100km may be inflated: few vehicles complete routes in low demand, making the per-km denominator small relative to total episode emissions."
+    },
+    "stable_flow": {
+      "source": "pymarl_evaluate",
+      "n_episodes": 30,
+      "los_label": "LOS C \u2014 Stable Flow",
+      "vehicles": {
+        "completed_approx": 356,
+        "arrival_rate_mean": 0.8693,
+        "arrival_rate_std": 0.008
+      },
+      "kpis": {
+        "avg_travel_time_s": 122.105,
+        "avg_travel_time_s_std": 4.656,
+        "avg_travel_time_min": 2.035,
+        "avg_waiting_time_s": 10.679,
+        "avg_waiting_time_s_std": 1.127,
+        "network_throughput_veh_h": 1281.64,
+        "throughput": 356,
+        "avg_speed_kmh": 27.56,
+        "avg_route_length_m": 934.75,
+        "avg_route_length_m_std": 9.118,
+        "real_time_factor": 293.59,
+        "co2_emissions_g_episode": 167433.13,
+        "fuel_consumption_ml_episode": 72211.38,
+        "avg_co2_g_per_km": 464.48,
+        "avg_co2_g_per_km_std": 9.193,
+        "avg_fuel_l_per_100km": 20.033,
+        "avg_fuel_l_per_100km_std": 0.396,
+        "controlled_mean_travel_time_s": 112.627,
+        "total_stops_mean": 16857.8,
+        "time_loss_s": null
+      },
+      "timeseries_file": null,
+      "data_quality_note": "co2_g_per_km and fuel_l_per_100km may be inflated for the same reason as free_flow."
+    },
+    "forced_flow": {
+      "source": "pymarl_evaluate",
+      "n_episodes": 30,
+      "los_label": "LOS E \u2014 Forced Flow",
+      "vehicles": {
+        "completed_approx": 605,
+        "arrival_rate_mean": 0.8585,
+        "arrival_rate_std": 0.0114
+      },
+      "kpis": {
+        "avg_travel_time_s": 126.995,
+        "avg_travel_time_s_std": 9.51,
+        "avg_travel_time_min": 2.117,
+        "avg_waiting_time_s": 20.758,
+        "avg_waiting_time_s_std": 1.376,
+        "network_throughput_veh_h": 2177.86,
+        "throughput": 605,
+        "avg_speed_kmh": 26.6,
+        "avg_route_length_m": 938.19,
+        "avg_route_length_m_std": 13.017,
+        "real_time_factor": 248.84,
+        "co2_emissions_g_episode": 308012.15,
+        "fuel_consumption_ml_episode": 132483.83,
+        "avg_co2_g_per_km": 485.6,
+        "avg_co2_g_per_km_std": 3.823,
+        "avg_fuel_l_per_100km": 20.886,
+        "avg_fuel_l_per_100km_std": 0.165,
+        "controlled_mean_travel_time_s": 102.27,
+        "total_stops_mean": 29814.4,
+        "time_loss_s": null
+      },
+      "timeseries_file": null
+    }
+  }
+}
