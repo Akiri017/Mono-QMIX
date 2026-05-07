@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import "./globals.css"
+import { ThemeProvider } from "@/contexts/ThemeContext"
 
 export const metadata: Metadata = {
   title: "Civiq - Hierarchical Multi-Agent Coordination Framework",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-inter">{children}</body>
+      <body className="font-inter">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   )
 }

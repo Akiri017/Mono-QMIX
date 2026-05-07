@@ -1,0 +1,57 @@
+==================================================================
+BGC Full Network Capacity Calibration
+Mode   : Full sweep
+SUMO   : C:\Program Files (x86)\Eclipse\Sumo\bin\sumo.EXE
+Network: C:\Users\otaku\Documents\VSC\Mono QMIX\Mono-QMIX\bgc_full\final_map.net.xml
+==================================================================
+  Loaded 1732 routes from 3 files
+
+    Demand   Spawned   Arrivals     Throughput   ArrRate    Wall
+----------------------------------------------------------------
+     100 vhr       100         97         97.0 vhr     0.970     2s
+     141 vhr       141        137        137.0 vhr     0.972     2s
+     200 vhr       200        194        194.0 vhr     0.970     2s
+     281 vhr       281        269        269.0 vhr     0.957     2s
+     400 vhr       400        384        384.0 vhr     0.960     2s
+     600 vhr       600        571        571.0 vhr     0.952     2s
+     900 vhr       900        859        859.0 vhr     0.954     3s
+    1125 vhr      1125       1077       1077.0 vhr     0.957     4s
+    1500 vhr      1500       1445       1445.0 vhr     0.963     4s
+    2000 vhr      2000       1910       1910.0 vhr     0.955     6s
+    3000 vhr      3000       2866       2866.0 vhr     0.955     9s
+    4500 vhr      4498       4289       4289.0 vhr     0.954    13s
+    6000 vhr      5732       3894       3894.0 vhr     0.679    33s
+
+==================================================================
+Estimated Network Capacity: 4289.0 veh/hr
+(Peak throughput across all demand levels — saturation flow rate)
+==================================================================
+
+HCM Level of Service Validation — BGC Full Map
+  Capacity baseline: 4289.0 veh/hr
+
+  Scenario        Demand   v/c ratio   HCM LOS   Target   Match
+  --------------------------------------------------------
+  LOS A            141 vhr       0.033         A        A     YES
+  LOS C            281 vhr       0.066         A        C  NO ← MISMATCH
+  LOS E           1125 vhr       0.262         A        E  NO ← MISMATCH
+
+Full demand sweep (demand → throughput mapping):
+      Demand     Throughput       v/c   HCM LOS
+  ----------------------------------------------
+         100         97.0 vhr     0.023         A
+         141        137.0 vhr     0.033         A
+         200        194.0 vhr     0.047         A
+         281        269.0 vhr     0.066         A
+         400        384.0 vhr     0.093         A
+         600        571.0 vhr     0.140         A
+         900        859.0 vhr     0.210         A
+        1125       1077.0 vhr     0.262         A
+        1500       1445.0 vhr     0.350         A
+        2000       1910.0 vhr     0.466         B
+        3000       2866.0 vhr     0.699         C
+        4500       4289.0 vhr     1.049         F
+        6000       3894.0 vhr     1.399         F
+
+VERDICT: One or more LOS labels do NOT match HCM v/c thresholds.
+         See MISMATCH rows above — demand levels need adjustment.

@@ -11,27 +11,21 @@ interface DropdownOption {
   description?: string
 }
 
-const mapSizeOptions: DropdownOption[] = [
-  { label: '2 km²', value: '2km', description: 'Medium urban grid suitable for general simulation' },
-  { label: '0.75 km²', value: '0.75km', description: 'Small dense urban area for focused analysis' },
-  { label: '4x4 Grid (2.25 km²)', value: '4x4', description: 'Structured grid layout for controlled testing' },
-]
-
 const trafficScaleOptions: DropdownOption[] = [
-  { label: 'Free Flow (LOS A)', value: 'free_flow', description: 'Minimal congestion — vehicles move freely at desired speeds' },
-  { label: 'Stable Flow (LOS C)', value: 'stable_flow', description: 'Moderate traffic density with acceptable delays' },
-  { label: 'Forced Flow (LOS E)', value: 'forced_flow', description: 'Near-capacity traffic with significant congestion' },
+  { label: 'Low Demand',      value: 'free_flow',   description: '1,000 veh/hr — light load on the traffic network; minimal queueing' },
+  { label: 'Moderate Demand', value: 'stable_flow', description: '1,200 veh/hr — emerging congestion; noticeable queueing onset' },
+  { label: 'High Demand',     value: 'forced_flow', description: '2,000 veh/hr — saturated network; significant queueing and delay' },
 ]
 
 const algorithmOptions: DropdownOption[] = [
-  { label: 'Selfish Routing', value: 'selfish_routing', description: 'Each vehicle independently optimizes its own route' },
-  { label: 'Monolithic QMIX', value: 'monolithic_qmix', description: 'Centralized multi-agent reinforcement learning control' },
   { label: 'Hierarchical QMIX (Civiq)', value: 'hierarchical_qmix', description: "Civiq's hierarchical coordination framework for urban optimization" },
+  { label: 'Monolithic QMIX', value: 'monolithic_qmix', description: 'Centralized multi-agent reinforcement learning control' },
+  { label: 'Selfish Routing', value: 'selfish_routing', description: 'Each vehicle independently optimizes its own route' },
 ]
 
-const DEFAULT_MAP_SIZE = '2km'
+const DEFAULT_MAP_SIZE    = '2km'
 const DEFAULT_TRAFFIC_SCALE = 'stable_flow'
-const DEFAULT_ALGORITHM = 'hierarchical_qmix'
+const DEFAULT_ALGORITHM   = 'hierarchical_qmix'
 
 interface GlassDropdownProps {
   label: string
@@ -52,12 +46,10 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
 
   useEffect(() => { setMounted(true) }, [])
 
-  // Recompute fixed position whenever the panel opens (or window resizes while open)
   useEffect(() => {
     if (!isOpen || !openRight || !triggerRef.current) return
     const update = () => {
       const r = triggerRef.current!.getBoundingClientRect()
-      // Estimate panel height: header (~44px) + each option (~64px)
       const estimatedH = options.length * 64 + 50
       const maxTop = window.innerHeight - estimatedH - 12
       setFixedPos({ top: Math.max(8, Math.min(r.top, maxTop)), left: r.right + 8 })
@@ -73,11 +65,15 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
 
   const triggerBg = darkMode
     ? isOpen ? 'rgba(6,182,212,0.15)' : 'rgba(255,255,255,0.07)'
-    : isOpen ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)'
+    : isOpen ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.65)'
 
   const triggerBorder = darkMode
-    ? isOpen ? '1px solid rgba(6,182,212,0.5)' : '1px solid rgba(255,255,255,0.12)'
-    : isOpen ? '1.5px solid rgba(6,182,212,0.5)' : '1px solid rgba(255,255,255,0.7)'
+    ? isOpen ? '1px solid rgba(6,182,212,0.5)' : '1px solid rgba(255,255,255,0.14)'
+    : isOpen ? '1px solid rgba(6,182,212,0.45)' : '1px solid rgba(15,23,42,0.14)'
+
+  const triggerShadow = darkMode
+    ? isOpen ? '0 4px 16px rgba(6,182,212,0.15)' : '0 1px 3px rgba(0,0,0,0.2)'
+    : isOpen ? '0 4px 16px rgba(6,182,212,0.12)' : '0 1px 4px rgba(15,23,42,0.08)'
 
   const textColor = darkMode
     ? selectedOption ? '#e2e8f0' : 'rgba(255,255,255,0.35)'
@@ -147,7 +143,7 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
           WebkitBackdropFilter: 'blur(8px)',
           borderRadius: '9999px',
           border: triggerBorder,
-          boxShadow: isOpen ? '0 4px 20px rgba(6,182,212,0.15)' : 'none',
+          boxShadow: triggerShadow,
         }}
       >
         <span className="font-medium text-[12px] select-none truncate" style={{ color: textColor }}>
@@ -174,22 +170,23 @@ interface SimulationControlsProps {
   darkMode?: boolean
   vertical?: boolean
   hideHeader?: boolean
-  initialMapSize?: string
   initialTrafficScale?: string
   initialAlgorithm?: string
+  onRunAlgorithm?: (algorithm: string) => void
+  // initialMapSize kept for compatibility but ignored — always uses 2km
+  initialMapSize?: string
 }
 
 export const SimulationControls = ({
   darkMode = false,
   vertical = false,
   hideHeader = false,
-  initialMapSize,
   initialTrafficScale,
   initialAlgorithm,
+  onRunAlgorithm,
 }: SimulationControlsProps) => {
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
-  const [mapSize, setMapSize] = useState(initialMapSize || '')
   const [trafficScale, setTrafficScale] = useState(initialTrafficScale || '')
   const [algorithm, setAlgorithm] = useState(initialAlgorithm || '')
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
@@ -198,10 +195,9 @@ export const SimulationControls = ({
     setOpenDropdown(prev => (prev === name ? null : name))
   }
 
-  const isFormValid = () => mapSize !== '' && trafficScale !== '' && algorithm !== ''
+  const isFormValid = () => trafficScale !== '' && algorithm !== ''
 
   const handleSelectDefault = () => {
-    setMapSize(DEFAULT_MAP_SIZE)
     setTrafficScale(DEFAULT_TRAFFIC_SCALE)
     setAlgorithm(DEFAULT_ALGORITHM)
     setOpenDropdown(null)
@@ -210,17 +206,17 @@ export const SimulationControls = ({
   const handleRun = () => {
     if (!isFormValid()) return
     const params = new URLSearchParams()
-    params.set('mapSize', mapSize)
+    params.set('mapSize', DEFAULT_MAP_SIZE)
     params.set('trafficScale', trafficScale)
     params.set('view', 'focused')
     params.set('algorithm1', algorithm)
+    onRunAlgorithm?.(algorithm)
     router.push(`/simulation?${params.toString()}`)
   }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element
-      // Don't close if the click is inside the container or inside a portal panel
       if (containerRef.current?.contains(target)) return
       if (target.closest('[data-dropdown-portal]')) return
       setOpenDropdown(null)
@@ -264,9 +260,6 @@ export const SimulationControls = ({
 
       {/* Dropdowns */}
       <div className={`flex ${vertical ? 'flex-col' : 'flex-row'} gap-2 mb-3`}>
-        <GlassDropdown label="Map Size" options={mapSizeOptions} selected={mapSize} onSelect={setMapSize}
-          isOpen={openDropdown === 'mapSize'} onToggle={() => toggleDropdown('mapSize')}
-          darkMode={darkMode} openRight={vertical} />
         <GlassDropdown label="Traffic Scale" options={trafficScaleOptions} selected={trafficScale} onSelect={setTrafficScale}
           isOpen={openDropdown === 'trafficScale'} onToggle={() => toggleDropdown('trafficScale')}
           darkMode={darkMode} openRight={vertical} />

@@ -3,7 +3,7 @@
  *
  * Returns real KPIs and time-series data for the Selfish Routing algorithm.
  * Data availability:
- *   2km   (bgc_full)  — free_flow, stable_flow, forced_flow  ✓  (PyMARL pipeline, 30 eps)
+ *   2km   (bgc_full)  — free_flow, stable_flow, forced_flow  ✓  (PyMARL pipeline, 50 eps)
  *   0.75km (bgc_core) — free_flow, stable_flow               ✓  (SUMO stats XML; forced_flow run incomplete)
  *   4x4               — free_flow, stable_flow, forced_flow  ✓  (PyMARL pipeline, 100 eps)
  */
@@ -89,10 +89,15 @@ export async function GET(request: NextRequest) {
       trafficLevel,
       map: mapParam,
       vehicles,
+      baselines: levelData.baselines ?? null,
+      evalReturns:      levelData.evalReturns      ?? null,
+      evalTravelTimes:  levelData.evalTravelTimes  ?? null,
+      evalWaitingTimes: levelData.evalWaitingTimes ?? null,
+      evalThroughputs:  levelData.evalThroughputs  ?? null,
       kpis: {
         // Primary display KPIs (matching AlgoData fields)
-        travelTime: parseFloat(kpis.avg_travel_time_min.toFixed(2)),             // min
-        waitTime:   parseFloat(kpis.avg_waiting_time_s.toFixed(1)),               // sec
+        travelTime: kpis.avg_travel_time_min,                                      // min
+        waitTime:   kpis.avg_waiting_time_s,                                       // sec
         throughput: parseFloat(kpis.network_throughput_veh_h.toFixed(0)),         // veh/hr
         speed:      parseFloat(kpis.real_time_factor.toFixed(2)),                  // real-time factor ×
         co2:        kpis.avg_co2_g_per_km,                                         // g/km
@@ -100,6 +105,7 @@ export async function GET(request: NextRequest) {
         avgSpeedKmh: kpis.avg_speed_kmh,
         avgRouteLengthM: kpis.avg_route_length_m,
         timeLossS: kpis.time_loss_s,
+        returnMean: kpis.returnMean ?? null,
       },
       timeseries: {
         steps: timeseries.map(r => r.step),

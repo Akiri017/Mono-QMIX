@@ -18,16 +18,17 @@ import os
 import sys
 import time
 import heapq
+from envs.road_blocks import RoadBlockageManager
 import threading
-import numpy as np
+import numpy as np # pyright: ignore[reportMissingImports]
 from typing import Dict, List, Tuple, Optional, Set
 import logging
-import psutil
+import psutil # pyright: ignore[reportMissingModuleSource]
 
 # SUMO imports
 from envs.sumo_backend import backend as traci
 from envs.sumo_backend import set_backend as _set_sumo_backend, is_libsumo as _is_libsumo
-import yaml
+import yaml # pyright: ignore[reportMissingModuleSource]
 import sumolib
 from components.rsu_zone_manager import RSUZoneManager
 
@@ -173,6 +174,14 @@ class SUMOGridRerouteEnv:
         self.agent_reset_mask = [False] * self.n_agents  # Whether slot was just reset
         self.agent_inactive_since = [0.0] * self.n_agents  # Time when slot became inactive
         self.agent_last_actions = [0] * self.n_agents  # Last action taken per agent
+        # Last confirmed RSU assignment per agent slot (int, -1 = never assigned).
+        # Used as fallback when a replacement vehicle has been scheduled via
+        # traci.vehicle.add() but not yet inserted into the network — such vehicles
+        # are absent from traci.vehicle.getIDList() so zone_assignments won't include
+        # them, yet the slot is logically occupied (agent_active=True).  Retaining the
+        # previous RSU prevents the slot from being silently omitted from the mask,
+        # which would zero out rsu_mask and block gradients to local_mixer.
+        self.agent_last_rsu = [-1] * self.n_agents
 
         # Route candidate cache
         self.route_candidates = {}  # Map agent_id -> list of route candidates
@@ -234,6 +243,14 @@ class SUMOGridRerouteEnv:
                 _rsu_cfg_dict = yaml.safe_load(_f)
             self.zone_manager = RSUZoneManager(_rsu_cfg_dict)
 
+        # Road blockage configuration (random incident injection)
+        self.blockage_enabled = env_args.get("blockage_enabled", False)
+        self.blockage_probability = env_args.get("blockage_probability", 0.003)
+        self.blockage_min_duration = env_args.get("blockage_min_duration", 120.0)
+        self.blockage_max_duration = env_args.get("blockage_max_duration", 600.0)
+        self.blockage_max_concurrent = env_args.get("blockage_max_concurrent", 3)
+        self.blockage_manager = None  # instantiated after network load in reset()
+
         if self.verbose:
             logger.info(f"SUMOGridRerouteEnv initialized:")
             logger.info(f"  los_level={self.los_level}, sumo_cfg={self.sumo_cfg}")
@@ -274,6 +291,7 @@ class SUMOGridRerouteEnv:
         self.agent_reset_mask = [False] * self.n_agents
         self.agent_inactive_since = [0.0] * self.n_agents
         self.agent_last_actions = [0] * self.n_agents
+        self.agent_last_rsu = [-1] * self.n_agents
         self.next_vehicle_id = 0
 
         # Reset episode metrics (Step 6)
@@ -322,15 +340,44 @@ class SUMOGridRerouteEnv:
         if self.net is None:
             self._load_network()
 
+        # Initialize (or re-initialize) road blockage manager for this episode
+        if self.blockage_enabled:
+            edge_list = list(self.edge_id_to_idx.keys())
+            if self.blockage_manager is None:
+                self.blockage_manager = RoadBlockageManager(
+                    edge_list=edge_list,
+                    block_probability=self.blockage_probability,
+                    min_duration=self.blockage_min_duration,
+                    max_duration=self.blockage_max_duration,
+                    max_concurrent=self.blockage_max_concurrent,
+                    seed=self.sumo_seed,
+                )
+            else:
+                self.blockage_manager.reset(seed=self.sumo_seed)
+        
         # Spawn initial controlled vehicles
         self._spawn_initial_vehicles()
 
-        # Advance simulation until all vehicles are inserted
+        # Advance simulation until all controlled vehicles have physically entered the
+        # SUMO network (i.e. appear in traci.vehicle.getIDList()).  The previous check
+        # used _count_active_agents() which tests agent_active — set during
+        # _spawn_vehicle() *before* the vehicle enters the sim — so the loop would exit
+        # after a single step even when vehicles were still in SUMO's insertion queue.
+        # This caused get_zone_assignments() at ts=0 to return empty zone lists for
+        # controlled vehicles, producing all-zero agent_masks_per_rsu at the first
+        # timestep.
         max_warmup_steps = 50
         for _ in range(max_warmup_steps):
             traci.simulationStep()
             self.sim_time = traci.simulation.getTime()
-            if self._count_active_agents() >= self.n_agents:
+            # All controlled vehicle IDs that have been assigned to an agent slot
+            active_vids = {vid for vid in self.agent_vehicle_ids if vid is not None}
+            if not active_vids:
+                # No vehicles successfully scheduled — nothing to wait for.
+                break
+            current_vids = set(traci.vehicle.getIDList())
+            # Exit only when every scheduled vehicle is physically in the network
+            if active_vids.issubset(current_vids):
                 break
 
         if self.verbose:
@@ -354,6 +401,8 @@ class SUMOGridRerouteEnv:
 
         if not self.sumo_warnings:
             sumo_cmd.append("--no-warnings")
+
+        sumo_cmd.extend(["--ignore-route-errors", "true"])
 
         # Start TraCI
         traci.start(sumo_cmd)
@@ -673,6 +722,10 @@ class SUMOGridRerouteEnv:
             traci.simulationStep()
             self.sim_time = traci.simulation.getTime()
 
+            # Inject random road blockages (if enabled)
+            if self.blockage_enabled and self.blockage_manager is not None:
+                self.blockage_manager.step(self.sim_time, self.sumo_step_length)
+            
             # Fetch vehicle list once per sub-step (shared by reward, arrivals, tracking)
             current_vehicles = set(traci.vehicle.getIDList())
 
@@ -1476,6 +1529,14 @@ class SUMOGridRerouteEnv:
         Uses agent_vehicle_ids to map from SUMO vehicle IDs (returned by
         zone_manager) back to agent slot indices (0..n_agents-1).
         Background vehicles not tracked in any agent slot are ignored.
+
+        Fallback for replacement vehicles: when traci.vehicle.add() has been
+        called for a replacement vehicle (agent_active=True, vehicle_id set)
+        but the vehicle has not yet entered the SUMO network (absent from
+        getIDList()), we fall back to agent_last_rsu — the last confirmed RSU
+        for that slot.  This prevents the slot from being silently omitted from
+        the mask, which would make rsu_mask all-zero and zero out the gradient
+        path through local_mixer.
         """
         veh_to_rsu: Dict[str, int] = {}
         for rsu_id, veh_ids in zone_assignments.items():
@@ -1485,9 +1546,21 @@ class SUMOGridRerouteEnv:
         agents_per_rsu: Dict[int, List[int]] = {i: [] for i in range(self.zone_manager.n_rsus)}
         for agent_id in range(self.n_agents):
             vid = self.agent_vehicle_ids[agent_id]
-            if vid is not None and vid in veh_to_rsu:
+            if vid is None:
+                continue
+            if vid in veh_to_rsu:
+                # Normal path: vehicle is active in the simulation.
                 rsu_id = veh_to_rsu[vid]
+                self.agent_last_rsu[agent_id] = rsu_id  # keep cache fresh
                 agents_per_rsu[rsu_id].append(agent_id)
+            elif self.agent_active[agent_id]:
+                # Fallback: vehicle was just scheduled (depart=sim_time) and
+                # has not yet entered the SUMO network.  Use the last known RSU
+                # so the mask slot remains 1 and gradient can flow through
+                # local_mixer for this RSU.
+                fallback_rsu = self.agent_last_rsu[agent_id]
+                if fallback_rsu >= 0:
+                    agents_per_rsu[fallback_rsu].append(agent_id)
         return agents_per_rsu
 
     def get_zone_assignments(self) -> Dict:
@@ -1570,8 +1643,17 @@ class SUMOGridRerouteEnv:
         result = np.full(self.n_agents, -1, dtype=np.int32)
         for agent_id in range(self.n_agents):
             vid = self.agent_vehicle_ids[agent_id]
-            if vid is not None and vid in veh_to_rsu:
+            if vid is None:
+                continue
+            if vid in veh_to_rsu:
                 result[agent_id] = veh_to_rsu[vid]
+            elif self.agent_active[agent_id]:
+                # Fallback: mirrors _build_agents_per_rsu — replacement vehicle
+                # scheduled but not yet in SUMO. Use last confirmed RSU so
+                # zone_assignments stays consistent with agent_masks_per_rsu.
+                fallback_rsu = self.agent_last_rsu[agent_id]
+                if fallback_rsu >= 0:
+                    result[agent_id] = fallback_rsu
         return result
 
     def get_obs_size(self) -> int:
