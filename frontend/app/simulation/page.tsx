@@ -2428,7 +2428,6 @@ const SELFISH_LOS_REF = {
 
 // ─── Road Closure Data ────────────────────────────────────────────────────────
 // Source: road_closure_{low,med,high}_demand_results.txt — 50 evaluation episodes each.
-// stable_flow: only Selfish Routing results available; QMIX/CiViQ runs pending.
 const ROAD_CLOSURE_DATA = {
   free_flow: {
     selfish: { travelTime: 118.677, waitTime:  7.329, throughput: 1148.979, co2: 461.301, fuel: 19.909, returnMean:  -45897.02 },
@@ -2437,8 +2436,8 @@ const ROAD_CLOSURE_DATA = {
   },
   stable_flow: {
     selfish: { travelTime: 123.671, waitTime: 10.894, throughput: 1225.367, co2: 473.217, fuel: 20.410, returnMean:  -52861.11 },
-    qmix:    { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
-    civiq:   { travelTime: 0, waitTime: 0, throughput: 0, co2: 0, fuel: 0, returnMean: 0 },
+    qmix:    { travelTime: 149.170, waitTime: 17.459, throughput:  738.342, co2: 579.012, fuel: 24.976, returnMean:  -56640.98 },
+    civiq:   { travelTime: 149.170, waitTime: 17.459, throughput:  738.342, co2: 579.012, fuel: 24.976, returnMean:  -56640.98 },
   },
   forced_flow: {
     selfish: { travelTime: 123.076, waitTime: 10.621, throughput: 1231.696, co2: 470.914, fuel: 20.311, returnMean:  -52879.41 },
@@ -4264,9 +4263,8 @@ function RoadClosuresPage() {
     { key: 'forced_flow' as const, label: 'High Demand',      sub: '2,000 veh/hr' },
   ]
 
-  // stable_flow: only Selfish has results; QMIX/CiViQ pending
-  const hasPartialData = demandTab === 'stable_flow'
-  const hasData = !hasPartialData
+  const hasPartialData = false
+  const hasData = true
 
   const closureData = ROAD_CLOSURE_DATA[demandTab]
 
@@ -4392,10 +4390,7 @@ function RoadClosuresPage() {
               <div className="relative">
                 {/* Card header */}
                 <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-[14px] font-bold" style={{ color: c.tp }}>{algo.label}</h3>
-                    <span className="text-[10px]" style={{ color: c.ts }}>{algo.sublabel}</span>
-                  </div>
+                  <h3 className="text-[14px] font-bold" style={{ color: c.tp }}>{algo.label}</h3>
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
                     style={{ background: `${algo.color}18`, color: algo.color, border: `1px solid ${algo.color}40` }}>
                     {allZero ? 'No Data' : 'w/ Closure'}
@@ -4482,40 +4477,93 @@ function RoadClosuresPage() {
         })}
       </div>
 
-      {/* Road Closure Map Placeholder */}
-      <GlassCard className="p-5" style={{ border: `1px solid ${c.glassBorder}` }}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Road Closure Map</h3>
-          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
-            style={{ background: 'rgba(251,146,60,0.12)', color: '#FB923C', border: '1px solid rgba(251,146,60,0.3)' }}>
-            Low Demand · BGC Full
-          </span>
-        </div>
-        <div className="rounded-xl flex flex-col items-center justify-center gap-3 py-12"
-          style={{
-            border: `2px dashed ${c.divider}`,
-            background: c.itemBg,
-            minHeight: '220px',
-          }}>
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={c.tu} strokeWidth="1.5"
-            strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
-          </svg>
-          <p className="text-[13px] font-semibold" style={{ color: c.tm }}>Map image with closed edges</p>
-          <p className="text-[11px] text-center max-w-xs leading-relaxed" style={{ color: c.tu }}>
-            Place the road closure map image here. Closed edges should be highlighted on the BGC network.
-          </p>
-          <div className="flex gap-2 mt-1">
-            {['Edge A–B', 'Edge C–D', 'Edge E–F'].map(e => (
-              <span key={e} className="text-[9px] px-2 py-0.5 rounded-full font-semibold"
-                style={{ background: 'rgba(251,146,60,0.12)', color: '#FB923C', border: '1px solid rgba(251,146,60,0.25)' }}>
-                {e}
-              </span>
-            ))}
+      {/* Road Closure Heatmap + Info */}
+      {(() => {
+        const HEATMAP_SRCS: Record<typeof demandTab, string> = {
+          free_flow:   '/heatmap_output/blockages/blockage_heatmap_civiq-los-a_best_low_seed60.png',
+          stable_flow: '/heatmap_output/blockages/blockage_heatmap_civiq-los-c_best_med_seed61.png',
+          forced_flow: '/heatmap_output/blockages/blockage_heatmap_civiq-los-e_best_high_seed62.png',
+        }
+        const demandMeta = DEMAND_TABS.find(d => d.key === demandTab)!
+        return (
+          <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
+
+            {/* Heatmap — left */}
+            <GlassCard className="xl:col-span-2 p-5" style={{ border: `1px solid ${c.glassBorder}` }}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Road Closure Heatmap</h3>
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                  style={{ background: 'rgba(251,146,60,0.12)', color: '#FB923C', border: '1px solid rgba(251,146,60,0.3)' }}>
+                  {demandMeta.label}
+                </span>
+              </div>
+              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${c.glassBorder}` }}>
+                <img
+                  src={HEATMAP_SRCS[demandTab]}
+                  alt={`Road closure heatmap — ${demandMeta.label}`}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+            </GlassCard>
+
+            {/* Right side — stacked cards */}
+            <div className="xl:col-span-3 flex flex-col gap-4">
+
+              {/* Top card: Blockage Configuration */}
+              <GlassCard className="p-5" style={{ border: `1px solid ${c.glassBorder}` }}>
+                <h3 className="text-[13px] font-bold mb-3" style={{ color: c.tp }}>Blockage Configuration</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {([
+                    { label: 'Injection Probability', value: '10%',     sub: 'per simulation second'  },
+                    { label: 'Max Concurrent Edges',  value: '3',       sub: 'blocked simultaneously' },
+                    { label: 'Duration per Closure',  value: '30–60 s', sub: 'randomized per event'   },
+                    { label: 'Episodes Evaluated',    value: '50',      sub: 'random seed per episode' },
+                  ] as const).map(item => (
+                    <div key={item.label} className="p-3 rounded-xl" style={{ background: c.itemBg, border: `1px solid ${c.divider}` }}>
+                      <p className="text-[9px] font-semibold uppercase tracking-wider mb-1" style={{ color: c.tu }}>{item.label}</p>
+                      <p className="text-[15px] font-bold tabular-nums" style={{ color: c.tp }}>{item.value}</p>
+                      <p className="text-[9px]" style={{ color: c.tu }}>{item.sub}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] mt-3 leading-relaxed" style={{ color: c.tm }}>
+                  Edges are randomly selected from the BGC Full network at each simulation step. The heatmap shows closure frequency across all evaluation episodes.
+                </p>
+              </GlassCard>
+
+              {/* Bottom card: Findings */}
+              <GlassCard className="p-5 flex-1" style={{ border: `1px solid ${c.glassBorder}` }}>
+                <h3 className="text-[13px] font-bold mb-3" style={{ color: c.tp }}>Findings</h3>
+                <div className="space-y-3">
+                  {([
+                    {
+                      tag: 'Selfish Routing', tagColor: '#94A3B8',
+                      text: 'Maintains the lowest travel times under closure at low and moderate demand, benefiting from fewer congested vehicles and faster equilibrium rerouting.',
+                    },
+                    {
+                      tag: 'MARL Resilience', tagColor: '#06B6D4',
+                      text: 'At high demand, Mono-QMIX and CiViQ achieve significantly higher throughput (2,221 vs. 1,231 veh/hr) despite higher individual wait times, demonstrating cooperative advantage under congestion.',
+                    },
+                    {
+                      tag: 'CiViQ vs QMIX', tagColor: '#A78BFA',
+                      text: 'Both algorithms produce identical traffic KPIs under closure across all demand levels, reflecting equivalent learned routing policies evaluated on the same blockage scenario.',
+                    },
+                  ] as const).map(f => (
+                    <div key={f.tag} className="p-3.5 rounded-xl" style={{ background: c.itemBg, border: `1px solid ${c.divider}` }}>
+                      <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider mb-1.5"
+                        style={{ background: `${f.tagColor}1a`, color: f.tagColor, border: `1px solid ${f.tagColor}33` }}>
+                        {f.tag}
+                      </span>
+                      <p className="text-[11px] leading-relaxed" style={{ color: c.tm }}>{f.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </GlassCard>
+
+            </div>
           </div>
-        </div>
-      </GlassCard>
+        )
+      })()}
 
     </div>
   )
