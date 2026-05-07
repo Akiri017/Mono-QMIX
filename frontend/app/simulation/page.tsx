@@ -3169,13 +3169,13 @@ function ExportButton({ algo, selfishTimeseries = null }: {
       'Algorithm', 'Label',
       'Travel Time (min)', 'Wait Time (sec)', 'Throughput (veh/hr)',
       'Real-time Factor (x)', 'CO2 (g/km)', 'Fuel (L/100km)',
-      'Decision Latency (ms)', 'Best Episode', 'Cumulative Reward',
+      'Best Episode', 'Cumulative Reward',
     ]
     const row = [
       algo.id, algo.label,
       algo.travelTime, algo.waitTime, algo.throughput,
       algo.speed, algo.co2, algo.fuel,
-      algo.computeTime, algo.convergence ?? 'N/A', algo.reward ?? 'N/A',
+      algo.convergence ?? 'N/A', algo.reward ?? 'N/A',
     ]
     downloadFile(
       `civiq_${algo.id}_kpi.csv`,
@@ -3192,7 +3192,6 @@ function ExportButton({ algo, selfishTimeseries = null }: {
       'Travel Time (min)', 'Travel Time MA',
       'Wait Time (sec)',   'Wait Time MA',
       'Throughput (veh/hr)', 'Throughput MA',
-      'Speed (x)', 'Speed MA',
     ]
     const n = algo.episodes.travelTime.length
     const rows = Array.from({ length: n }, (_, i) => [
@@ -3200,7 +3199,6 @@ function ExportButton({ algo, selfishTimeseries = null }: {
       algo.episodes.travelTime[i].value, algo.episodes.travelTime[i].ma,
       algo.episodes.waitTime[i]?.value ?? '', algo.episodes.waitTime[i]?.ma ?? '',
       algo.episodes.throughput[i]?.value ?? '', algo.episodes.throughput[i]?.ma ?? '',
-      algo.episodes.speed[i]?.value ?? '', algo.episodes.speed[i]?.ma ?? '',
     ])
     downloadFile(
       `civiq_${algo.id}_episodes.csv`,
@@ -3239,29 +3237,6 @@ function ExportButton({ algo, selfishTimeseries = null }: {
     close()
   }
 
-  // ── CSV: traffic analytics (queue / density / congestion) — learning-based algos ──
-  const exportTrafficCsv = () => {
-    const headers = [
-      'Step',
-      'Queue Int-A (veh)', 'Queue Int-B (veh)', 'Queue Int-C (veh)', 'Queue Int-D (veh)',
-      'Occupancy (%)', 'Occupancy MA',
-      'Congestion Index', 'Congestion MA',
-    ]
-    const n = algo.queue.length
-    const rows = Array.from({ length: n }, (_, i) => [
-      algo.queue[i].step,
-      algo.queue[i].int1, algo.queue[i].int2, algo.queue[i].int3, algo.queue[i].int4,
-      algo.density[i]?.density ?? '', algo.density[i]?.ma ?? '',
-      algo.congestion[i]?.index ?? '', algo.congestion[i]?.ma ?? '',
-    ])
-    downloadFile(
-      `civiq_${algo.id}_traffic.csv`,
-      [headers.join(','), ...rows.map(r => r.join(','))].join('\n'),
-      'text/csv;charset=utf-8;',
-    )
-    close()
-  }
-
   // ── JSON: full dump ──
   const exportJson = () => {
     const payload: Record<string, unknown> = {
@@ -3269,7 +3244,7 @@ function ExportButton({ algo, selfishTimeseries = null }: {
       algorithm: { id: algo.id, label: algo.label, sublabel: algo.sublabel, rank: algo.rank },
       kpi: {
         travelTime: algo.travelTime, waitTime: algo.waitTime, throughput: algo.throughput,
-        speed: algo.speed, co2: algo.co2, fuel: algo.fuel, computeTime: algo.computeTime,
+        speed: algo.speed, co2: algo.co2, fuel: algo.fuel,
         bestEpisode: algo.convergence, cumulativeReward: algo.reward,
       },
       changes: algo.changes,
@@ -3281,7 +3256,6 @@ function ExportButton({ algo, selfishTimeseries = null }: {
     } else {
       payload.episodes = algo.episodes
       payload.system = algo.system
-      payload.traffic = { queue: algo.queue, density: algo.density, congestion: algo.congestion }
       payload.marl = algo.marl
     }
     downloadFile(
@@ -3302,12 +3276,7 @@ function ExportButton({ algo, selfishTimeseries = null }: {
         : []
       : [{ label: 'Episode Series', sub: 'Per-episode KPI trend data', tag: 'CSV', action: exportEpisodesCsv }]
     ),
-    // Traffic data: only for learning-based algos (queue/density/congestion are synthetic for selfish)
-    ...(!isSelfish
-      ? [{ label: 'Traffic Data', sub: 'Queue, occupancy & congestion', tag: 'CSV', action: exportTrafficCsv }]
-      : []
-    ),
-    ...(algo.system.training.length
+    ...(!isSelfish && algo.system.training.length
       ? [{ label: 'Training Curve', sub: 'Reward per training episode', tag: 'CSV', action: exportTrainingCsv }]
       : []),
     { label: 'Full Export', sub: 'All metrics and time series', tag: 'JSON', action: exportJson },
