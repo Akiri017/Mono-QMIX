@@ -29,24 +29,24 @@ Evaluation Results
 ============================================================
 Policy       : C:\Users\Ianne\Mono_QMIX\results\mono-qmix\mono-qmix-los-a\seed_1801\best
 Episodes     : 50
-Mean Return  : -48064.06 ± 1061.27
+Mean Return  : -48176.05 ± 936.35
 
 --- Traffic Metrics ---
-  Mean Travel Time (s)               : 150.950 ± 41.194
-  Mean Waiting Time (s)              : 12.207 ± 3.475
-  Network Throughput (veh/h)         : 605.850 ± 214.663
-  Real-Time Factor                   : 75.686 ± 20.011
-  CO2 Emissions (g/episode)          : 143066.871 ± 2117.346
-  Fuel Consumption (ml/episode)      : 61755.502 ± 913.091
-  CO2 Emissions (g/km)               : 582.907 ± 21.291
-  Fuel Consumption (L/100km)         : 25.161 ± 0.921
-  Avg Route Length (m)               : 923.115 ± 7.088
-  Total Stops                        : 21612.640 ± 1705.180
-  Arrival Rate                       : 0.767 ± 0.049
-  Controlled Mean Travel Time (s)    : 162.100 ± 58.764
-  CPU Usage Mean (%)                 : 312.358 ± 47.182
-  CPU Usage Peak (%)                 : 4490.016 ± 1019.531
-  Process CPU Time (s)               : 1024.216 ± 544.247
+  Mean Travel Time (s)               : 141.891 ± 43.381
+  Mean Waiting Time (s)              : 11.831 ± 3.769
+  Network Throughput (veh/h)         : 650.086 ± 241.172
+  Real-Time Factor                   : 72.605 ± 11.346
+  CO2 Emissions (g/episode)          : 142782.876 ± 2222.525
+  Fuel Consumption (ml/episode)      : 61632.340 ± 958.243
+  CO2 Emissions (g/km)               : 591.881 ± 23.255
+  Fuel Consumption (L/100km)         : 25.548 ± 1.006
+  Avg Route Length (m)               : 920.873 ± 7.221
+  Total Stops                        : 22051.380 ± 1672.716
+  Arrival Rate                       : 0.776 ± 0.053
+  Controlled Mean Travel Time (s)    : 148.683 ± 59.974
+  CPU Usage Mean (%)                 : 319.313 ± 32.402
+  CPU Usage Peak (%)                 : 4632.572 ± 642.620
+  Process CPU Time (s)               : 1019.729 ± 571.665
 ===============================================================================
 Civiq:
 ============================================================
