@@ -29,24 +29,24 @@ Evaluation Results
 ============================================================
 Policy       : C:\Users\Ianne\Mono_QMIX\results\mono-qmix\mono-qmix-los-c\seed_1802\best
 Episodes     : 50
-Mean Return  : -56640.98 ± 1351.11
+Mean Return  : -57000.48 ± 1495.02
 
 --- Traffic Metrics ---
-  Mean Travel Time (s)               : 149.170 ± 34.719
-  Mean Waiting Time (s)              : 17.459 ± 4.209
-  Network Throughput (veh/h)         : 738.342 ± 239.709
-  Real-Time Factor                   : 65.075 ± 11.093
-  CO2 Emissions (g/episode)          : 170742.878 ± 3126.786
-  Fuel Consumption (ml/episode)      : 73649.788 ± 1348.547
-  CO2 Emissions (g/km)               : 579.012 ± 20.304
-  Fuel Consumption (L/100km)         : 24.976 ± 0.876
-  Avg Route Length (m)               : 946.124 ± 14.155
-  Total Stops                        : 25506.260 ± 1823.929
-  Arrival Rate                       : 0.769 ± 0.046
-  Controlled Mean Travel Time (s)    : 164.337 ± 57.379
-  CPU Usage Mean (%)                 : 307.934 ± 35.319
-  CPU Usage Peak (%)                 : 3366.566 ± 626.262
-  Process CPU Time (s)               : 1092.328 ± 635.494
+  Mean Travel Time (s)               : 129.503 ± 38.469
+  Mean Waiting Time (s)              : 15.526 ± 4.657
+  Network Throughput (veh/h)         : 840.839 ± 257.058
+  Real-Time Factor                   : 80.117 ± 8.023
+  CO2 Emissions (g/episode)          : 170859.144 ± 3082.889
+  Fuel Consumption (ml/episode)      : 73697.755 ± 1330.320
+  CO2 Emissions (g/km)               : 587.801 ± 23.344
+  Fuel Consumption (L/100km)         : 25.355 ± 1.008
+  Avg Route Length (m)               : 932.302 ± 7.156
+  Total Stops                        : 26078.740 ± 2191.310
+  Arrival Rate                       : 0.788 ± 0.051
+  Controlled Mean Travel Time (s)    : 132.054 ± 62.634
+  CPU Usage Mean (%)                 : 345.762 ± 16.976
+  CPU Usage Peak (%)                 : 4098.824 ± 553.521
+  Process CPU Time (s)               : 1029.603 ± 591.003
 
 
 Civiq:
