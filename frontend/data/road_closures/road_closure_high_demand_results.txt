@@ -29,24 +29,24 @@ Evaluation Results
 ============================================================
 Policy       : C:\Users\Ianne\Mono_QMIX\results\mono-qmix\mono-qmix-los-e\seed_1803\best
 Episodes     : 50
-Mean Return  : -96035.50 ± 5763.58
+Mean Return  : -96019.92 ± 4306.74
 
 --- Traffic Metrics ---
-  Mean Travel Time (s)               : 126.362 ± 12.373
-  Mean Waiting Time (s)              : 21.547 ± 1.691
-  Network Throughput (veh/h)         : 2221.930 ± 284.876
-  Real-Time Factor                   : 29.300 ± 12.034
-  CO2 Emissions (g/episode)          : 312710.009 ± 17373.195
-  Fuel Consumption (ml/episode)      : 134501.645 ± 7482.804
-  CO2 Emissions (g/km)               : 490.883 ± 10.962
-  Fuel Consumption (L/100km)         : 21.114 ± 0.472
-  Avg Route Length (m)               : 942.425 ± 15.646
-  Total Stops                        : 30695.840 ± 2880.806
-  Arrival Rate                       : 0.863 ± 0.012
-  Controlled Mean Travel Time (s)    : 97.997 ± 20.740
-  CPU Usage Mean (%)                 : 151.329 ± 67.824
-  CPU Usage Peak (%)                 : 1209.640 ± 339.810
-  Process CPU Time (s)               : 1198.395 ± 673.923
+  Mean Travel Time (s)               : 125.943 ± 10.707
+  Mean Waiting Time (s)              : 21.171 ± 1.493
+  Network Throughput (veh/h)         : 2192.296 ± 223.633
+  Real-Time Factor                   : 77.327 ± 5.162
+  CO2 Emissions (g/episode)          : 309083.678 ± 11196.811
+  Fuel Consumption (ml/episode)      : 132939.819 ± 4822.933
+  CO2 Emissions (g/km)               : 493.650 ± 9.443
+  Fuel Consumption (L/100km)         : 21.232 ± 0.407
+  Avg Route Length (m)               : 934.655 ± 14.414
+  Total Stops                        : 31303.160 ± 2414.892
+  Arrival Rate                       : 0.858 ± 0.012
+  Controlled Mean Travel Time (s)    : 99.697 ± 17.393
+  CPU Usage Mean (%)                 : 361.623 ± 10.813
+  CPU Usage Peak (%)                 : 2283.130 ± 251.407
+  Process CPU Time (s)               : 1152.116 ± 655.284
 
 Civiq:
 ============================================================
