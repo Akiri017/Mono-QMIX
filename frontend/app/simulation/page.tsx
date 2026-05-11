@@ -2903,6 +2903,20 @@ function BoxStripPanel({ values, color, label, unit, fmt, info }: {
 }) {
   const c = useDashColors()
   const stats = evalBoxStats(values)
+  const [zoom, setZoom] = useState(1)
+  const svgRef = useRef<SVGSVGElement>(null)
+
+  useEffect(() => {
+    const el = svgRef.current
+    if (!el) return
+    const handler = (e: WheelEvent) => {
+      e.preventDefault()
+      setZoom(z => Math.min(4, Math.max(0.3, z * (e.deltaY < 0 ? 1.15 : 1 / 1.15))))
+    }
+    el.addEventListener('wheel', handler, { passive: false })
+    return () => el.removeEventListener('wheel', handler)
+  }, [])
+
   if (!stats) return null
 
   const W = 160, H = 152
@@ -2911,16 +2925,30 @@ function BoxStripPanel({ values, color, label, unit, fmt, info }: {
   const cx = mL + (W - mL - mR) / 2
   const bHW = 15
 
+  // Base Y domain (unzoomed)
   const range = stats.wHi - stats.wLo
   const pad = range * 0.15 || 0.5
   const yMin = stats.wLo - pad, yMax = stats.wHi + pad
-  const ys = (v: number) => mT + plotH - ((v - yMin) / (yMax - yMin)) * plotH
 
-  const nTicks = 4
-  const ticks = Array.from({ length: nTicks + 1 }, (_, i) => yMin + (yMax - yMin) * i / nTicks)
+  // Zoomed Y domain — zoom in narrows the visible range, zoom out widens it
+  const yCenter = (yMin + yMax) / 2
+  const halfRange = (yMax - yMin) / 2
+  const zYMin = yCenter - halfRange / zoom
+  const zYMax = yCenter + halfRange / zoom
 
-  // Deterministic horizontal jitter — index-based, no randomness
+  // Y scale maps data values to fixed screen positions based on zoomed domain
+  const ys = (v: number) => mT + plotH - ((v - zYMin) / (zYMax - zYMin)) * plotH
+
+  // Guidelines: fixed screen positions, values derived from zoomed domain
+  const nTicks = 6
+  const guidelines = Array.from({ length: nTicks + 1 }, (_, i) => ({
+    y: mT + plotH * i / nTicks,                              // fixed screen Y
+    val: zYMax - (zYMax - zYMin) * i / nTicks,               // value at that position
+  }))
+
   const det = (i: number) => ((i * 2654435761) >>> 0) / 0xffffffff * 32 - 16
+  const isZoomed = Math.abs(zoom - 1) > 0.01
+  const clipId = `bsp-clip-${label.replace(/\s+/g, '')}`
 
   const gc = c.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
   const ac = c.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
@@ -2934,43 +2962,66 @@ function BoxStripPanel({ values, color, label, unit, fmt, info }: {
           <span className="text-[12px] font-bold" style={{ color: c.tp }}>{label}</span>
           <span className="text-[10px] ml-2" style={{ color: c.tu }}>{unit}</span>
         </div>
-        {info && <InfoBubble side="right" text={info} />}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {isZoomed && (
+            <button onClick={() => setZoom(1)}
+              className="text-[9px] px-1.5 py-0.5 rounded"
+              style={{ background: 'rgba(255,255,255,0.08)', color: c.tu, border: `1px solid ${c.divider}` }}>
+              Reset
+            </button>
+          )}
+          {info && <InfoBubble side="right" text={info} />}
+        </div>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%">
-        {ticks.map((t, i) => (
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} width="100%"
+        style={{ cursor: zoom > 1 ? 'zoom-out' : 'zoom-in' }}>
+        <defs>
+          <clipPath id={clipId}>
+            <rect x={mL} y={mT} width={W - mL - mR} height={plotH} />
+          </clipPath>
+        </defs>
+
+        {/* Static guidelines — screen positions never move, only label values update */}
+        {guidelines.map(({ y, val }, i) => (
           <g key={i}>
-            <line x1={mL} x2={W - mR} y1={ys(t)} y2={ys(t)} stroke={gc} strokeWidth={0.6} />
-            <line x1={mL - 3} x2={mL} y1={ys(t)} y2={ys(t)} stroke={ac} strokeWidth={0.6} />
-            <text x={mL - 5} y={ys(t)} textAnchor="end" dominantBaseline="middle" fontSize={7} fill={tc}>{fmt(t)}</text>
+            <line x1={mL} x2={W - mR} y1={y} y2={y} stroke={gc} strokeWidth={0.6} />
+            <line x1={mL - 3} x2={mL} y1={y} y2={y} stroke={ac} strokeWidth={0.6} />
+            <text x={mL - 5} y={y} textAnchor="end" dominantBaseline="middle" fontSize={7} fill={tc}>
+              {fmt(val)}
+            </text>
           </g>
         ))}
         <line x1={mL} x2={mL} y1={mT} y2={mT + plotH} stroke={ac} strokeWidth={0.6} />
 
-        {/* Whiskers */}
-        <line x1={cx} x2={cx} y1={ys(stats.wHi)} y2={ys(stats.q3)} stroke={color} strokeWidth={1} strokeOpacity={0.45} />
-        <line x1={cx} x2={cx} y1={ys(stats.q1)} y2={ys(stats.wLo)} stroke={color} strokeWidth={1} strokeOpacity={0.45} />
-        <line x1={cx - 7} x2={cx + 7} y1={ys(stats.wHi)} y2={ys(stats.wHi)} stroke={color} strokeWidth={1} strokeOpacity={0.6} />
-        <line x1={cx - 7} x2={cx + 7} y1={ys(stats.wLo)} y2={ys(stats.wLo)} stroke={color} strokeWidth={1} strokeOpacity={0.6} />
+        {/* Zoomable plot layer — clipped to the plot area */}
+        <g clipPath={`url(#${clipId})`}>
+          {/* Whiskers */}
+          <line x1={cx} x2={cx} y1={ys(stats.wHi)} y2={ys(stats.q3)} stroke={color} strokeWidth={1} strokeOpacity={0.45} />
+          <line x1={cx} x2={cx} y1={ys(stats.q1)} y2={ys(stats.wLo)} stroke={color} strokeWidth={1} strokeOpacity={0.45} />
+          <line x1={cx - 7} x2={cx + 7} y1={ys(stats.wHi)} y2={ys(stats.wHi)} stroke={color} strokeWidth={1} strokeOpacity={0.6} />
+          <line x1={cx - 7} x2={cx + 7} y1={ys(stats.wLo)} y2={ys(stats.wLo)} stroke={color} strokeWidth={1} strokeOpacity={0.6} />
 
-        {/* IQR box */}
-        <rect x={cx - bHW} y={ys(stats.q3)} width={bHW * 2}
-          height={Math.max(1, ys(stats.q1) - ys(stats.q3))}
-          fill={boxFill} stroke={color} strokeWidth={1} strokeOpacity={0.7} rx={2} />
+          {/* IQR box */}
+          <rect x={cx - bHW} y={ys(stats.q3)} width={bHW * 2}
+            height={Math.max(1, ys(stats.q1) - ys(stats.q3))}
+            fill={boxFill} stroke={color} strokeWidth={1} strokeOpacity={0.7} rx={2} />
 
-        {/* Median line */}
-        <line x1={cx - bHW} x2={cx + bHW} y1={ys(stats.median)} y2={ys(stats.median)} stroke={color} strokeWidth={2} />
+          {/* Median line */}
+          <line x1={cx - bHW} x2={cx + bHW} y1={ys(stats.median)} y2={ys(stats.median)} stroke={color} strokeWidth={2} />
 
-        {/* Individual episode dots */}
-        {values.map((v, i) => (
-          <circle key={i} cx={cx + det(i)} cy={ys(v)} r={1.8} fill={color} fillOpacity={0.4} />
-        ))}
+          {/* Individual episode dots */}
+          {values.map((v, i) => (
+            <circle key={i} cx={cx + det(i)} cy={ys(v)} r={1.8} fill={color} fillOpacity={0.4} />
+          ))}
 
-        {/* Mean diamond */}
-        <polygon
-          points={`${cx},${ys(stats.mean) - 4} ${cx + 4},${ys(stats.mean)} ${cx},${ys(stats.mean) + 4} ${cx - 4},${ys(stats.mean)}`}
-          fill={color} fillOpacity={0.95}
-        />
+          {/* Mean diamond */}
+          <polygon
+            points={`${cx},${ys(stats.mean) - 4} ${cx + 4},${ys(stats.mean)} ${cx},${ys(stats.mean) + 4} ${cx - 4},${ys(stats.mean)}`}
+            fill={color} fillOpacity={0.95}
+          />
+        </g>
 
+        {/* Static episode count label */}
         <text x={(mL + W - mR) / 2} y={H - 3} textAnchor="middle" fontSize={7.5} fill={tc}>
           {values.length} eval episodes
         </text>
