@@ -4080,28 +4080,6 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
             Loading data…
           </span>
         )}
-        {/* Real-data badge for monolithic QMIX */}
-        {isQmix && (
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-            style={{
-              background: qmixLoading ? c.itemBg : qmixData ? 'rgba(167,139,250,0.15)' : c.itemBg,
-              border: qmixLoading ? `1px solid ${c.divider}` : qmixData ? '1px solid rgba(167,139,250,0.4)' : `1px solid ${c.divider}`,
-              color: qmixLoading ? c.tm : qmixData ? '#A78BFA' : c.tm,
-            }}>
-            {qmixLoading ? 'Loading data…' : qmixData ? `${trafficScale === 'stable_flow' ? 'Moderate Demand' : trafficScale === 'forced_flow' ? 'High Demand' : 'Low Demand'}` : 'Static Data'}
-          </span>
-        )}
-        {/* Real-data badge for CiViQ */}
-        {isCiviq && (
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
-            style={{
-              background: civiqLoading ? c.itemBg : civiqData ? 'rgba(56,189,248,0.15)' : c.itemBg,
-              border: civiqLoading ? `1px solid ${c.divider}` : civiqData ? '1px solid rgba(56,189,248,0.4)' : `1px solid ${c.divider}`,
-              color: civiqLoading ? c.tm : civiqData ? '#38BDF8' : c.tm,
-            }}>
-            {civiqLoading ? 'Loading data…' : civiqData ? `${trafficScale === 'stable_flow' ? 'Moderate Demand' : trafficScale === 'forced_flow' ? 'High Demand' : 'Low Demand'}` : 'Static Data'}
-          </span>
-        )}
       </div>
       <ExportButton algo={displayAlgo} selfishTimeseries={isSelfish ? realTimeseries : null} />
     </div>
