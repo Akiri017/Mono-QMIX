@@ -2904,6 +2904,7 @@ function BoxStripPanel({ values, color, label, unit, fmt, info }: {
   const c = useDashColors()
   const stats = evalBoxStats(values)
   const [zoom, setZoom] = useState(1)
+  const [hovered, setHovered] = useState<{ val: number; idx: number } | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
@@ -3011,7 +3012,13 @@ function BoxStripPanel({ values, color, label, unit, fmt, info }: {
 
           {/* Individual episode dots */}
           {values.map((v, i) => (
-            <circle key={i} cx={cx + det(i)} cy={ys(v)} r={1.8} fill={color} fillOpacity={0.4} />
+            <circle key={i} cx={cx + det(i)} cy={ys(v)}
+              r={hovered?.idx === i ? 3 : 1.8}
+              fill={color} fillOpacity={hovered?.idx === i ? 0.9 : 0.4}
+              style={{ cursor: 'crosshair' }}
+              onMouseEnter={() => setHovered({ val: v, idx: i })}
+              onMouseLeave={() => setHovered(null)}
+            />
           ))}
 
           {/* Mean diamond */}
@@ -3020,6 +3027,32 @@ function BoxStripPanel({ values, color, label, unit, fmt, info }: {
             fill={color} fillOpacity={0.95}
           />
         </g>
+
+        {/* Hover tooltip — outside clip so it's never cut off */}
+        {hovered !== null && (() => {
+          const ty = ys(hovered.val)
+          if (ty < mT - 2 || ty > mT + plotH + 2) return null
+          const tx = cx + det(hovered.idx)
+          const ttW = 58, ttH = 22
+          const ttX = Math.min(W - mR - ttW, Math.max(mL, tx - ttW / 2))
+          const showAbove = ty - mT > plotH * 0.45
+          const ttY = showAbove ? ty - ttH - 5 : ty + 6
+          return (
+            <g style={{ pointerEvents: 'none' }}>
+              <rect x={ttX} y={ttY} width={ttW} height={ttH} rx={3}
+                fill={c.tooltipBg} stroke={c.tooltipBorder} strokeWidth={0.6}
+                style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))' }} />
+              <text x={ttX + ttW / 2} y={ttY + 8} textAnchor="middle"
+                fontSize={6.5} fill={c.tu}>
+                Ep. {hovered.idx + 1}
+              </text>
+              <text x={ttX + ttW / 2} y={ttY + 16} textAnchor="middle"
+                fontSize={7.5} fill={c.tooltipColor} fontWeight="600">
+                {fmt(hovered.val)} {unit}
+              </text>
+            </g>
+          )
+        })()}
 
         {/* Static episode count label */}
         <text x={(mL + W - mR) / 2} y={H - 3} textAnchor="middle" fontSize={7.5} fill={tc}>
