@@ -2875,69 +2875,154 @@ function CpuStatsCard({ algo, evalCpuMeans, onViewDetail }: {
   )
 }
 
-// 1 — Training Curve
-function TrainingCurveChart({ algo }: { algo: AlgoData }) {
+// ─── Evaluation Performance Distribution ──────────────────────────────────────
+
+function evalBoxStats(values: number[]) {
+  if (values.length < 4) return null
+  const sorted = [...values].sort((a, b) => a - b)
+  const n = sorted.length
+  const at = (p: number) => {
+    const i = p * (n - 1); const lo = Math.floor(i), hi = Math.ceil(i)
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo)
+  }
+  const q1 = at(0.25), median = at(0.5), q3 = at(0.75)
+  const iqr = q3 - q1
+  const wLo = sorted.find(v => v >= q1 - 1.5 * iqr) ?? sorted[0]
+  const wHi = [...sorted].reverse().find(v => v <= q3 + 1.5 * iqr) ?? sorted[n - 1]
+  const mean = sorted.reduce((a, b) => a + b, 0) / n
+  return { values, q1, median, q3, wLo, wHi, mean }
+}
+
+function BoxStripPanel({ values, color, label, unit, fmt, info }: {
+  values: number[]
+  color: string
+  label: string
+  unit: string
+  fmt: (v: number) => string
+  info?: string
+}) {
   const c = useDashColors()
-  const data = algo.system.training
-  const maLineColor = c.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(55,65,81,0.7)'
-  const confFill = c.isDark ? '#040916' : '#dde9f8'
-  if (!data.length) return (
-    <GlassCard className="p-5 flex flex-col gap-2 col-span-2">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-[13px] font-bold" style={{ color: c.tp }}>Training Curve</span>
-        <span className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'rgba(248,113,113,0.12)', color: '#F87171', border: '1px solid rgba(248,113,113,0.25)' }}>No training phase</span>
+  const stats = evalBoxStats(values)
+  if (!stats) return null
+
+  const W = 160, H = 152
+  const mL = 42, mR = 8, mT = 6, mB = 18
+  const plotH = H - mT - mB
+  const cx = mL + (W - mL - mR) / 2
+  const bHW = 15
+
+  const range = stats.wHi - stats.wLo
+  const pad = range * 0.15 || 0.5
+  const yMin = stats.wLo - pad, yMax = stats.wHi + pad
+  const ys = (v: number) => mT + plotH - ((v - yMin) / (yMax - yMin)) * plotH
+
+  const nTicks = 4
+  const ticks = Array.from({ length: nTicks + 1 }, (_, i) => yMin + (yMax - yMin) * i / nTicks)
+
+  // Deterministic horizontal jitter — index-based, no randomness
+  const det = (i: number) => ((i * 2654435761) >>> 0) / 0xffffffff * 32 - 16
+
+  const gc = c.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+  const ac = c.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
+  const tc = c.isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)'
+  const boxFill = color + '20'
+
+  return (
+    <GlassCard className="p-4 flex flex-col gap-2 min-w-0">
+      <div className="flex items-start gap-2">
+        <div className="flex-1">
+          <span className="text-[12px] font-bold" style={{ color: c.tp }}>{label}</span>
+          <span className="text-[10px] ml-2" style={{ color: c.tu }}>{unit}</span>
+        </div>
+        {info && <InfoBubble side="right" text={info} />}
       </div>
-      <p className="text-[12px]" style={{ color: c.tm }}>
-        {algo.id === 'selfish'
-          ? 'Selfish Routing is a rule-based baseline — it requires no training and has no reward curve.'
-          : 'Training curve data is not available for this scenario.'}
-      </p>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%">
+        {ticks.map((t, i) => (
+          <g key={i}>
+            <line x1={mL} x2={W - mR} y1={ys(t)} y2={ys(t)} stroke={gc} strokeWidth={0.6} />
+            <line x1={mL - 3} x2={mL} y1={ys(t)} y2={ys(t)} stroke={ac} strokeWidth={0.6} />
+            <text x={mL - 5} y={ys(t)} textAnchor="end" dominantBaseline="middle" fontSize={7} fill={tc}>{fmt(t)}</text>
+          </g>
+        ))}
+        <line x1={mL} x2={mL} y1={mT} y2={mT + plotH} stroke={ac} strokeWidth={0.6} />
+
+        {/* Whiskers */}
+        <line x1={cx} x2={cx} y1={ys(stats.wHi)} y2={ys(stats.q3)} stroke={color} strokeWidth={1} strokeOpacity={0.45} />
+        <line x1={cx} x2={cx} y1={ys(stats.q1)} y2={ys(stats.wLo)} stroke={color} strokeWidth={1} strokeOpacity={0.45} />
+        <line x1={cx - 7} x2={cx + 7} y1={ys(stats.wHi)} y2={ys(stats.wHi)} stroke={color} strokeWidth={1} strokeOpacity={0.6} />
+        <line x1={cx - 7} x2={cx + 7} y1={ys(stats.wLo)} y2={ys(stats.wLo)} stroke={color} strokeWidth={1} strokeOpacity={0.6} />
+
+        {/* IQR box */}
+        <rect x={cx - bHW} y={ys(stats.q3)} width={bHW * 2}
+          height={Math.max(1, ys(stats.q1) - ys(stats.q3))}
+          fill={boxFill} stroke={color} strokeWidth={1} strokeOpacity={0.7} rx={2} />
+
+        {/* Median line */}
+        <line x1={cx - bHW} x2={cx + bHW} y1={ys(stats.median)} y2={ys(stats.median)} stroke={color} strokeWidth={2} />
+
+        {/* Individual episode dots */}
+        {values.map((v, i) => (
+          <circle key={i} cx={cx + det(i)} cy={ys(v)} r={1.8} fill={color} fillOpacity={0.4} />
+        ))}
+
+        {/* Mean diamond */}
+        <polygon
+          points={`${cx},${ys(stats.mean) - 4} ${cx + 4},${ys(stats.mean)} ${cx},${ys(stats.mean) + 4} ${cx - 4},${ys(stats.mean)}`}
+          fill={color} fillOpacity={0.95}
+        />
+
+        <text x={(mL + W - mR) / 2} y={H - 3} textAnchor="middle" fontSize={7.5} fill={tc}>
+          {values.length} eval episodes
+        </text>
+      </svg>
+
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-1">
+          <svg width="12" height="6"><line x1="0" y1="3" x2="12" y2="3" stroke={color} strokeWidth="2" /></svg>
+          <span className="text-[9px]" style={{ color: c.tu }}>Median</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <svg width="8" height="8"><polygon points="4,0 8,4 4,8 0,4" fill={color} /></svg>
+          <span className="text-[9px]" style={{ color: c.tu }}>Mean</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-[10px] h-[8px] rounded-sm" style={{ background: boxFill, border: `1px solid ${color}` }} />
+          <span className="text-[9px]" style={{ color: c.tu }}>IQR (Q1–Q3)</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <svg width="6" height="6"><circle cx="3" cy="3" r="2" fill={color} fillOpacity={0.4} /></svg>
+          <span className="text-[9px]" style={{ color: c.tu }}>Episodes</span>
+        </div>
+      </div>
     </GlassCard>
   )
+}
+
+function EvalDeviationCard({ algo }: { algo: AlgoData }) {
+  const c = useDashColors()
+  const tt = algo.episodes.travelTime.map(p => p.value / 60)
+  const wt = algo.episodes.waitTime.map(p => p.value)
+  const th = algo.episodes.throughput.map(p => p.value)
+  if (!tt.length) return null
   return (
-    <GlassCard className="p-5 flex flex-col gap-3 col-span-2">
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="text-[13px] font-bold" style={{ color: c.tp }}>Training Curve</span>
-          <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>
-            Cumulative reward per episode · shaded area = seed confidence band
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          {[
-            { color: algo.color, label: 'Mean reward' },
-            { color: maLineColor, label: 'Moving avg.', dashed: true },
-          ].map(({ color, label, dashed }) => (
-            <div key={label} className="flex items-center gap-1.5">
-              <svg width="20" height="8"><line x1="0" y1="4" x2="20" y2="4" stroke={color} strokeWidth="2" strokeDasharray={dashed ? '4 2' : undefined} /></svg>
-              <span className="text-[10px]" style={{ color: c.tm }}>{label}</span>
-            </div>
-          ))}
-          <div className="flex items-center gap-1.5">
-            <div className="w-4 h-3 rounded-sm" style={{ background: algo.color, opacity: 0.18 }} />
-            <span className="text-[10px]" style={{ color: c.tm }}>Conf. band</span>
-          </div>
-        </div>
+    <>
+      <div className="flex items-center gap-3">
+        <span className="text-[13px] font-bold" style={{ color: c.ts }}>Evaluation Performance Distribution</span>
+        <InfoBubble text="Each chart shows how consistently the algorithm performed across all evaluation episodes. The box covers the middle 50% of results (IQR). The solid line is the median, the diamond is the mean — if they differ, the distribution is skewed. Whiskers extend to the furthest non-outlier value (1.5×IQR). Dots beyond the whiskers are outlier episodes. A narrow box with tightly clustered dots means reliable performance; a wide box signals high run-to-run variance." />
+        <div className="flex-1 h-px" style={{ background: c.divider }} />
       </div>
-      <ResponsiveContainer width="100%" height={200}>
-        <ComposedChart data={data} margin={{ top: 4, right: 12, left: 0, bottom: 20 }}>
-          <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
-          <XAxis dataKey="episode" tick={c.chartAxis} tickLine={c.chartTickLine} axisLine={c.chartAxisLine}
-            label={{ value: 'Episode', position: 'insideBottom', offset: -12, fill: c.chartLabel, fontSize: 11 }}
-            interval={Math.floor(data.length / 8)} />
-          <YAxis tick={c.chartAxis} tickLine={c.chartTickLine} axisLine={c.chartAxisLine} width={52}
-            label={{ value: 'Reward', angle: -90, position: 'insideLeft', offset: 14, fill: c.chartLabel, fontSize: 11 }} />
-          <Tooltip content={<ChartTooltip xLabel="Ep." rows={[
-            { key: 'reward', label: 'Reward', color: algo.color, unit: '' },
-            { key: 'ma',     label: 'MA-10',  color: maLineColor, unit: '' },
-          ]} />} />
-          <Area type="monotone" dataKey="hi" stroke="none" fill={algo.color} fillOpacity={0.14} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-          <Area type="monotone" dataKey="lo" stroke="none" fill={confFill} fillOpacity={1} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-          <Line type="monotone" dataKey="reward" stroke={algo.color} strokeWidth={1.5} dot={false} activeDot={{ r: 3 }} strokeOpacity={0.85} isAnimationActive={false} />
-          <Line type="monotone" dataKey="ma" stroke={maLineColor} strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </GlassCard>
+      <div className="grid grid-cols-3 gap-4 min-w-0">
+        <BoxStripPanel values={tt} color={algo.color} label="Travel Time" unit="min"
+          fmt={v => v.toFixed(2)}
+          info="Average time a vehicle spends travelling from its origin to its destination across all active vehicles in this evaluation episode. Lower is better. A wide spread here means the algorithm sometimes gets vehicles through quickly but struggles in other runs." />
+        <BoxStripPanel values={wt} color={algo.color} label="Wait Time" unit="s"
+          fmt={v => v.toFixed(1)}
+          info="Average time vehicles spend stopped at intersections per evaluation episode. Lower is better. High variance here often indicates the algorithm hasn't learned a stable signal-timing policy and occasionally causes long queues." />
+        <BoxStripPanel values={th} color={algo.color} label="Throughput" unit="veh/hr"
+          fmt={v => Math.round(v).toString()}
+          info="Number of vehicles that successfully completed their trips per hour in this evaluation episode. Higher is better. Low throughput episodes may indicate gridlock or poor routing decisions under the current traffic demand." />
+      </div>
+    </>
   )
 }
 
@@ -2963,167 +3048,7 @@ function InfoBubble({ text, side = 'left' }: { text: string; side?: 'left' | 'ri
   )
 }
 
-// ─── MARL Training Diagnostics ────────────────────────────────────────────────
 
-function MarlMetricsSection({ algo }: { algo: AlgoData }) {
-  const c = useDashColors()
-  const data = algo.marl
-  if (!data.length) return null  // not rendered for selfish (no training)
-
-  const maLineColor = c.isDark ? 'rgba(255,255,255,0.65)' : 'rgba(55,65,81,0.7)'
-  const confFill = c.isDark ? '#040916' : '#dde9f8'
-  const xAxis = (
-    <XAxis dataKey="episode" tick={{ ...c.chartAxis, fontSize: 9 }} tickLine={c.chartTickLine} axisLine={c.chartAxisLine}
-      label={{ value: 'Episode', position: 'insideBottom', offset: -10, fill: c.chartLabel, fontSize: 10 }}
-      interval={Math.floor(data.length / 5)} />
-  )
-
-  return (
-    <>
-      {/* Section header */}
-      <div className="flex items-center gap-3">
-        <span className="text-[13px] font-bold" style={{ color: c.ts }}>{algo.id === 'civiq' ? 'HMARL' : 'MARL'} Training Diagnostics</span>
-        <div className="flex-1 h-px" style={{ background: c.divider }} />
-      </div>
-
-      {/* ── 1. Episode Cumulative Reward (full-width, prominent) ── */}
-      <GlassCard className="p-5 flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] font-bold" style={{ color: c.tp }}>Episode Cumulative Reward</span>
-              <InfoBubble text="The combined score all agents earned in each training episode. When the score levels off, the agents have learned their best strategy. The shaded area shows the spread across runs; the dashed line smooths out short-term noise." />
-            </div>
-            <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>
-              Primary training health indicator · shaded = seed confidence band
-            </p>
-          </div>
-          <div className="flex items-center gap-4 flex-shrink-0">
-            {[
-              { color: algo.color, label: 'Per-episode reward' },
-              { color: maLineColor, label: 'MA-10', dashed: true },
-            ].map(({ color, label, dashed }) => (
-              <div key={label} className="flex items-center gap-1.5">
-                <svg width="18" height="6"><line x1="0" y1="3" x2="18" y2="3" stroke={color} strokeWidth="2" strokeDasharray={dashed ? '4 2' : undefined} /></svg>
-                <span className="text-[10px]" style={{ color: c.tm }}>{label}</span>
-              </div>
-            ))}
-            <div className="flex items-center gap-1.5">
-              <div className="w-4 h-3 rounded-sm" style={{ background: algo.color, opacity: 0.18 }} />
-              <span className="text-[10px]" style={{ color: c.tm }}>Conf. band</span>
-            </div>
-          </div>
-        </div>
-        <ResponsiveContainer width="100%" height={220}>
-          <ComposedChart data={data} margin={{ top: 4, right: 12, left: 0, bottom: 20 }}>
-            <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
-            {xAxis}
-            <YAxis tick={c.chartAxis} tickLine={c.chartTickLine} axisLine={c.chartAxisLine} width={52}
-              label={{ value: 'Reward', angle: -90, position: 'insideLeft', offset: 14, fill: c.chartLabel, fontSize: 11 }} />
-            <Tooltip content={<ChartTooltip xLabel="Ep." rows={[
-              { key: 'reward',    label: 'Reward', color: algo.color, unit: '' },
-              { key: 'rewardMa',  label: 'MA-10',  color: maLineColor, unit: '' },
-            ]} />} />
-            <Area type="monotone" dataKey="rewardHi" stroke="none" fill={algo.color} fillOpacity={0.14} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-            <Area type="monotone" dataKey="rewardLo" stroke="none" fill={confFill} fillOpacity={1} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-            <Line type="monotone" dataKey="reward" stroke={algo.color} strokeWidth={1.5} dot={false} activeDot={{ r: 3 }} strokeOpacity={0.85} isAnimationActive={false} />
-            <Line type="monotone" dataKey="rewardMa" stroke={maLineColor} strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </GlassCard>
-
-      {/* ── 2–4. Bottom row: TD Loss | Q-values | Gradient Norm ── */}
-      <div className="grid grid-cols-3 gap-4">
-
-        {/* TD Loss — log Y-axis */}
-        <GlassCard className="p-4 flex flex-col gap-2">
-          <div className="flex items-start gap-2">
-            <div className="flex-1">
-              <span className="text-[12px] font-bold" style={{ color: c.tp }}>TD Loss</span>
-              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>How fast the model is learning</p>
-            </div>
-            <InfoBubble side="right" text="How far off the agents' predictions were during training. A lower value means agents are getting better at making decisions. It starts high and drops quickly — the log scale keeps the whole improvement visible at once." />
-          </div>
-          <ResponsiveContainer width="100%" height={170}>
-            <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 16 }}>
-              <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
-              {xAxis}
-              <YAxis tick={{ ...c.chartAxis, fontSize: 9 }} tickLine={c.chartTickLine} axisLine={c.chartAxisLine}
-                width={44} scale="log" domain={[0.0001, 'auto']}
-                tickFormatter={(v) => v < 0.01 ? v.toExponential(0) : String(+v.toFixed(3))} />
-              <Tooltip content={<ChartTooltip xLabel="Ep." rows={[{ key: 'tdLoss', label: 'TD Loss', color: '#FB923C', unit: '' }]} />} />
-              <Area type="monotone" dataKey="tdLoss" stroke="#FB923C" strokeWidth={1.5}
-                fill="#FB923C" fillOpacity={0.12} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </GlassCard>
-
-        {/* Q-Value Estimates — two series + std band */}
-        <GlassCard className="p-4 flex flex-col gap-2">
-          <div className="flex items-start gap-2">
-            <div className="flex-1">
-              <span className="text-[12px] font-bold" style={{ color: c.tp }}>Q-Value Estimates</span>
-              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>Expected reward vs. ideal target</p>
-            </div>
-            <InfoBubble side="right" text="Shows how much reward the agents expect from each action (solid line) versus the ideal score they're being trained toward (dashed line). When both lines track closely together, the agents are learning well. The shaded area shows variation across agents." />
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            {[
-              { color: '#A78BFA', label: 'q_taken_mean' },
-              { color: 'rgba(167,139,250,0.45)', label: 'target_mean', dashed: true },
-            ].map(({ color, label, dashed }) => (
-              <div key={label} className="flex items-center gap-1">
-                <svg width="14" height="5"><line x1="0" y1="2.5" x2="14" y2="2.5" stroke={color} strokeWidth="1.8" strokeDasharray={dashed ? '3 2' : undefined} /></svg>
-                <span className="text-[9px]" style={{ color: c.tu }}>{label}</span>
-              </div>
-            ))}
-          </div>
-          <ResponsiveContainer width="100%" height={150}>
-            <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 16 }}>
-              <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
-              {xAxis}
-              <YAxis tick={{ ...c.chartAxis, fontSize: 9 }} tickLine={c.chartTickLine} axisLine={c.chartAxisLine} width={40} />
-              <Tooltip content={<ChartTooltip xLabel="Ep." rows={[
-                { key: 'qTakenMean', label: 'q_taken', color: '#A78BFA', unit: '' },
-                { key: 'targetMean', label: 'target',  color: 'rgba(167,139,250,0.6)', unit: '' },
-              ]} />} />
-              {/* ±std band around q_taken */}
-              <Area type="monotone" dataKey="qTakenHi" stroke="none" fill="#A78BFA" fillOpacity={0.14} dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-              <Area type="monotone" dataKey="qTakenLo" stroke="none" fill={confFill} fillOpacity={1}  dot={false} activeDot={false} legendType="none" isAnimationActive={false} />
-              <Line type="monotone" dataKey="qTakenMean" stroke="#A78BFA" strokeWidth={2} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
-              <Line type="monotone" dataKey="targetMean" stroke="rgba(167,139,250,0.5)" strokeWidth={1.5} dot={false} activeDot={false} strokeDasharray="4 2" isAnimationActive={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </GlassCard>
-
-        {/* Gradient Norm — log Y-axis + reference line */}
-        <GlassCard className="p-4 flex flex-col gap-2">
-          <div className="flex items-start gap-2">
-            <div className="flex-1">
-              <span className="text-[12px] font-bold" style={{ color: c.tp }}>Gradient Norm</span>
-              <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>Stability of learning updates</p>
-            </div>
-            <InfoBubble side="right" text="Measures how aggressively agents are adjusting their decisions each episode. High values early on are normal — agents are still exploring. Once training settles, this should stay low and steady. The dashed line marks a healthy upper bound." />
-          </div>
-          <ResponsiveContainer width="100%" height={170}>
-            <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 16 }}>
-              <CartesianGrid stroke={c.chartGrid} strokeDasharray="3 4" />
-              {xAxis}
-              <YAxis tick={{ ...c.chartAxis, fontSize: 9 }} tickLine={c.chartTickLine} axisLine={c.chartAxisLine}
-                width={44} scale="log" domain={[0.0001, 'auto']}
-                tickFormatter={(v) => v < 0.01 ? v.toExponential(0) : String(+v.toFixed(3))} />
-              <Tooltip content={<ChartTooltip xLabel="Ep." rows={[{ key: 'gradNorm', label: 'Grad norm', color: '#34D399', unit: '' }]} />} />
-              <ReferenceLine y={0.5} stroke={c.tm} strokeDasharray="5 3"
-                label={{ value: 'healthy ≤ 0.5', position: 'insideTopRight', fill: c.chartLabel, fontSize: 8 }} />
-              <Area type="monotone" dataKey="gradNorm" stroke="#34D399" strokeWidth={1.5}
-                fill="#34D399" fillOpacity={0.11} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </GlassCard>
-      </div>
-    </>
-  )
-}
 
 // ─── Algorithm Detail Page ─────────────────────────────────────────────────────
 
@@ -4232,20 +4157,17 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       />
     </div>
 
-    {/* Analytics row: training curve + CPU utilization */}
+    {/* CPU utilization */}
     {displayAlgo.id !== 'selfish' && (
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <TrainingCurveChart algo={displayAlgo} />
-        <CpuStatsCard
-          algo={displayAlgo}
-          evalCpuMeans={isQmix ? (qmixData?.evalCpuMeans ?? null) : isCiviq ? (civiqData?.evalCpuMeans ?? null) : null}
-          onViewDetail={() => setOpenCpuModal(true)}
-        />
-      </div>
+      <CpuStatsCard
+        algo={displayAlgo}
+        evalCpuMeans={isQmix ? (qmixData?.evalCpuMeans ?? null) : isCiviq ? (civiqData?.evalCpuMeans ?? null) : null}
+        onViewDetail={() => setOpenCpuModal(true)}
+      />
     )}
 
-    {/* MARL training diagnostics (learning-based only) */}
-    <MarlMetricsSection algo={displayAlgo} />
+    {/* Evaluation performance distribution */}
+    <EvalDeviationCard algo={displayAlgo} />
   </div>
   )
 }
