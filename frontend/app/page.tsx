@@ -5,7 +5,7 @@ import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { SimulationControls } from '@/components/SimulationControls'
 import { useTheme } from '@/contexts/ThemeContext'
 
-const SURVEY_URL = 'https://forms.google.com'  // TODO: replace with actual Google Forms survey URL
+const SURVEY_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfO1J0zUOVJdmIoTM4vjY5uVCS0_Ju93zY8xXkVTnxGcvP6fg/viewform'
 
 const researchers = [
   { name: 'Kristian Bautista', role: 'Project Manager',  email: 'kristiandavidbautista@gmail.com',  avatar: '/images/researchers/Kristian_David_R_Bautista.jpg' },

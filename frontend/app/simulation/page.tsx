@@ -180,7 +180,7 @@ function DashThemeToggle() {
   )
 }
 
-const SURVEY_URL = 'https://forms.google.com'  // TODO: replace with actual Google Forms survey URL
+const SURVEY_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfO1J0zUOVJdmIoTM4vjY5uVCS0_Ju93zY8xXkVTnxGcvP6fg/viewform'
 
 const StatusBar = () => {
   const router = useRouter()
