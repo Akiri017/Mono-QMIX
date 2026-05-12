@@ -2426,6 +2426,88 @@ const SELFISH_LOS_REF = {
   forced_flow: { travelTime_s: 127.3438, waitTime_s: 20.668,  throughput: 2159.9281, returnMean: -94445.9153, co2: 486.2586, fuel: 20.914  },
 } as const
 
+// ─── Key Findings per algorithm × LOS ────────────────────────────────────────
+const LOS_FINDINGS: Record<string, Record<string, { headline: string; points: string[] }>> = {
+  civiq: {
+    free_flow: {
+      headline: 'At low traffic, CiViQ leads on wait time — but travel times are neck-and-neck across all approaches.',
+      points: [
+        'Wait time (7.2 sec) is 10.8% lower than Mono-QMIX (8.0 sec) and 2.6% lower than Selfish Routing (7.3 sec).',
+        'Travel time (121.7 sec) is within 2% of both alternatives — the difference is negligible at this demand level.',
+        'Throughput (1,088 veh/hr) beats Mono-QMIX (1,044) but is 3.0% below Selfish Routing (1,121).',
+      ],
+    },
+    stable_flow: {
+      headline: 'Mono-QMIX outperforms CiViQ at moderate traffic — centralized control finds a better balance here.',
+      points: [
+        'CiViQ travel time (122.1 sec) is 12.7% slower than Mono-QMIX (108.3 sec) at this demand level.',
+        'Throughput (1,193 veh/hr) is 4.4% below Mono-QMIX (1,246) and 5.4% below Selfish Routing (1,258).',
+        'Wait time (11.0 sec) is comparable to the others — the hierarchical design adds no clear advantage here.',
+      ],
+    },
+    forced_flow: {
+      headline: 'High demand is where CiViQ shines — its two-level design handles network saturation far better.',
+      points: [
+        'Throughput (2,273 veh/hr) is 37.4% higher than Mono-QMIX (1,654) and 5.2% above Selfish Routing (2,160).',
+        'Travel time (111.8 sec) is 12.6% faster than Mono-QMIX (125.9 sec) and 12.2% faster than Selfish Routing (127.3 sec).',
+        'Wait time (19.3 sec) is 18.8% lower than Mono-QMIX (23.7 sec) — far fewer vehicles stuck in queues.',
+      ],
+    },
+  },
+  qmix: {
+    free_flow: {
+      headline: 'Mono-QMIX is marginally fastest at low traffic, but moves fewer vehicles than the other approaches.',
+      points: [
+        'Travel time (119.1 sec) is the lowest of the three at this demand level.',
+        'Throughput (1,044 veh/hr) is 4.0% below CiViQ (1,088) and 6.9% below Selfish Routing (1,121).',
+        'Wait time (8.0 sec) is higher than both CiViQ (7.2 sec) and Selfish Routing (7.3 sec), hinting at signal inefficiency under light load.',
+      ],
+    },
+    stable_flow: {
+      headline: 'Moderate traffic is Mono-QMIX\'s strongest scenario — it achieves the fastest travel times of all three.',
+      points: [
+        'Travel time (108.3 sec) is 11.3% faster than CiViQ (122.1 sec) and 11.8% faster than Selfish Routing (122.8 sec).',
+        'Throughput (1,246 veh/hr) is competitive — only 1.0% below Selfish Routing (1,258) and 4.4% above CiViQ (1,193).',
+        'The AI finds efficient signal coordination at this level without being overwhelmed by too many simultaneous decisions.',
+      ],
+    },
+    forced_flow: {
+      headline: 'Mono-QMIX struggles most at high demand — coordinating 28+ intersections at once becomes a bottleneck.',
+      points: [
+        'Throughput (1,654 veh/hr) is 27.2% below CiViQ (2,273) and 23.4% below Selfish Routing (2,160).',
+        'Travel time (125.9 sec) and wait time (23.7 sec) are the worst of the three approaches at this level.',
+        'As more vehicles enter the network, the single central AI faces an increasingly large decision space.',
+      ],
+    },
+  },
+  selfish: {
+    free_flow: {
+      headline: 'At light traffic, Selfish Routing matches AI systems — coordination adds minimal benefit when roads are clear.',
+      points: [
+        'Travel time (120.8 sec) is within 2% of CiViQ (121.7 sec) and Mono-QMIX (119.1 sec).',
+        'Throughput (1,121 veh/hr) is the highest of the three — vehicles naturally spread across available routes.',
+        'Wait time (7.3 sec) nearly matches CiViQ (7.2 sec), showing light-demand routing needs no coordination.',
+      ],
+    },
+    stable_flow: {
+      headline: 'Selfish Routing leads on throughput at moderate traffic, but Mono-QMIX opens a clear travel time gap.',
+      points: [
+        'Throughput (1,258 veh/hr) is the highest of all three approaches at this demand level.',
+        'Travel time (122.8 sec) is 13.4% slower than Mono-QMIX (108.3 sec) — signal coordination starts to matter.',
+        'Wait time (10.5 sec) is close to CiViQ (11.0 sec), but congestion is building without coordination.',
+      ],
+    },
+    forced_flow: {
+      headline: 'Selfish Routing holds up better than expected at high demand, though CiViQ pulls clearly ahead.',
+      points: [
+        'Throughput (2,160 veh/hr) is 30.6% higher than Mono-QMIX (1,654) and only 5.0% below CiViQ (2,273).',
+        'Travel time (127.3 sec) is only 1.1% slower than Mono-QMIX — uncoordinated routing stays competitive.',
+        'Wait time (20.7 sec) beats Mono-QMIX (23.7 sec) but is 7.2% higher than CiViQ (19.3 sec).',
+      ],
+    },
+  },
+}
+
 // ─── Road Closure Data ────────────────────────────────────────────────────────
 // Source: road_closure_{low,med,high}_demand_results.txt — 50 evaluation episodes each.
 const ROAD_CLOSURE_DATA = {
@@ -2870,6 +2952,30 @@ function CpuStatsCard({ algo, evalCpuMeans, onViewDetail }: {
         </div>
 
       </div>
+      </div>
+    </GlassCard>
+  )
+}
+
+// ─── Key Findings Card ────────────────────────────────────────────────────────
+
+function FindingsCard({ algo, trafficScale }: { algo: AlgoData; trafficScale: string }) {
+  const c = useDashColors()
+  const finding = LOS_FINDINGS[algo.id]?.[trafficScale]
+  if (!finding) return null
+  return (
+    <GlassCard className="p-5 flex flex-col gap-3">
+      <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Key Findings</h3>
+      <p className="text-[12px] font-medium leading-relaxed" style={{ color: c.ts }}>
+        {finding.headline}
+      </p>
+      <div className="flex flex-col gap-2 pt-2" style={{ borderTop: `1px solid ${c.divider}` }}>
+        {finding.points.map((point, i) => (
+          <div key={i} className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 rounded-full mt-[5px] flex-shrink-0" style={{ background: algo.color }} />
+            <p className="text-[11px] leading-relaxed" style={{ color: c.ts }}>{point}</p>
+          </div>
+        ))}
       </div>
     </GlassCard>
   )
@@ -4219,13 +4325,18 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       />
     </div>
 
-    {/* CPU utilization */}
-    {displayAlgo.id !== 'selfish' && (
-      <CpuStatsCard
-        algo={displayAlgo}
-        evalCpuMeans={isQmix ? (qmixData?.evalCpuMeans ?? null) : isCiviq ? (civiqData?.evalCpuMeans ?? null) : null}
-        onViewDetail={() => setOpenCpuModal(true)}
-      />
+    {/* CPU utilization + Key Findings */}
+    {displayAlgo.id !== 'selfish' ? (
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <CpuStatsCard
+          algo={displayAlgo}
+          evalCpuMeans={isQmix ? (qmixData?.evalCpuMeans ?? null) : isCiviq ? (civiqData?.evalCpuMeans ?? null) : null}
+          onViewDetail={() => setOpenCpuModal(true)}
+        />
+        <FindingsCard algo={displayAlgo} trafficScale={trafficScale} />
+      </div>
+    ) : (
+      <FindingsCard algo={displayAlgo} trafficScale={trafficScale} />
     )}
 
     {/* Evaluation performance distribution */}
