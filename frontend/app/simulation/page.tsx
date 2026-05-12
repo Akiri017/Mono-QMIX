@@ -498,7 +498,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Averages across LOS A/C/E on BGC Full (2 km²)
     travelTime: 1.975, waitTime: 12.47, throughput: 1518, speed: 1.24,
     co2: 492.8, fuel: 21.24, computeTime: 22.35, cpuMean: 537.5, cpuPeak: 8597, convergence: 150, reward: -65638,
-    description: 'CiViQ employs a hierarchical two-tier coordination mechanism: a global orchestrator assigns zone-level routing goals across 17 RSU zones on a 2 km² network, while local agents optimize intersection-level decisions using QMIX. Under High Demand (2,000 veh/hr), CiViQ achieves 2,273 veh/hr throughput and 19.3 sec average wait time — outperforming Mono-QMIX by 37.4% in throughput and 23.1% in wait time at peak congestion.',
+    description: 'CiViQ works like a smart city planner with two levels: a big-picture coordinator sets routing goals across the city, while local controllers manage each intersection in real time. This layered approach keeps traffic flowing efficiently — especially under heavy load, where it leads all three approaches in vehicles moved and shortest wait times.',
     strengths: ['37.4% higher throughput than QMIX at High Demand', 'Lowest wait time at peak load (19.3 sec)', 'Travel time improves 8.4% from Moderate → High Demand', 'Constant per-decision complexity as agents scale'],
     scores: [0.99, 1.00, 1.00, 0.67, 0.96, 0.96, 0.30],
     sparklines: {
@@ -532,7 +532,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-LOS by useQmixRealData
     travelTime: 1.99, waitTime: 14.1, throughput: 1305, speed: 53.97,
     co2: 538.9, fuel: 23.2, computeTime: 18.20, cpuMean: 93.4, cpuPeak: 702, convergence: 9001, reward: -68798,
-    description: 'Mono-QMIX applies centralized multi-agent reinforcement learning where all agents share a joint action-value function across the full 2 km² network. It converges in ~9,000 training episodes (vs. CiViQ\'s ~150) and achieves its best result at Moderate Demand (1,200 veh/hr) with a 108.3 sec average travel time — 11.3% better than CiViQ at that level. Under High Demand (2,000 veh/hr), travel time degrades 16.3% to 125.9 sec as the joint action space grows with 28+ simultaneously active agents.',
+    description: 'Mono-QMIX trains one central AI to control all traffic signals across the network at once. It shines at moderate traffic — delivering the fastest average travel times of all three approaches at that level. But as roads fill up, coordinating dozens of intersections simultaneously becomes harder, and performance starts to slip.',
     strengths: ['Best travel time at Moderate Demand: 108.3 sec', '11.3% faster than CiViQ at Moderate Demand', 'Lower CPU overhead per decision step', 'Well-established QMIX mixing-network framework'],
     scores: [0.85, 0.87, 0.98, 0.82, 0.87, 0.87, 0.32],
     // Flat sparklines at averaged eval measurement — overridden by useQmixRealData
@@ -571,7 +571,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-level by useSelfishRealData
     travelTime: 2.05, waitTime: 13.1, throughput: 1545, speed: 248.84,
     co2: 471.2, fuel: 20.3, computeTime: 0, cpuMean: 0, cpuPeak: 0, convergence: null, reward: null,
-    description: 'Selfish Routing models each vehicle independently optimizing its own route via shortest-path algorithms, representing the Nash Equilibrium. At Low Demand (1,000 veh/hr) it achieves 120.8 sec average travel time — within 0.7% of CiViQ — establishing it as the Price of Anarchy baseline. Under High Demand (2,000 veh/hr), wait time rises to 20.7 sec, 7.2% higher than CiViQ\'s 19.3 sec, as uncoordinated vehicles converge on popular routes.',
+    description: 'Selfish Routing shows what happens without any coordination — every vehicle independently picks the shortest path for itself. It holds its own when traffic is light, performing nearly as well as the AI systems. But as roads get busier, vehicles all pile onto the same popular routes, causing wait times and congestion to climb.',
     strengths: ['No training or setup required', 'Within 0.7% of CiViQ travel time at Low Demand', 'Establishes the Price of Anarchy baseline', 'Fully interpretable shortest-path decisions'],
     scores: [1.00, 0.95, 0.95, 1.00, 1.00, 1.00, 1.00],
     // Sparklines: flat at averaged measurement — overridden by real data once loaded
