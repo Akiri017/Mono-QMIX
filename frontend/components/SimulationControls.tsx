@@ -43,6 +43,7 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
   const triggerRef = useRef<HTMLDivElement>(null)
   const [fixedPos, setFixedPos] = useState({ top: 0, left: 0 })
   const [mounted, setMounted] = useState(false)
+  const [focusedIdx, setFocusedIdx] = useState(-1)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -107,8 +108,17 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
       {options.map((option, index) => (
         <div
           key={option.value}
+          role="option"
+          aria-selected={option.value === selected}
+          tabIndex={0}
           onClick={(e) => { e.stopPropagation(); onSelect(option.value); onToggle() }}
-          className="px-4 py-3 cursor-pointer transition-colors duration-150"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(option.value); onToggle() }
+            if (e.key === 'ArrowDown') { e.preventDefault(); const next = e.currentTarget.parentElement?.children[index + 1] as HTMLElement; next?.focus() }
+            if (e.key === 'ArrowUp')   { e.preventDefault(); const prev = e.currentTarget.parentElement?.children[index - 1] as HTMLElement; prev?.focus() }
+            if (e.key === 'Escape')    { e.preventDefault(); onToggle(); triggerRef.current?.focus() }
+          }}
+          className="px-4 py-3 cursor-pointer transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400/60"
           style={{
             borderBottom: index < options.length - 1
               ? darkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)'
@@ -135,8 +145,17 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
     <div className="relative flex-1 min-w-0">
       <div
         ref={triggerRef}
+        role="combobox"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        tabIndex={0}
         onClick={onToggle}
-        className="w-full px-3 py-3 flex items-center justify-between cursor-pointer transition-all duration-200"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle() }
+          if (e.key === 'Escape' && isOpen) { e.preventDefault(); onToggle() }
+          if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !isOpen) { e.preventDefault(); onToggle() }
+        }}
+        className="w-full px-3 py-3 flex items-center justify-between cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
         style={{
           background: triggerBg,
           backdropFilter: 'blur(8px)',

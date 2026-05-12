@@ -55,16 +55,16 @@ function buildDashColors(isDark: boolean): DashColors {
     glassBg: 'linear-gradient(155deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
     glassBorder: 'rgba(255,255,255,0.14)',
     glassShadow: 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)',
-    tp: 'rgba(255,255,255,0.9)', ts: 'rgba(255,255,255,0.52)',
-    tm: 'rgba(255,255,255,0.35)', tu: 'rgba(255,255,255,0.28)',
-    divider: 'rgba(255,255,255,0.06)',
-    badgeBg: 'rgba(255,255,255,0.07)', badgeBorder: 'rgba(255,255,255,0.1)', badgeColor: 'rgba(255,255,255,0.45)',
+    tp: 'rgba(255,255,255,0.9)', ts: 'rgba(255,255,255,0.72)',
+    tm: 'rgba(255,255,255,0.55)', tu: 'rgba(255,255,255,0.45)',
+    divider: 'rgba(255,255,255,0.10)',
+    badgeBg: 'rgba(255,255,255,0.07)', badgeBorder: 'rgba(255,255,255,0.14)', badgeColor: 'rgba(255,255,255,0.60)',
     itemBg: 'rgba(255,255,255,0.04)', itemBgMd: 'rgba(255,255,255,0.07)', itemBgHi: 'rgba(255,255,255,0.12)',
-    chartGrid: 'rgba(255,255,255,0.05)',
-    chartAxis: { fill: 'rgba(255,255,255,0.28)', fontSize: 10 },
-    chartAxisLine: { stroke: 'rgba(255,255,255,0.08)' },
-    chartTickLine: { stroke: 'rgba(255,255,255,0.08)' },
-    chartLabel: 'rgba(255,255,255,0.28)',
+    chartGrid: 'rgba(255,255,255,0.07)',
+    chartAxis: { fill: 'rgba(255,255,255,0.52)', fontSize: 10 },
+    chartAxisLine: { stroke: 'rgba(255,255,255,0.10)' },
+    chartTickLine: { stroke: 'rgba(255,255,255,0.10)' },
+    chartLabel: 'rgba(255,255,255,0.52)',
     barTrack: 'rgba(255,255,255,0.1)', ringTrack: 'rgba(255,255,255,0.08)',
     tooltipBg: 'rgba(4,9,22,0.97)', tooltipBorder: 'rgba(255,255,255,0.12)',
     tooltipColor: 'rgba(255,255,255,0.88)', tooltipShadow: '0 12px 24px rgba(0,0,0,0.45)',
@@ -966,6 +966,12 @@ function CompareModal({ onClose, onConfirm }: {
   const [traffic, setTraffic] = useState('stable_flow')
   const canRun = left !== right
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(10px)' }}>
@@ -980,11 +986,11 @@ function CompareModal({ onClose, onConfirm }: {
             <h3 className="text-[15px] font-bold" style={{ color: 'rgba(255,255,255,0.92)' }}>Configure Comparison</h3>
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>Select two algorithms and test conditions</p>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+          <button onClick={onClose} aria-label="Close" className="w-7 h-7 rounded-full flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)' }}>
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
               <path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           </button>
@@ -2127,6 +2133,11 @@ const CONGESTION_TABS: { key: CongestionTab; label: string; sub: string }[] = [
 function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () => void }) {
   const [tab, setTab] = useState<CongestionTab>('queue')
   const [selInt, setSelInt] = useState<IntKey>('int1')
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
   const INT_COLOR: Record<IntKey, string> = {
     int1: algo.color, int2: 'rgba(251,191,36,0.9)', int3: 'rgba(52,211,153,0.9)', int4: 'rgba(248,113,113,0.85)',
   }
@@ -2159,7 +2170,8 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            aria-label="Close"
+            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)' }}
@@ -2547,6 +2559,11 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
   onClose: () => void
 }) => {
   const c = useDashColors()
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
   const baseMeta = KPI_META[metricKey]
   const meta = {
     ...baseMeta,
@@ -2606,11 +2623,12 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            aria-label="Close"
+            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}` }}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={c.tm}
-              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
@@ -2734,6 +2752,11 @@ const CpuDetailModal = ({ algo, evalCpuMeans, onClose }: {
   evalCpuMeans: number[] | null
   onClose: () => void
 }) => {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
   const isReal = evalCpuMeans && evalCpuMeans.length > 0
   const W = 5
 
@@ -2786,11 +2809,12 @@ const CpuDetailModal = ({ algo, evalCpuMeans, onClose }: {
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            aria-label="Close"
+            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)"
-              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
@@ -3221,12 +3245,12 @@ function EvalDeviationCard({ algo }: { algo: AlgoData }) {
 function InfoBubble({ text, side = 'left' }: { text: string; side?: 'left' | 'right' }) {
   const c = useDashColors()
   return (
-    <div className="group/info relative z-20 flex-shrink-0">
+    <div className="group/info relative z-20 flex-shrink-0 outline-none" tabIndex={0} role="button" aria-label="More information">
       <div className="w-[18px] h-[18px] rounded-full flex items-center justify-center cursor-default"
         style={{ background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.65)', color: c.isDark ? 'rgba(217,249,255,0.95)' : 'rgba(3,105,161,0.95)', boxShadow: '0 0 0 1px rgba(0,0,0,0.2) inset' }}>
-        <span className="text-[10px] font-bold leading-none">!</span>
+        <span className="text-[10px] font-bold leading-none" aria-hidden="true">!</span>
       </div>
-      <div className="pointer-events-none absolute top-[calc(100%+8px)] w-[260px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/info:opacity-100 group-hover/info:translate-y-0"
+      <div className="pointer-events-none absolute top-[calc(100%+8px)] w-[260px] rounded-lg px-3 py-2 text-[10px] leading-relaxed opacity-0 translate-y-1 transition-all duration-150 group-hover/info:opacity-100 group-hover/info:translate-y-0 group-focus/info:opacity-100 group-focus/info:translate-y-0"
         style={{
           ...(side === 'right' ? { right: 0 } : { left: 0 }),
           background: c.tooltipBg, border: `1px solid ${c.tooltipBorder}`,
@@ -3822,6 +3846,11 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
   onClose: () => void
 }) => {
   const c = useDashColors()
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
   const meta = SELFISH_METRIC_META[metricKey]
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -3872,9 +3901,10 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
             </p>
           </div>
           <button onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            aria-label="Close"
+            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}` }}>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={c.tm} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={c.tm} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
@@ -4179,10 +4209,11 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
             {TRAFFIC_LABELS[trafficScale] || trafficScale}
           </span>
         )}
-        {/* Loading indicator for selfish routing */}
-        {isSelfish && kpisLoading && (
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+        {/* Loading indicator */}
+        {((isSelfish && kpisLoading) || (isQmix && qmixLoading) || (isCiviq && civiqLoading)) && (
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
             style={{ background: c.itemBg, border: `1px solid ${c.divider}`, color: c.tm }}>
+            <span className="inline-block w-2.5 h-2.5 rounded-full border-[1.5px] border-current border-t-transparent animate-spin" aria-hidden="true" />
             Loading data…
           </span>
         )}
