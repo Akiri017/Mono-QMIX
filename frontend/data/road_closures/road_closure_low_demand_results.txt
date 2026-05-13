@@ -4,71 +4,71 @@ Evaluation Results
 ============================================================
 Policy       : selfish_routing
 Episodes     : 50
-Mean Return  : -45897.02 ± 4078.76
+Mean Return  : -45215.45 ± 621.82
 
 --- Traffic Metrics ---
-  Mean Travel Time (s)               : 118.677 ± 10.831
-  Mean Waiting Time (s)              : 7.329 ± 1.302
-  Network Throughput (veh/h)         : 1148.979 ± 194.436
-  Real-Time Factor                   : 117.390 ± 8.059
-  CO2 Emissions (g/episode)          : 141271.494 ± 10694.595
-  Fuel Consumption (ml/episode)      : 60969.690 ± 4609.641
-  CO2 Emissions (g/km)               : 461.301 ± 13.044
-  Fuel Consumption (L/100km)         : 19.909 ± 0.562
-  Avg Route Length (m)               : 922.554 ± 47.415
-  Total Stops                        : 14162.100 ± 1897.514
-  Arrival Rate                       : 0.878 ± 0.013
-  Controlled Mean Travel Time (s)    : 111.103 ± 13.055
-  CPU Usage Mean (%)                 : 98.948 ± 4.200
-  CPU Usage Peak (%)                 : 1648.374 ± 194.728
-  Process CPU Time (s)               : 239.427 ± 129.833
+  Mean Travel Time (s)               : 120.381 ± 6.798
+  Mean Waiting Time (s)              : 7.188 ± 0.461
+  Network Throughput (veh/h)         : 1107.405 ± 103.723
+  Real-Time Factor                   : 83.760 ± 16.202
+  CO2 Emissions (g/episode)          : 138933.259 ± 1931.774
+  Fuel Consumption (ml/episode)      : 59961.863 ± 831.848
+  CO2 Emissions (g/km)               : 464.112 ± 6.623
+  Fuel Consumption (L/100km)         : 20.031 ± 0.285
+  Avg Route Length (m)               : 928.828 ± 25.653
+  Total Stops                        : 14174.320 ± 538.613
+  Arrival Rate                       : 0.877 ± 0.007
+  Controlled Mean Travel Time (s)    : 113.453 ± 7.638
+  CPU Usage Mean (%)                 : 94.131 ± 5.198
+  CPU Usage Peak (%)                 : 1293.418 ± 225.230
+  Process CPU Time (s)               : 304.171 ± 179.493
 ===============================================================================
 Mono-QMIX:
 ============================================================
 Evaluation Results
 ============================================================
-Policy       : C:\Users\Ianne\Mono_QMIX\results\mono-qmix\mono-qmix-los-a\seed_1801\best
+Policy       : ..\..\results\mono-qmix\mono-qmix-los-a\seed_1801\best
 Episodes     : 50
-Mean Return  : -48176.05 ± 936.35
+Mean Return  : -46033.23 ± 864.94
 
 --- Traffic Metrics ---
-  Mean Travel Time (s)               : 141.891 ± 43.381
-  Mean Waiting Time (s)              : 11.831 ± 3.769
-  Network Throughput (veh/h)         : 650.086 ± 241.172
-  Real-Time Factor                   : 72.605 ± 11.346
-  CO2 Emissions (g/episode)          : 142782.876 ± 2222.525
-  Fuel Consumption (ml/episode)      : 61632.340 ± 958.243
-  CO2 Emissions (g/km)               : 591.881 ± 23.255
-  Fuel Consumption (L/100km)         : 25.548 ± 1.006
-  Avg Route Length (m)               : 920.873 ± 7.221
-  Total Stops                        : 22051.380 ± 1672.716
-  Arrival Rate                       : 0.776 ± 0.053
-  Controlled Mean Travel Time (s)    : 148.683 ± 59.974
-  CPU Usage Mean (%)                 : 319.313 ± 32.402
-  CPU Usage Peak (%)                 : 4632.572 ± 642.620
-  Process CPU Time (s)               : 1019.729 ± 571.665
+  Mean Travel Time (s)               : 123.751 ± 17.816
+  Mean Waiting Time (s)              : 8.260 ± 1.092
+  Network Throughput (veh/h)         : 992.823 ± 204.943
+  Real-Time Factor                   : 70.384 ± 6.788
+  CO2 Emissions (g/episode)          : 138868.581 ± 2551.600
+  Fuel Consumption (ml/episode)      : 59935.717 ± 1099.334
+  CO2 Emissions (g/km)               : 505.432 ± 19.660
+  Fuel Consumption (L/100km)         : 21.814 ± 0.850
+  Avg Route Length (m)               : 922.834 ± 32.885
+  Total Stops                        : 17340.120 ± 1476.602
+  Arrival Rate                       : 0.860 ± 0.019
+  Controlled Mean Travel Time (s)    : 117.114 ± 20.122
+  CPU Usage Mean (%)                 : 326.639 ± 30.630
+  CPU Usage Peak (%)                 : 4092.652 ± 541.551
+  Process CPU Time (s)               : 1108.431 ± 621.657
 ===============================================================================
 Civiq:
 ============================================================
 Evaluation Results
 ============================================================
-Policy       : C:\Users\Ianne\Mono_QMIX\results\civiq\civiq-los-a\best
+Policy       : ..\..\results\civiq\civiq-los-a\best
 Episodes     : 50
-Mean Return  : -48064.06 ± 1061.27
+Mean Return  : -45854.36 ± 3795.76
 
 --- Traffic Metrics ---
-  Mean Travel Time (s)               : 150.950 ± 41.194
-  Mean Waiting Time (s)              : 12.207 ± 3.475
-  Network Throughput (veh/h)         : 605.850 ± 214.663
-  Real-Time Factor                   : 78.358 ± 7.210
-  CO2 Emissions (g/episode)          : 143066.871 ± 2117.346
-  Fuel Consumption (ml/episode)      : 61755.502 ± 913.091
-  CO2 Emissions (g/km)               : 582.907 ± 21.291
-  Fuel Consumption (L/100km)         : 25.161 ± 0.921
-  Avg Route Length (m)               : 923.115 ± 7.088
-  Total Stops                        : 21612.640 ± 1705.180
-  Arrival Rate                       : 0.767 ± 0.049
-  Controlled Mean Travel Time (s)    : 162.100 ± 58.764
-  CPU Usage Mean (%)                 : 326.732 ± 22.530
-  CPU Usage Peak (%)                 : 4646.202 ± 621.732
-  Process CPU Time (s)               : 992.820 ± 556.170
+  Mean Travel Time (s)               : 119.267 ± 9.376
+  Mean Waiting Time (s)              : 7.351 ± 0.698
+  Network Throughput (veh/h)         : 1140.348 ± 239.653
+  Real-Time Factor                   : 65.069 ± 25.108
+  CO2 Emissions (g/episode)          : 141255.038 ± 10295.768
+  Fuel Consumption (ml/episode)      : 60963.112 ± 4437.538
+  CO2 Emissions (g/km)               : 466.047 ± 7.429
+  Fuel Consumption (L/100km)         : 20.114 ± 0.320
+  Avg Route Length (m)               : 925.578 ± 28.278
+  Total Stops                        : 14445.680 ± 1308.383
+  Arrival Rate                       : 0.877 ± 0.008
+  Controlled Mean Travel Time (s)    : 111.774 ± 12.034
+  CPU Usage Mean (%)                 : 287.560 ± 71.474
+  CPU Usage Peak (%)                 : 3591.288 ± 1088.341
+  Process CPU Time (s)               : 1032.525 ± 622.839

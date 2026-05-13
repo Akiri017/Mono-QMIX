@@ -2,4 +2,21 @@
 <viewsettings>
     <scheme name="real world"/>
     <delay value="20"/>
+    <viewport zoom="500" x="0" y="0"/>
+    <decal filename="" centerX="0" centerY="0" width="0" height="0" rotation="0"/>
+    <showGrid value="0"/>
+    <gridXSize value="100"/>
+    <gridYSize value="100"/>
+    <show3DTLSLinkMarkers value="1"/>
+    <show3DTLSDomes value="1"/>
+    <generate3DTLSModels value="0"/>
+    <show3DHeadUpDisplay value="1"/>
+    <scaleLength value="1"/>
+    <widthExaggeration value="1"/>
+    <polyType id="" name="" color="179,217,255" fill="1" layer="-1" discard="0"/>
+    <polyType id="building" name="building" color="178,178,178" fill="1" layer="1" discard="0"/>
+    <polyType id="amenity" name="amenity" color="150,200,150" fill="1" layer="0.5" discard="0"/>
+    <polyType id="landuse" name="landuse" color="200,220,180" fill="1" layer="0" discard="0"/>
+    <polyType id="natural" name="natural" color="100,180,100" fill="1" layer="0" discard="0"/>
+    <polyType id="water" name="water" color="100,149,237" fill="1" layer="0" discard="0"/>
 </viewsettings>

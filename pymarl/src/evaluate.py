@@ -446,6 +446,7 @@ def main():
     # Override with command line args
     args["seed"] = args_cmd.seed
     args["use_gui"] = args_cmd.use_gui
+    args["env_args"]["sumo_gui"] = args_cmd.use_gui
     args["eval_episodes"] = args_cmd.episodes
     args["use_cuda"] = False  # Evaluation on CPU
     args["use_tensorboard"] = False
