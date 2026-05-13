@@ -2540,9 +2540,6 @@ const ROAD_CLOSURE_DATA = {
     selfish: { travelTime: 120.360, waitTime: 10.831, throughput: 1296.432, co2: 470.007, fuel: 20.271, returnMean:  -53674.21 },
     qmix:    { travelTime: 114.724, waitTime: 11.605, throughput: 1187.676, co2: 535.974, fuel: 23.119, returnMean:  -54622.36 },
     civiq:   { travelTime: 122.307, waitTime: 11.457, throughput: 1192.711, co2: 498.524, fuel: 21.501, returnMean:  -53807.32 },
-    selfish: { travelTime: 123.671, waitTime: 10.894, throughput: 1225.367, co2: 473.217, fuel: 20.410, returnMean:  -52861.11 },
-    qmix:    { travelTime: 149.170, waitTime: 17.459, throughput:  738.342, co2: 579.012, fuel: 24.976, returnMean:  -56640.98 },
-    civiq:   { travelTime: 149.170, waitTime: 17.459, throughput:  738.342, co2: 579.012, fuel: 24.976, returnMean:  -56640.98 },
   },
   forced_flow: {
     selfish: { travelTime: 125.943, waitTime: 21.171, throughput: 2192.296, co2: 493.650, fuel: 21.232, returnMean:  -96019.92 },
