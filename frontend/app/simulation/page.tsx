@@ -1375,7 +1375,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       body: 'At moderate traffic (1,200 veh/hr), Mono-QMIX averages 108.3 sec travel time vs. CiViQ\'s 122.1 sec — 11.3% faster. When roads aren\'t fully loaded, a single central AI can fine-tune signals more efficiently than a two-level system.' },
     { tag: 'Wait Time',    tagColor: '#F59E0B',
       headline: 'Heavy traffic exposes Mono-QMIX\'s limits — wait times climb',
-      body: 'At high traffic (2,000 veh/hr), Mono-QMIX vehicles wait an average of 23.8 sec — 23% longer than CiViQ\'s 19.3 sec. When dozens of intersections need coordinating at once, the single AI struggles to keep queues short.' },
+      body: 'At high traffic (2,000 veh/hr), Mono-QMIX vehicles wait an average of 23.7 sec — 23% longer than CiViQ\'s 19.3 sec. When dozens of intersections need coordinating at once, the single AI struggles to keep queues short.' },
     { tag: 'Baseline',     tagColor: '#F87171',
       headline: 'No AI needed at low traffic — Selfish Routing keeps up',
       body: 'At light traffic (1,000 veh/hr), Selfish Routing averages 120.8 sec travel time — nearly identical to CiViQ\'s 121.7 sec. When roads are quiet, vehicles naturally find good routes on their own with no training or coordination required.' },
