@@ -542,7 +542,7 @@ export default function Home() {
     },
     {
       rawValue: 19.3, format: (n: number) => n.toFixed(1),
-      unit: 'sec', label: 'Wait Time at Peak Load', sub: 'High Demand (2,000 veh/hr) · 23.1% less than Mono-QMIX',
+      unit: 'sec', label: 'Wait Time at Peak Load', sub: 'High Demand (2,000 veh/hr) · 18.8% less than Mono-QMIX',
       darkColor: '#4ADE80', lightColor: '#15803d', rgb: '74,222,128',
       icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
     },
@@ -648,7 +648,7 @@ export default function Home() {
               Redefining Urban Traffic Management
             </h2>
             <p className="text-[15px] leading-relaxed max-w-3xl" style={{ color: c.textSecondary }}>
-              CiViQ is a hierarchical multi-agent reinforcement learning framework for urban traffic management, evaluated on a 2 km² BGC road network simulated in SUMO. It uses a three-level architecture — individual vehicle agents, 6 local RSU coordinators, and a global server — built on the QMIX algorithm. Tested across three demand levels (Low: 1,000 veh/hr; Moderate: 1,200 veh/hr; High: 2,000 veh/hr), CiViQ outperforms Mono-QMIX by 37.4% in throughput and reduces average wait time by 23.1% under peak congestion.
+              CiViQ is a smart traffic coordination system tested on a 2 km² simulation of BGC. It works on three levels: individual vehicles, 17 roadside units that coordinate nearby intersections, and a central server that oversees the whole network. Across three traffic volumes — light, moderate, and heavy — CiViQ moves 37.4% more vehicles per hour than the single-AI baseline and cuts average wait times by 18.8% when roads are at their busiest.
             </p>
           </div>
 
@@ -680,8 +680,8 @@ export default function Home() {
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.78), 0 4px 18px rgba(15,23,42,0.05)',
               } : {}}>
                 <p className="text-[14px] leading-relaxed" style={{ color: c.textSecondary }}>
-                  Evaluated on a 2 km² SUMO simulation of BGC, CiViQ coordinates traffic across three demand levels. At{' '}
-                  <span className="font-semibold" style={{ color: c.accent }}>High Demand (2,000 veh/hr)</span>, it achieves 2,273 veh/hr throughput — 37.4% above Mono-QMIX — and reduces average wait time to 19.29 sec (vs. Mono-QMIX's 23.75 sec, a 23.1% reduction). At Moderate Demand (1,200 veh/hr), Mono-QMIX is faster by 11.3% in travel time (108.3 vs. 122.1 sec), showing that hierarchy overhead becomes beneficial only under higher congestion. Average diesel consumption across all demand levels: 21.2 L/100km for CiViQ vs. 23.4 L/100km for Mono-QMIX — a 9.4% reduction.
+                  Simulated on a 2 km² model of BGC, CiViQ was tested at three traffic levels. When roads are at peak load{' '}
+                  <span className="font-semibold" style={{ color: c.accent }}>(2,000 vehicles/hr)</span>, it clears 2,273 vehicles per hour — 37.4% more than the single-AI approach — and cuts average wait time from 23.75 sec to 19.29 sec. At moderate traffic, the single-AI approach is actually 11.3% faster in travel time (108.3 vs. 122.1 sec), showing that CiViQ's coordination pays off most when the network is under pressure. Fuel efficiency also improves: 21.2 L/100km for CiViQ vs. 23.4 L/100km — a 9.4% reduction.
                 </p>
               </GlassCard>
             </div>
