@@ -1792,7 +1792,7 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
 
 // ─── Map Player ───────────────────────────────────────────────────────────────
 
-const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData; mapSize: string; onCo2Click?: () => void; onFuelClick?: () => void }) => {
+const MapPlayer = ({ algo, mapSize, trafficScale, onCo2Click, onFuelClick }: { algo: AlgoData; mapSize: string; trafficScale: string; onCo2Click?: () => void; onFuelClick?: () => void }) => {
   const c = useDashColors()
   // Playback
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -1814,6 +1814,14 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
   const dragging = useRef(false)
   const dragOrigin = useRef({ x: 0, y: 0 })
   const panOrigin = useRef({ x: 0, y: 0 })
+
+  // Reset playback state when algo or traffic scale changes (new video src)
+  useEffect(() => {
+    setPlaying(false)
+    setCurrentTime(0)
+    setDuration(0)
+    setVideoReady(false)
+  }, [algo.id, trafficScale])
 
   // Wire playback rate to video
   useEffect(() => {
@@ -1961,7 +1969,7 @@ const MapPlayer = ({ algo, mapSize, onCo2Click, onFuelClick }: { algo: AlgoData;
         >
           <video
             ref={videoRef}
-            src="/simulation.mp4"
+            src={`/videos/${algo.id}_${trafficScale === 'free_flow' ? 'low' : trafficScale === 'stable_flow' ? 'med' : 'high'}.mp4`}
             muted
             playsInline
             preload="auto"
@@ -2524,19 +2532,19 @@ const LOS_FINDINGS: Record<string, Record<string, { headline: string; points: st
 // Source: road_closure_{low,med,high}_demand_results.txt — 50 evaluation episodes each.
 const ROAD_CLOSURE_DATA = {
   free_flow: {
-    selfish: { travelTime: 118.677, waitTime:  7.329, throughput: 1148.979, co2: 461.301, fuel: 19.909, returnMean:  -45897.02 },
-    qmix:    { travelTime: 150.950, waitTime: 12.207, throughput:  605.850, co2: 582.907, fuel: 25.161, returnMean:  -48064.06 },
-    civiq:   { travelTime: 150.950, waitTime: 12.207, throughput:  605.850, co2: 582.907, fuel: 25.161, returnMean:  -48064.06 },
+    selfish: { travelTime: 120.381, waitTime:  7.188, throughput: 1107.405, co2: 464.112, fuel: 20.031, returnMean:  -45215.45 },
+    qmix:    { travelTime: 123.751, waitTime:  8.260, throughput:  992.823, co2: 505.432, fuel: 21.814, returnMean:  -46033.23 },
+    civiq:   { travelTime: 119.267, waitTime:  7.351, throughput: 1140.348, co2: 466.047, fuel: 20.114, returnMean:  -45854.36 },
   },
   stable_flow: {
-    selfish: { travelTime: 123.671, waitTime: 10.894, throughput: 1225.367, co2: 473.217, fuel: 20.410, returnMean:  -52861.11 },
-    qmix:    { travelTime: 149.170, waitTime: 17.459, throughput:  738.342, co2: 579.012, fuel: 24.976, returnMean:  -56640.98 },
-    civiq:   { travelTime: 149.170, waitTime: 17.459, throughput:  738.342, co2: 579.012, fuel: 24.976, returnMean:  -56640.98 },
+    selfish: { travelTime: 120.360, waitTime: 10.831, throughput: 1296.432, co2: 470.007, fuel: 20.271, returnMean:  -53674.21 },
+    qmix:    { travelTime: 114.724, waitTime: 11.605, throughput: 1187.676, co2: 535.974, fuel: 23.119, returnMean:  -54622.36 },
+    civiq:   { travelTime: 122.307, waitTime: 11.457, throughput: 1192.711, co2: 498.524, fuel: 21.501, returnMean:  -53807.32 },
   },
   forced_flow: {
-    selfish: { travelTime: 123.076, waitTime: 10.621, throughput: 1231.696, co2: 470.914, fuel: 20.311, returnMean:  -52879.41 },
-    qmix:    { travelTime: 126.362, waitTime: 21.547, throughput: 2221.930, co2: 490.883, fuel: 21.114, returnMean:  -96035.50 },
-    civiq:   { travelTime: 126.362, waitTime: 21.547, throughput: 2221.930, co2: 490.883, fuel: 21.114, returnMean:  -96035.50 },
+    selfish: { travelTime: 125.943, waitTime: 21.171, throughput: 2192.296, co2: 493.650, fuel: 21.232, returnMean:  -96019.92 },
+    qmix:    { travelTime: 120.691, waitTime: 23.517, throughput: 1721.023, co2: 598.172, fuel: 25.732, returnMean: -107819.89 },
+    civiq:   { travelTime: 116.484, waitTime: 20.527, throughput: 2185.031, co2: 534.522, fuel: 22.993, returnMean:  -99280.52 },
   },
 } as const
 
@@ -4350,7 +4358,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       </div>
 
       {/* Map Player (col 2–3) */}
-      <MapPlayer algo={displayAlgo} mapSize={mapSize}
+      <MapPlayer algo={displayAlgo} mapSize={mapSize} trafficScale={trafficScale}
         onCo2Click={isSelfish ? () => setSelfishModal('co2') : undefined}
         onFuelClick={isSelfish ? () => setSelfishModal('fuel') : undefined}
       />
@@ -4477,19 +4485,6 @@ function RoadClosuresPage() {
         </div>
       </div>
 
-      {/* Partial-data banner for Moderate Demand (QMIX/CiViQ pending) */}
-      {hasPartialData && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
-          style={{ background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.25)' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FB923C" strokeWidth="2"
-            strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          <span className="text-[12px]" style={{ color: '#FB923C' }}>
-            Selfish Routing results are available. Road closure simulations for Mono-QMIX and CiViQ at this demand level are pending.
-          </span>
-        </div>
-      )}
 
       {/* Per-algorithm cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -4587,7 +4582,6 @@ function RoadClosuresPage() {
                 </div>
 
                 {/* Return */}
-                {hasData && (
                   <div className="mt-4 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
                     <div className="flex justify-between items-baseline">
                       <span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: c.tu }}>Mean Return</span>
@@ -4596,7 +4590,6 @@ function RoadClosuresPage() {
                       </span>
                     </div>
                   </div>
-                )}
               </div>
             </GlassCard>
           )
