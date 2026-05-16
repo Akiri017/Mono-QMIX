@@ -2393,18 +2393,13 @@ function CongestionHeatmap({ algo, heatmapSrc, congestionLabel }: {
   const src = heatmapSrc ?? (algo.id !== 'selfish'
     ? HEATMAP_IMG[algo.id as 'civiq' | 'qmix']?.free_flow
     : SELFISH_HEATMAP.free_flow)
-  const label = congestionLabel ?? CONGESTION_LABEL.free_flow
-  const labelColor = label.startsWith('Low') ? '#4ADE80' : label.startsWith('Moderate') ? '#FACC15' : '#F87171'
   const imgBg = c.isDark ? 'rgba(3,7,18,0.75)' : 'rgba(220,230,245,0.75)'
 
   return (
     <GlassCard className="p-4 flex flex-col gap-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-baseline gap-2">
-          <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Congestion Heatmap</h3>
-          <span className="text-[11px] font-semibold" style={{ color: labelColor }}>{label}</span>
-        </div>
+        <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Congestion Heatmap</h3>
       </div>
 
       {/* Heatmap image */}
