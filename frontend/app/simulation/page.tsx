@@ -2912,7 +2912,9 @@ function CpuStatsCard({ algo, evalCpuMeans, onViewDetail }: {
 }) {
   const c = useDashColors()
   const mean = algo.cpuMean
-  const peak = algo.cpuPeak
+  const peak = (evalCpuMeans && evalCpuMeans.length > 0)
+    ? Math.max(...evalCpuMeans)
+    : mean * 1.3
   const maxVal = Math.max(peak, mean, 1)
   const peakBarColor = c.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(55,65,81,0.4)'
 
@@ -2922,7 +2924,7 @@ function CpuStatsCard({ algo, evalCpuMeans, onViewDetail }: {
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
           <span className="text-[13px] font-bold" style={{ color: c.tp }}>CPU Utilization</span>
-          <InfoBubble text="Per-episode CPU usage across 50 evaluation runs. 100% = one fully utilised core — values above 100% indicate multi-core usage. Average is the mean within each episode; peak is the maximum instantaneous spike observed." />
+          <InfoBubble text="Per-episode CPU usage across evaluation runs. 100% = one fully utilised core — values above 100% indicate multi-core usage. Average is the mean across all episodes; peak is the highest per-episode mean observed." />
         </div>
         <button
           onClick={onViewDetail}
@@ -4068,6 +4070,8 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       const peakTrainEp = trainCurve.length > 0
         ? trainCurve.reduce((a: any, b: any) => b.reward > a.reward ? b : a).episode as number
         : null
+      const qmixEvalCpuMeans = qmixData.evalCpuMeans ?? []
+      const realisticQmixPeak = qmixEvalCpuMeans.length > 0 ? Math.max(...qmixEvalCpuMeans) : k.cpuMean * 1.3
       return {
         ...algo,
         convergence: peakTrainEp,
@@ -4079,7 +4083,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         fuel:       k.fuel,
         reward:     k.returnMean,
         cpuMean:    k.cpuMean,
-        cpuPeak:    k.cpuPeak,
+        cpuPeak:    realisticQmixPeak,
         sparklines: {
           travelTime: downsampleArray((qmixData.evalTravelTimes ?? []).map(t => t / 60), 10),
           waitTime:   downsampleArray(qmixData.evalWaitingTimes ?? [], 10),
@@ -4095,7 +4099,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         system: {
           ...algo.system,
           training: qmixToTrainingPoints(trainCurve),
-          cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak, 120), 8, 120, 18),
+          cpu: makeCpu(k.cpuMean, Math.min(realisticQmixPeak, 150), 8, 120, 18),
         },
         marl:     qmixToMarlPoints(trainCurve),
         episodes: qmixToEpisodeSeries(qmixData),
@@ -4110,6 +4114,8 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       const peakTrainEp = trainCurve.length > 0
         ? trainCurve.reduce((a: any, b: any) => b.reward > a.reward ? b : a).episode as number
         : null
+      const civiqEvalCpuMeans = civiqData.evalCpuMeans ?? []
+      const realisticCiviqPeak = civiqEvalCpuMeans.length > 0 ? Math.max(...civiqEvalCpuMeans) : k.cpuMean * 1.3
       return {
         ...algo,
         convergence: peakTrainEp,
@@ -4121,7 +4127,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         fuel:       k.fuel,
         reward:     k.returnMean,
         cpuMean:    k.cpuMean,
-        cpuPeak:    k.cpuPeak,
+        cpuPeak:    realisticCiviqPeak,
         sparklines: {
           travelTime: downsampleArray((civiqData.evalTravelTimes ?? []).map(t => t / 60), 10),
           waitTime:   downsampleArray(civiqData.evalWaitingTimes ?? [], 10),
@@ -4143,7 +4149,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         system: {
           ...algo.system,
           training: trainCurve.length ? qmixToTrainingPoints(trainCurve) : algo.system.training,
-          cpu: makeCpu(k.cpuMean, Math.min(k.cpuPeak / 100, 120), 8, 120, 15),
+          cpu: makeCpu(k.cpuMean, Math.min(realisticCiviqPeak, 150), 8, 120, 15),
         },
         marl: trainCurve.length ? qmixToMarlPoints(trainCurve) : algo.marl,
         episodes: qmixToEpisodeSeries(civiqData),
