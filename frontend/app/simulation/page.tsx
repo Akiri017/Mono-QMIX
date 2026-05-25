@@ -4158,6 +4158,8 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
     return algo
   })()
 
+  const isLoading = (isSelfish && kpisLoading) || (isQmix && qmixLoading) || (isCiviq && civiqLoading)
+
   return (
   <div className="p-4 md:p-6 space-y-4 md:space-y-5 overflow-y-auto" style={{
     height: '100%',
@@ -4229,6 +4231,24 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       </div>
       <ExportButton algo={displayAlgo} selfishTimeseries={isSelfish ? realTimeseries : null} />
     </div>
+
+    {/* Loading gate — show spinner while real data is fetching */}
+    {isLoading ? (
+      <div className="flex flex-col items-center justify-center py-32 gap-5">
+        <div
+          className="w-12 h-12 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: algo.color, borderTopColor: 'transparent' }}
+          role="status"
+          aria-label="Loading simulation data"
+        />
+        <p className="text-[13px] font-semibold" style={{ color: c.tm }}>
+          Loading simulation data…
+        </p>
+        <p className="text-[11px]" style={{ color: c.tu }}>
+          Fetching results for {TRAFFIC_LABELS[trafficScale] || trafficScale}
+        </p>
+      </div>
+    ) : (<>
 
     {/* KPI Row */}
     <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4">
@@ -4381,6 +4401,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 
     {/* Evaluation performance distribution */}
     <EvalDeviationCard algo={displayAlgo} />
+    </>)}
   </div>
   )
 }
