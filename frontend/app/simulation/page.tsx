@@ -4880,31 +4880,12 @@ function SimulationDashboardContent() {
     return 'summary'
   }
   const [activePage, setActivePage] = useState<Page>(() => algoToPage(algorithm1))
-  const [roadClosuresVisible, setRoadClosuresVisible] = useState(false)
+  const roadClosuresVisible = true
 
   // Keep active tab in sync when URL params change (e.g. Run from sidebar controls)
   useEffect(() => {
     setActivePage(algoToPage(algorithm1))
   }, [algorithm1])
-
-  // Ctrl+Alt+K toggles the Road Closures tab visibility
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'k') {
-        e.preventDefault()
-        setRoadClosuresVisible(prev => {
-          if (!prev) {
-            setActivePage('road_closures')
-          } else {
-            setActivePage(p => p === 'road_closures' ? 'summary' : p)
-          }
-          return !prev
-        })
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [])
 
   useEffect(() => {
     if (!mapSize || !trafficScale || !view || !algorithm1) { router.push('/'); return }
