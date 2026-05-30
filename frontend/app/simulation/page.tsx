@@ -599,7 +599,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
   },
 }
 
-const ALGO_LIST = [ALGO.civiq, ALGO.qmix, ALGO.selfish]
+const ALGO_LIST = [ALGO.selfish, ALGO.qmix, ALGO.civiq]
 
 // ─── Reusable UI primitives ────────────────────────────────────────────────────
 
@@ -960,8 +960,8 @@ function CompareModal({ onClose, onConfirm }: {
   onClose: () => void
   onConfirm: (cfg: CompareConfig) => void
 }) {
-  const [left, setLeft]       = useState<AlgoKey>('civiq')
-  const [right, setRight]     = useState<AlgoKey>('qmix')
+  const [left, setLeft]       = useState<AlgoKey>('selfish')
+  const [right, setRight]     = useState<AlgoKey>('civiq')
   const [mapSize, setMapSize] = useState('2km')
   const [traffic, setTraffic] = useState('stable_flow')
   const canRun = left !== right
