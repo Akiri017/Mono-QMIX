@@ -834,11 +834,12 @@ function rLabel(i: number) {
   return { x: RC.x + (RR + 22) * Math.cos(a), y: RC.y + (RR + 22) * Math.sin(a) }
 }
 
-function RadarTooltip({ axisIdx, scores }: { axisIdx: number; scores: Record<AlgoKey, number[]> }) {
+function RadarTooltip({ axisIdx, scores, visible }: { axisIdx: number; scores: Record<AlgoKey, number[]>; visible: Set<AlgoKey> }) {
   const c = useDashColors()
   const { x: lx, y: ly } = rLabel(axisIdx)
   const tipW = 148
-  const tipH = 68
+  const visibleAlgos = ALGO_LIST.filter(a => visible.has(a.id))
+  const tipH = 20 + visibleAlgos.length * 13
   const tx = lx > RC.x ? Math.min(lx - tipW - 4, 240) : Math.max(lx + 8, 2)
   const ty = Math.max(8, Math.min(ly - tipH / 2, 350 - tipH - 8))
   return (
@@ -847,7 +848,7 @@ function RadarTooltip({ axisIdx, scores }: { axisIdx: number; scores: Record<Alg
         fill={c.tooltipBg} stroke={c.tooltipBorder} strokeWidth="1" />
       <text x={tx + 8} y={ty + 14} fontSize="9.5" fill={c.tooltipColor}
         fontWeight="700" textAnchor="start">{RADAR_AXES[axisIdx]}</text>
-      {ALGO_LIST.map((a, ai) => (
+      {visibleAlgos.map((a, ai) => (
         <g key={a.id}>
           <circle cx={tx + 9} cy={ty + 26 + ai * 13} r="3.5" fill={a.color} />
           <text x={tx + 17} y={ty + 30 + ai * 13} fontSize="9" fill={c.tooltipColor} textAnchor="start">
@@ -859,7 +860,7 @@ function RadarTooltip({ axisIdx, scores }: { axisIdx: number; scores: Record<Alg
   )
 }
 
-function RadarChart({ scores }: { scores: Record<AlgoKey, number[]> }) {
+function RadarChart({ scores, visible }: { scores: Record<AlgoKey, number[]>; visible: Set<AlgoKey> }) {
   const c = useDashColors()
   const [hoveredAxis, setHoveredAxis] = useState<number | null>(null)
   const gridStroke = c.chartGrid
@@ -878,9 +879,9 @@ function RadarChart({ scores }: { scores: Record<AlgoKey, number[]> }) {
         return <line key={i} x1={RC.x} y1={RC.y} x2={pt.x} y2={pt.y}
           stroke={hoveredAxis === i ? axisStrokeHover : axisStrokeBase} strokeWidth="1" />
       })}
-      <polygon points={rPts(scores.selfish)} fill="rgba(248,113,113,0.12)" stroke="#F87171" strokeWidth="1.5" strokeLinejoin="round" />
-      <polygon points={rPts(scores.qmix)}    fill="rgba(167,139,250,0.12)" stroke="#A78BFA" strokeWidth="1.5" strokeLinejoin="round" />
-      <polygon points={rPts(scores.civiq)}   fill="rgba(56,189,248,0.18)"  stroke="#38BDF8" strokeWidth="2"   strokeLinejoin="round" />
+      {visible.has('selfish') && <polygon points={rPts(scores.selfish)} fill="rgba(248,113,113,0.12)" stroke="#F87171" strokeWidth="1.5" strokeLinejoin="round" />}
+      {visible.has('qmix')    && <polygon points={rPts(scores.qmix)}    fill="rgba(167,139,250,0.12)" stroke="#A78BFA" strokeWidth="1.5" strokeLinejoin="round" />}
+      {visible.has('civiq')   && <polygon points={rPts(scores.civiq)}   fill="rgba(56,189,248,0.18)"  stroke="#38BDF8" strokeWidth="2"   strokeLinejoin="round" />}
       {RADAR_AXES.map((label, i) => {
         const { x, y } = rLabel(i)
         const isHovered = hoveredAxis === i
@@ -898,7 +899,7 @@ function RadarChart({ scores }: { scores: Record<AlgoKey, number[]> }) {
             onMouseLeave={() => setHoveredAxis(null)} />
         )
       })}
-      {hoveredAxis !== null && <RadarTooltip axisIdx={hoveredAxis} scores={scores} />}
+      {hoveredAxis !== null && <RadarTooltip axisIdx={hoveredAxis} scores={scores} visible={visible} />}
     </svg>
   )
 }
@@ -1302,6 +1303,13 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const c = useDashColors()
   const { reducedMotion, ready } = usePageEntrance()
   const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('forced_flow')
+  const [visibleAlgos, setVisibleAlgos] = useState<Set<AlgoKey>>(new Set<AlgoKey>(['selfish', 'qmix', 'civiq']))
+  const toggleAlgo = (id: AlgoKey) => setVisibleAlgos(prev => {
+    if (prev.has(id) && prev.size === 1) return prev
+    const next = new Set(prev)
+    next.has(id) ? next.delete(id) : next.add(id)
+    return next
+  })
 
   type LosKey = 'free_flow' | 'stable_flow' | 'forced_flow'
   const LOS_TABS: { key: LosKey; label: string; sub: string; note: string }[] = [
@@ -1505,14 +1513,32 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
     <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
       <GlassCard className="xl:col-span-2 p-5">
         <h3 className="text-[13px] font-bold mb-3" style={{ color: c.tp }}>Performance Profile</h3>
-        <RadarChart scores={radarScores} />
-        <div className="flex justify-center gap-5 mt-2">
-          {ALGO_LIST.map((a) => (
-            <div key={a.id} className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: a.color }} />
-              <span className="text-[10px]" style={{ color: c.tm }}>{a.label}</span>
-            </div>
-          ))}
+        <RadarChart scores={radarScores} visible={visibleAlgos} />
+        <div className="flex justify-center gap-2 mt-3 flex-wrap">
+          {ALGO_LIST.map((a) => {
+            const active = visibleAlgos.has(a.id)
+            const isLast = visibleAlgos.size === 1 && active
+            return (
+              <button
+                key={a.id}
+                onClick={() => toggleAlgo(a.id)}
+                disabled={isLast}
+                title={isLast ? 'At least one algorithm must be visible' : (active ? `Hide ${a.label}` : `Show ${a.label}`)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+                style={{
+                  background: active ? `${a.color}18` : (c.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(15,23,42,0.04)'),
+                  border: `1px solid ${active ? a.border : c.divider}`,
+                  opacity: active ? 1 : 0.4,
+                  cursor: isLast ? 'default' : 'pointer',
+                }}
+              >
+                <div className="w-2 h-2 rounded-full transition-colors duration-150"
+                  style={{ background: active ? a.color : c.tm }} />
+                <span className="text-[10px] font-medium transition-colors duration-150"
+                  style={{ color: active ? a.color : c.tm }}>{a.label}</span>
+              </button>
+            )
+          })}
         </div>
       </GlassCard>
 
