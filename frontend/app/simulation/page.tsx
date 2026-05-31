@@ -42,39 +42,39 @@ interface DashColors {
 function buildDashColors(isDark: boolean): DashColors {
   return isDark ? {
     isDark: true,
-    pageBg: '#060112',
-    pageBgGrad: 'linear-gradient(135deg, #060112 0%, #0b0320 40%, #040c1c 100%)',
-    obuBg: 'rgba(8,14,32,0.48)', obuBorder: 'rgba(255,255,255,0.11)',
-    obuShadow: '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3)',
-    screenBg: 'rgba(6,11,26,0.45)', screenBorder: 'rgba(255,255,255,0.08)',
-    screenShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-    screenGloss: 'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%)',
-    contentBg: 'rgba(4,9,22,0.82)', contentBorder: 'rgba(255,255,255,0.07)',
-    sidebarBg: 'rgba(0,0,0,0.2)', sidebarBorder: 'rgba(255,255,255,0.06)',
-    statusBg: 'rgba(0,0,0,0.35)', statusBorder: 'rgba(255,255,255,0.06)',
-    glassBg: 'linear-gradient(155deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)',
-    glassBorder: 'rgba(255,255,255,0.14)',
-    glassShadow: 'inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.32)',
-    tp: 'rgba(255,255,255,0.9)', ts: 'rgba(255,255,255,0.72)',
-    tm: 'rgba(255,255,255,0.55)', tu: 'rgba(255,255,255,0.45)',
-    divider: 'rgba(255,255,255,0.10)',
-    badgeBg: 'rgba(255,255,255,0.07)', badgeBorder: 'rgba(255,255,255,0.14)', badgeColor: 'rgba(255,255,255,0.60)',
-    itemBg: 'rgba(255,255,255,0.04)', itemBgMd: 'rgba(255,255,255,0.07)', itemBgHi: 'rgba(255,255,255,0.12)',
-    chartGrid: 'rgba(255,255,255,0.07)',
-    chartAxis: { fill: 'rgba(255,255,255,0.52)', fontSize: 10 },
-    chartAxisLine: { stroke: 'rgba(255,255,255,0.10)' },
-    chartTickLine: { stroke: 'rgba(255,255,255,0.10)' },
-    chartLabel: 'rgba(255,255,255,0.52)',
-    barTrack: 'rgba(255,255,255,0.1)', ringTrack: 'rgba(255,255,255,0.08)',
-    tooltipBg: 'rgba(4,9,22,0.97)', tooltipBorder: 'rgba(255,255,255,0.12)',
-    tooltipColor: 'rgba(255,255,255,0.88)', tooltipShadow: '0 12px 24px rgba(0,0,0,0.45)',
-    screwBg: 'linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))',
-    screwShadow: 'inset 0 1px 2px rgba(0,0,0,0.6)',
-    blob1: 'radial-gradient(circle at 40% 40%, rgba(6,182,212,0.28) 0%, transparent 70%)',
-    blob2: 'radial-gradient(circle at 60% 55%, rgba(139,92,246,0.24) 0%, transparent 70%)',
-    blob3: 'radial-gradient(circle at 50% 50%, rgba(37,99,235,0.18) 0%, transparent 70%)',
-    logoClass: 'brightness-0 invert opacity-80',
-    hoverBg: 'rgba(255,255,255,0.07)', hoverBgMd: 'rgba(255,255,255,0.14)', hoverColor: 'rgba(255,255,255,0.9)',
+    pageBg: '#16243e',
+    pageBgGrad: 'linear-gradient(135deg, #16243e 0%, #1a2a48 40%, #12203a 100%)',
+    obuBg: 'rgba(20,34,62,0.88)', obuBorder: 'rgba(255,255,255,0.32)',
+    obuShadow: '0 32px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.15)',
+    screenBg: 'rgba(18,30,56,0.80)', screenBorder: 'rgba(255,255,255,0.26)',
+    screenShadow: 'inset 0 1px 0 rgba(255,255,255,0.14)',
+    screenGloss: 'linear-gradient(180deg, rgba(255,255,255,0.09) 0%, transparent 100%)',
+    contentBg: 'rgba(18,30,56,0.96)', contentBorder: 'rgba(255,255,255,0.24)',
+    sidebarBg: 'rgba(18,30,56,0.70)', sidebarBorder: 'rgba(255,255,255,0.24)',
+    statusBg: 'rgba(18,30,56,0.80)', statusBorder: 'rgba(255,255,255,0.24)',
+    glassBg: 'linear-gradient(155deg, rgba(10,24,56,0.92) 0%, rgba(8,18,46,0.86) 100%)',
+    glassBorder: 'rgba(255,255,255,0.32)',
+    glassShadow: 'inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.30)',
+    tp: '#ffffff', ts: 'rgba(255,255,255,0.95)',
+    tm: 'rgba(255,255,255,0.82)', tu: 'rgba(255,255,255,0.68)',
+    divider: 'rgba(255,255,255,0.22)',
+    badgeBg: 'rgba(255,255,255,0.12)', badgeBorder: 'rgba(255,255,255,0.32)', badgeColor: '#ffffff',
+    itemBg: 'rgba(0,8,30,0.45)', itemBgMd: 'rgba(0,8,30,0.60)', itemBgHi: 'rgba(0,8,30,0.75)',
+    chartGrid: 'rgba(255,255,255,0.18)',
+    chartAxis: { fill: 'rgba(255,255,255,0.90)', fontSize: 10 },
+    chartAxisLine: { stroke: 'rgba(255,255,255,0.25)' },
+    chartTickLine: { stroke: 'rgba(255,255,255,0.25)' },
+    chartLabel: 'rgba(255,255,255,0.90)',
+    barTrack: 'rgba(0,0,0,0.40)', ringTrack: 'rgba(0,0,0,0.35)',
+    tooltipBg: 'rgba(16,28,52,0.98)', tooltipBorder: 'rgba(255,255,255,0.34)',
+    tooltipColor: '#ffffff', tooltipShadow: '0 12px 24px rgba(0,0,0,0.35)',
+    screwBg: 'linear-gradient(135deg,rgba(255,255,255,0.32),rgba(255,255,255,0.12))',
+    screwShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)',
+    blob1: 'radial-gradient(circle at 40% 40%, rgba(6,182,212,0.45) 0%, transparent 70%)',
+    blob2: 'radial-gradient(circle at 60% 55%, rgba(139,92,246,0.40) 0%, transparent 70%)',
+    blob3: 'radial-gradient(circle at 50% 50%, rgba(37,99,235,0.34) 0%, transparent 70%)',
+    logoClass: 'brightness-0 invert',
+    hoverBg: 'rgba(255,255,255,0.14)', hoverBgMd: 'rgba(255,255,255,0.22)', hoverColor: '#ffffff',
   } : {
     isDark: false,
     pageBg: '#e8f0fb',
@@ -494,7 +494,7 @@ function makeMarlMetrics(tdStart: number, qStart: number, qEnd: number, gradStar
 const ALGO: Record<AlgoKey, AlgoData> = {
   civiq: {
     id: 'civiq', label: 'Civiq', sublabel: 'HMARL', rank: 1,
-    color: '#38BDF8', colorDim: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.3)',
+    color: '#38BDF8', colorDim: 'rgba(56,189,248,0.28)', border: 'rgba(56,189,248,0.55)',
     // Averages across LOS A/C/E on BGC Full (2 km²)
     travelTime: 1.975, waitTime: 12.47, throughput: 1518, speed: 1.24,
     co2: 492.8, fuel: 21.24, computeTime: 22.35, cpuMean: 537.5, cpuPeak: 8597, convergence: 150, reward: -65638,
@@ -528,7 +528,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Source: results/mono-qmix-los-a/experiment_summary_losA.json + qmix_exp_1801.json
     // Detail page fetches training curve & MARL diagnostics dynamically via /api/qmix
     id: 'qmix', label: 'Monolithic QMIX', sublabel: 'Baseline RL', rank: 2,
-    color: '#A78BFA', colorDim: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)',
+    color: '#A78BFA', colorDim: 'rgba(167,139,250,0.28)', border: 'rgba(167,139,250,0.55)',
     // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-LOS by useQmixRealData
     travelTime: 1.99, waitTime: 14.1, throughput: 1305, speed: 53.97,
     co2: 538.9, fuel: 23.2, computeTime: 18.20, cpuMean: 93.4, cpuPeak: 702, convergence: 9001, reward: -68798,
@@ -567,7 +567,7 @@ const ALGO: Record<AlgoKey, AlgoData> = {
     // Source: pymarl/src/results/eval/selfish_routing_bgc_full_{low,med,high}_seed5.json
     // Detail page fetches per-traffic-level values dynamically via /api/selfish
     id: 'selfish', label: 'Selfish Routing', sublabel: 'Nash Equilibrium', rank: 3,
-    color: '#F87171', colorDim: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.3)',
+    color: '#F87171', colorDim: 'rgba(248,113,113,0.28)', border: 'rgba(248,113,113,0.55)',
     // Averages across LOS A/C/E on BGC Full (2 km²) — overridden per-level by useSelfishRealData
     travelTime: 2.05, waitTime: 13.1, throughput: 1545, speed: 248.84,
     co2: 471.2, fuel: 20.3, computeTime: 0, cpuMean: 0, cpuPeak: 0, convergence: null, reward: null,
@@ -688,7 +688,7 @@ function KpiCard({ label, abbr, value, unit, color, colorDim, borderColor, chang
       } : undefined}
       style={{
         background: colorDim
-          ? `linear-gradient(145deg, ${colorDim.replace('0.12', '0.10')} 0%, ${c.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.45)'} 100%)`
+          ? `linear-gradient(145deg, ${colorDim.replace('0.28', '0.22')} 0%, ${c.isDark ? 'rgba(0,8,30,0.50)' : 'rgba(255,255,255,0.45)'} 100%)`
           : undefined,
         border: borderColor ? `1px solid ${borderColor.replace('0.3', '0.25')}` : undefined,
         cursor: onClick ? 'pointer' : 'default',

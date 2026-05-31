@@ -82,13 +82,13 @@ function GlassCard({ children, className = '', style, ...rest }: { children: Rea
   const isDark = theme === 'dark'
   const base: React.CSSProperties = {
     background: isDark
-      ? 'linear-gradient(155deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)'
+      ? 'linear-gradient(155deg, rgba(10,24,56,0.92) 0%, rgba(8,18,46,0.86) 100%)'
       : 'linear-gradient(155deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.52) 100%)',
     backdropFilter: 'blur(28px)', WebkitBackdropFilter: 'blur(28px)',
-    border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.7)'}`,
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.7)'}`,
     borderRadius: '16px',
     boxShadow: isDark
-      ? 'inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(0,0,0,0.28)'
+      ? 'inset 0 1px 0 rgba(255,255,255,0.18), 0 8px 32px rgba(0,0,0,0.30)'
       : 'inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 24px rgba(99,102,241,0.07), 0 1px 4px rgba(15,23,42,0.06)',
   }
   return (
@@ -101,8 +101,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   const isDark = theme === 'dark'
   return (
     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-4" style={{
-      background: isDark ? 'rgba(6,182,212,0.1)' : 'rgba(255,255,255,0.6)',
-      border: `1px solid ${isDark ? 'rgba(6,182,212,0.25)' : 'rgba(2,132,199,0.3)'}`,
+      background: isDark ? 'rgba(6,182,212,0.22)' : 'rgba(255,255,255,0.6)',
+      border: `1px solid ${isDark ? 'rgba(6,182,212,0.50)' : 'rgba(2,132,199,0.3)'}`,
       backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
     }}>
       <div className="w-1.5 h-1.5 rounded-full" style={{ background: isDark ? '#06B6D4' : '#0284C7' }} />
@@ -127,10 +127,10 @@ function ThemeToggle() {
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200"
       style={{
-        background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.55)',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.8)'}`,
+        background: isDark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.55)',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.8)'}`,
         backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-        color: isDark ? 'rgba(255,255,255,0.6)' : '#374151',
+        color: isDark ? 'rgba(255,255,255,0.88)' : '#374151',
         boxShadow: isDark ? 'none' : '0 1px 4px rgba(15,23,42,0.08)',
       }}
       onMouseEnter={(e) => {
@@ -179,18 +179,18 @@ function StickyNav({ visible, activeSection }: { visible: boolean; activeSection
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
         transform: visible ? 'translateY(0)' : 'translateY(-110%)',
         transition: 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-        background: isDark ? 'rgba(6,1,18,0.85)' : 'rgba(240,246,255,0.88)',
+        background: isDark ? 'rgba(16,26,50,0.94)' : 'rgba(240,246,255,0.88)',
         backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)'}`,
-        boxShadow: isDark ? '0 4px 24px rgba(0,0,0,0.45)' : '0 4px 20px rgba(15,23,42,0.09)',
+        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.24)' : 'rgba(255,255,255,0.6)'}`,
+        boxShadow: isDark ? '0 4px 24px rgba(0,0,0,0.30)' : '0 4px 20px rgba(15,23,42,0.09)',
         padding: '10px 28px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}
     >
       <div className="flex items-center gap-2.5">
         <img src="/icons/civiq-logo.png" alt="Civiq"
-          className={`w-5 h-5 object-contain ${isDark ? 'brightness-0 invert opacity-80' : 'opacity-90'}`} />
-        <span className="font-bold text-[13px] tracking-widest" style={{ color: isDark ? 'rgba(255,255,255,0.75)' : '#1e293b' }}>CIVIQ</span>
+          className={`w-5 h-5 object-contain ${isDark ? 'brightness-0 invert' : 'opacity-90'}`} />
+        <span className="font-bold text-[13px] tracking-widest" style={{ color: isDark ? '#ffffff' : '#1e293b' }}>CIVIQ</span>
       </div>
       <div className="flex items-center gap-1">
         {NAV.map(({ label, href, id }) => {
@@ -199,19 +199,19 @@ function StickyNav({ visible, activeSection }: { visible: boolean; activeSection
             <a key={label} href={href}
               className="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150"
               style={{
-                color: isActive ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.52)' : '#374151'),
-                background: isActive ? (isDark ? 'rgba(56,189,248,0.1)' : 'rgba(29,78,216,0.08)') : 'transparent',
+                color: isActive ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.80)' : '#374151'),
+                background: isActive ? (isDark ? 'rgba(56,189,248,0.18)' : 'rgba(29,78,216,0.08)') : 'transparent',
               }}
               onMouseEnter={(e) => {
                 if (isActive) return
                 const el = e.currentTarget as HTMLElement
-                el.style.color = isDark ? 'rgba(255,255,255,0.9)' : '#111827'
-                el.style.background = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.6)'
+                el.style.color = isDark ? '#ffffff' : '#111827'
+                el.style.background = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.6)'
               }}
               onMouseLeave={(e) => {
                 if (isActive) return
                 const el = e.currentTarget as HTMLElement
-                el.style.color = isDark ? 'rgba(255,255,255,0.52)' : '#374151'
+                el.style.color = isDark ? 'rgba(255,255,255,0.80)' : '#374151'
                 el.style.background = 'transparent'
               }}>
               {label}
@@ -254,15 +254,15 @@ function StatusBar({ activeSection }: { activeSection: string }) {
   ]
   return (
     <div className="flex items-center justify-between px-7 py-2.5 flex-shrink-0" style={{
-      background: isDark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.45)',
-      borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.6)'}`,
+      background: isDark ? 'rgba(18,30,56,0.80)' : 'rgba(255,255,255,0.45)',
+      borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.6)'}`,
       backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
     }}>
       <div className="flex items-center gap-2.5">
         <img src="/icons/civiq-logo.png" alt="Civiq"
-          className={`w-5 h-5 object-contain ${isDark ? 'brightness-0 invert opacity-80' : 'opacity-90'}`} />
-        <span className="font-bold text-[13px] tracking-widest" style={{ color: isDark ? 'rgba(255,255,255,0.75)' : '#1e293b' }}>CIVIQ</span>
-        <span className="hidden sm:inline text-[10px] font-medium" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#64748b' }}>
+          className={`w-5 h-5 object-contain ${isDark ? 'brightness-0 invert' : 'opacity-90'}`} />
+        <span className="font-bold text-[13px] tracking-widest" style={{ color: isDark ? '#ffffff' : '#1e293b' }}>CIVIQ</span>
+        <span className="hidden sm:inline text-[10px] font-medium" style={{ color: isDark ? 'rgba(255,255,255,0.65)' : '#64748b' }}>
           ·&nbsp; A Hierarchical Multi-Agent Coordination Framework
         </span>
       </div>
@@ -273,19 +273,19 @@ function StatusBar({ activeSection }: { activeSection: string }) {
             <a key={label} href={href}
               className="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150"
               style={{
-                color: isActive ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.52)' : '#374151'),
-                background: isActive ? (isDark ? 'rgba(56,189,248,0.1)' : 'rgba(29,78,216,0.08)') : 'transparent',
+                color: isActive ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.80)' : '#374151'),
+                background: isActive ? (isDark ? 'rgba(56,189,248,0.18)' : 'rgba(29,78,216,0.08)') : 'transparent',
               }}
               onMouseEnter={(e) => {
                 if (isActive) return
                 const el = e.currentTarget as HTMLElement
-                el.style.color = isDark ? 'rgba(255,255,255,0.9)' : '#111827'
-                el.style.background = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.6)'
+                el.style.color = isDark ? '#ffffff' : '#111827'
+                el.style.background = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.6)'
               }}
               onMouseLeave={(e) => {
                 if (isActive) return
                 const el = e.currentTarget as HTMLElement
-                el.style.color = isDark ? 'rgba(255,255,255,0.52)' : '#374151'
+                el.style.color = isDark ? 'rgba(255,255,255,0.80)' : '#374151'
                 el.style.background = 'transparent'
               }}>
               {label}
@@ -347,10 +347,10 @@ function KPICard({ rawValue, format, unit, label, sub, darkColor, lightColor, rg
 
   const animVal = useCountUp(rawValue, active)
   const color = isDark ? darkColor : lightColor
-  const cardBg = isDark ? `rgba(${rgb},0.10)` : 'rgba(255,255,255,0.9)'
-  const cardBorder = isDark ? `rgba(${rgb},0.25)` : `rgba(${rgb},0.28)`
-  const textPrimary = isDark ? 'rgba(255,255,255,0.88)' : '#111827'
-  const textMuted = isDark ? 'rgba(255,255,255,0.35)' : '#6b7280'
+  const cardBg = isDark ? `rgba(${rgb},0.32)` : 'rgba(255,255,255,0.9)'
+  const cardBorder = isDark ? `rgba(${rgb},0.65)` : `rgba(${rgb},0.28)`
+  const textPrimary = isDark ? '#ffffff' : '#111827'
+  const textMuted = isDark ? 'rgba(255,255,255,0.80)' : '#6b7280'
 
   return (
     <GlassCard className="p-6" style={{
@@ -394,11 +394,11 @@ function ResearcherCard({ name, role, email, avatar, staggerMs, sectionActive }:
     return () => clearTimeout(t)
   }, [sectionActive, staggerMs])
 
-  const textPrimary = isDark ? 'rgba(255,255,255,0.88)' : '#111827'
-  const textMuted = isDark ? 'rgba(255,255,255,0.35)' : '#6b7280'
-  const avatarShadow = isDark ? '0 4px 20px rgba(0,0,0,0.4)' : '0 4px 16px rgba(15,23,42,0.12)'
-  const avatarRing = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.7)'
-  const emailColor = emailHov ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.3)' : '#6b7280')
+  const textPrimary = isDark ? '#ffffff' : '#111827'
+  const textMuted = isDark ? 'rgba(255,255,255,0.72)' : '#6b7280'
+  const avatarShadow = isDark ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 16px rgba(15,23,42,0.12)'
+  const avatarRing = isDark ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.7)'
+  const emailColor = emailHov ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.65)' : '#6b7280')
 
   return (
     <div style={{
@@ -443,8 +443,8 @@ function ResearcherCard({ name, role, email, avatar, staggerMs, sectionActive }:
 
 function FooterLink({ label, href, isDark }: { label: string; href: string; isDark: boolean }) {
   const [hov, setHov] = useState(false)
-  const textSecondary = isDark ? 'rgba(255,255,255,0.55)' : '#374151'
-  const textPrimary = isDark ? 'rgba(255,255,255,0.88)' : '#111827'
+  const textSecondary = isDark ? 'rgba(255,255,255,0.80)' : '#374151'
+  const textPrimary = isDark ? '#ffffff' : '#111827'
   return (
     <a href={href}
       className="flex items-center gap-1 text-[13px]"
@@ -482,49 +482,49 @@ export default function Home() {
   const chevronHidden = useScrolled(120)
 
   const c = {
-    pageBg:          isDark ? '#060112' : '#dde9f8',
+    pageBg:          isDark ? '#16243e' : '#dde9f8',
     pageBgGrad:      isDark
-      ? 'linear-gradient(135deg, #060112 0%, #0b0320 40%, #040c1c 100%)'
+      ? 'linear-gradient(135deg, #16243e 0%, #1a2a48 40%, #12203a 100%)'
       : 'linear-gradient(135deg, #dde9f8 0%, #d5e3f5 40%, #e0edf9 100%)',
-    heroBg:          isDark ? 'rgba(8,14,32,0.48)'  : 'rgba(255,255,255,0.22)',
-    heroInner:       isDark ? 'rgba(6,11,26,0.62)'  : 'rgba(210,228,255,0.22)',
-    heroBorder:      isDark ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.75)',
+    heroBg:          isDark ? 'rgba(20,34,62,0.72)'  : 'rgba(255,255,255,0.22)',
+    heroInner:       isDark ? 'rgba(18,30,56,0.85)'  : 'rgba(210,228,255,0.22)',
+    heroBorder:      isDark ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.75)',
     heroShadow:      isDark
-      ? '0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(0,0,0,0.3)'
+      ? '0 32px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.2)'
       : '0 32px 80px rgba(99,102,241,0.1), 0 8px 32px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.9)',
-    heroInnerBorder: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)',
-    heroInsetTop:    isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)',
-    heroDivider:     isDark ? 'rgba(255,255,255,0.09)' : 'rgba(99,102,241,0.15)',
-    heroCtrlBg:      isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.82)',
-    heroCtrlBorder:  isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.1)',
-    heroCtrlInset:   isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.95)',
+    heroInnerBorder: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.6)',
+    heroInsetTop:    isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)',
+    heroDivider:     isDark ? 'rgba(255,255,255,0.22)' : 'rgba(99,102,241,0.15)',
+    heroCtrlBg:      isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.82)',
+    heroCtrlBorder:  isDark ? 'rgba(255,255,255,0.26)' : 'rgba(15,23,42,0.1)',
+    heroCtrlInset:   isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.95)',
     h1Grad:          isDark
       ? 'linear-gradient(140deg, #93C5FD 0%, #60A5FA 40%, #38BDF8 100%)'
       : 'linear-gradient(140deg, #1e3a8a 0%, #1d4ed8 45%, #0369a1 100%)',
     headingGrad:     isDark
       ? 'linear-gradient(140deg, #93C5FD 0%, #38BDF8 100%)'
       : 'linear-gradient(140deg, #1e3a8a 0%, #0369a1 100%)',
-    textBody:        isDark ? 'rgba(255,255,255,0.52)' : '#374151',
-    textPrimary:     isDark ? 'rgba(255,255,255,0.88)' : '#111827',
-    textSecondary:   isDark ? 'rgba(255,255,255,0.55)' : '#374151',
-    textMuted:       isDark ? 'rgba(255,255,255,0.35)' : '#6b7280',
-    textUltraMuted:  isDark ? 'rgba(255,255,255,0.25)' : '#9ca3af',
+    textBody:        isDark ? 'rgba(255,255,255,0.85)' : '#374151',
+    textPrimary:     isDark ? '#ffffff' : '#111827',
+    textSecondary:   isDark ? 'rgba(255,255,255,0.88)' : '#374151',
+    textMuted:       isDark ? 'rgba(255,255,255,0.72)' : '#6b7280',
+    textUltraMuted:  isDark ? 'rgba(255,255,255,0.58)' : '#9ca3af',
     accent:          isDark ? '#38BDF8' : '#1d4ed8',
     accentLight:     isDark ? '#06B6D4' : '#0284C7',
     greenEmphasis:   isDark ? '#4ADE80' : '#15803d',
-    sectionBorder:   isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.5)',
-    footerBg:        isDark ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.2)',
-    socialBg:        isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.5)',
-    socialBorder:    isDark ? 'rgba(255,255,255,0.1)'  : 'rgba(255,255,255,0.7)',
-    socialColor:     isDark ? 'rgba(255,255,255,0.45)' : '#4b5563',
-    socialBgHover:   isDark ? 'rgba(6,182,212,0.12)'  : 'rgba(255,255,255,0.8)',
+    sectionBorder:   isDark ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.5)',
+    footerBg:        isDark ? 'rgba(18,30,56,0.70)' : 'rgba(255,255,255,0.2)',
+    socialBg:        isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.5)',
+    socialBorder:    isDark ? 'rgba(255,255,255,0.28)'  : 'rgba(255,255,255,0.7)',
+    socialColor:     isDark ? 'rgba(255,255,255,0.80)' : '#4b5563',
+    socialBgHover:   isDark ? 'rgba(6,182,212,0.25)'  : 'rgba(255,255,255,0.8)',
     dotBg:           isDark
-      ? 'linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.04))'
+      ? 'linear-gradient(135deg,rgba(255,255,255,0.32),rgba(255,255,255,0.12))'
       : 'linear-gradient(135deg,rgba(255,255,255,0.7),rgba(255,255,255,0.3))',
-    dotShadow:       isDark ? 'inset 0 1px 2px rgba(0,0,0,0.6)' : 'inset 0 1px 2px rgba(15,23,42,0.06)',
-    ringTrack:       isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.1)',
-    avatarShadow:    isDark ? '0 4px 20px rgba(0,0,0,0.4)' : '0 4px 16px rgba(15,23,42,0.12)',
-    avatarRing:      isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.7)',
+    dotShadow:       isDark ? 'inset 0 1px 2px rgba(0,0,0,0.4)' : 'inset 0 1px 2px rgba(15,23,42,0.06)',
+    ringTrack:       isDark ? 'rgba(255,255,255,0.20)' : 'rgba(15,23,42,0.1)',
+    avatarShadow:    isDark ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 16px rgba(15,23,42,0.12)',
+    avatarRing:      isDark ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.7)',
   }
 
   const kpiData = [
