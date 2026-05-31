@@ -1299,7 +1299,7 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
 
 // ─── Summary Page (stateful) ──────────────────────────────────────────────────
 
-function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
+function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => void }) {
   const c = useDashColors()
   const { reducedMotion, ready } = usePageEntrance()
   const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('forced_flow')
@@ -1435,7 +1435,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
       {ALGO_LIST.map((a) => (
         <GlassCard key={a.id} className="p-5 relative overflow-hidden cursor-pointer"
           style={{ border: `1px solid ${a.border}`, transition: 'transform 0.15s ease, box-shadow 0.15s ease' }}
-          onClick={() => onNavigate(a.id)}
+          onClick={() => onNavigate(a.id, losTab)}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'
             ;(e.currentTarget as HTMLElement).style.boxShadow = `0 16px 48px rgba(0,0,0,0.45), 0 0 0 1px ${a.border}`
@@ -1451,6 +1451,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[14px] font-bold" style={{ color: c.tp }}>{a.label}</h3>
               <button
+                onClick={(e) => { e.stopPropagation(); onNavigate(a.id, losTab) }}
                 className="text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-all duration-150"
                 style={{ background: c.badgeBg, color: c.ts, border: `1px solid ${c.badgeBorder}` }}
                 onMouseEnter={(e) => {
@@ -4770,7 +4771,7 @@ const PAGE_COLOR: Record<Page, string> = {
 interface SidebarProps {
   activePage: Page
   setActivePage: (p: Page) => void
-  onRunAlgorithm: (algorithm: string) => void
+  onRunAlgorithm: (algorithm: string, trafficScale: string) => void
   mapSize: string
   trafficScale: string
   algorithm1: string
@@ -4877,12 +4878,23 @@ function SimulationDashboardContent() {
     return 'summary'
   }
   const [activePage, setActivePage] = useState<Page>(() => algoToPage(algorithm1))
+  const [detailTrafficScale, setDetailTrafficScale] = useState(trafficScale)
   const roadClosuresVisible = true
+
+  const navigateTo = (p: Page, los?: string) => {
+    if (los) setDetailTrafficScale(los)
+    setActivePage(p)
+  }
 
   // Keep active tab in sync when URL params change (e.g. Run from sidebar controls)
   useEffect(() => {
     setActivePage(algoToPage(algorithm1))
   }, [algorithm1])
+
+  // Keep detailTrafficScale in sync when URL trafficScale changes (e.g. re-run)
+  useEffect(() => {
+    setDetailTrafficScale(trafficScale)
+  }, [trafficScale])
 
   useEffect(() => {
     if (!mapSize || !trafficScale || !view || !algorithm1) { router.push('/'); return }
@@ -4953,7 +4965,7 @@ function SimulationDashboardContent() {
               <Sidebar
                 activePage={activePage}
                 setActivePage={setActivePage}
-                onRunAlgorithm={(algorithm) => setActivePage(algoToPage(algorithm))}
+                onRunAlgorithm={(algorithm, los) => navigateTo(algoToPage(algorithm), los)}
                 mapSize={mapSize}
                 trafficScale={trafficScale}
                 algorithm1={algorithm1}
@@ -4989,10 +5001,10 @@ function SimulationDashboardContent() {
 
                 {/* Scrollable page content */}
                 <div className="absolute inset-0 overflow-y-auto" style={{ zIndex: 1 }}>
-                  {activePage === 'summary'       && <SummaryPage onNavigate={setActivePage} />}
-                  {activePage === 'civiq'          && <AlgoDetailPage algo={ALGO.civiq}   mapSize={mapSize} trafficScale={trafficScale} />}
-                  {activePage === 'selfish'        && <AlgoDetailPage algo={ALGO.selfish} mapSize={mapSize} trafficScale={trafficScale} />}
-                  {activePage === 'qmix'           && <AlgoDetailPage algo={ALGO.qmix}    mapSize={mapSize} trafficScale={trafficScale} />}
+                  {activePage === 'summary'       && <SummaryPage onNavigate={navigateTo} />}
+                  {activePage === 'civiq'          && <AlgoDetailPage algo={ALGO.civiq}   mapSize={mapSize} trafficScale={detailTrafficScale} />}
+                  {activePage === 'selfish'        && <AlgoDetailPage algo={ALGO.selfish} mapSize={mapSize} trafficScale={detailTrafficScale} />}
+                  {activePage === 'qmix'           && <AlgoDetailPage algo={ALGO.qmix}    mapSize={mapSize} trafficScale={detailTrafficScale} />}
                   {activePage === 'road_closures'  && <RoadClosuresPage />}
                 </div>
               </div>

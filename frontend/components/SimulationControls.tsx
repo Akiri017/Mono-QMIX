@@ -191,7 +191,7 @@ interface SimulationControlsProps {
   hideHeader?: boolean
   initialTrafficScale?: string
   initialAlgorithm?: string
-  onRunAlgorithm?: (algorithm: string) => void
+  onRunAlgorithm?: (algorithm: string, trafficScale: string) => void
   // initialMapSize kept for compatibility but ignored — always uses 2km
   initialMapSize?: string
 }
@@ -229,7 +229,7 @@ export const SimulationControls = ({
     params.set('trafficScale', trafficScale)
     params.set('view', 'focused')
     params.set('algorithm1', algorithm)
-    onRunAlgorithm?.(algorithm)
+    onRunAlgorithm?.(algorithm, trafficScale)
     router.push(`/simulation?${params.toString()}`)
   }
 
