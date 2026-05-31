@@ -4249,7 +4249,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
             style={{ background: c.itemBg, border: `1px solid ${c.divider}`, color: c.tm }}>
             <span className="inline-block w-2.5 h-2.5 rounded-full border-[1.5px] border-current border-t-transparent animate-spin" aria-hidden="true" />
-            Loading data…
+            Loading…
           </span>
         )}
       </div>
@@ -4258,18 +4258,14 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
 
     {/* Loading gate — show spinner while real data is fetching */}
     {isLoading ? (
-      <div className="flex flex-col items-center justify-center py-32 gap-5">
+      <div className="flex flex-col items-center justify-center py-32 gap-4">
         <div
-          className="w-12 h-12 rounded-full border-2 border-t-transparent animate-spin"
+          className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin"
           style={{ borderColor: algo.color, borderTopColor: 'transparent' }}
           role="status"
-          aria-label="Loading simulation data"
         />
         <p className="text-[13px] font-semibold" style={{ color: c.tm }}>
-          Loading simulation data…
-        </p>
-        <p className="text-[11px]" style={{ color: c.tu }}>
-          Fetching results for {TRAFFIC_LABELS[trafficScale] || trafficScale}
+          Loading results for {TRAFFIC_LABELS[trafficScale] || trafficScale}…
         </p>
       </div>
     ) : (<>
