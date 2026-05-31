@@ -3310,213 +3310,59 @@ function downloadFile(filename: string, content: string, mime: string) {
   URL.revokeObjectURL(url)
 }
 
-function ExportButton({ algo, selfishTimeseries = null }: {
+function ExportButton({ algo, evalCpuMeans }: {
   algo: AlgoData
-  selfishTimeseries?: SelfishTimeseries | null
+  evalCpuMeans: number[] | null
 }) {
   const c = useDashColors()
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const isSelfish = algo.id === 'selfish'
 
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
-
-  const close = () => setOpen(false)
-
-  // ── CSV: KPI summary (one row per algorithm) ──
-  const exportKpiCsv = () => {
-    const headers = [
-      'Algorithm', 'Label',
-      'Travel Time (min)', 'Wait Time (sec)', 'Throughput (veh/hr)',
-      'Real-time Factor (x)', 'CO2 (g/km)', 'Fuel (L/100km)',
-      'Best Episode', 'Cumulative Reward',
-    ]
-    const row = [
-      algo.id, algo.label,
-      algo.travelTime, algo.waitTime, algo.throughput,
-      algo.speed, algo.co2, algo.fuel,
-      algo.convergence ?? 'N/A', algo.reward ?? 'N/A',
-    ]
-    downloadFile(
-      `civiq_${algo.id}_kpi.csv`,
-      [headers.join(','), row.join(',')].join('\n'),
-      'text/csv;charset=utf-8;',
-    )
-    close()
-  }
-
-  // ── CSV: per-episode KPI series (learning-based algos only) ──
-  const exportEpisodesCsv = () => {
+  const handleExport = () => {
+    const hasCpu = evalCpuMeans && evalCpuMeans.length > 0
     const headers = [
       'Episode',
-      'Travel Time (min)', 'Travel Time MA',
-      'Wait Time (sec)',   'Wait Time MA',
-      'Throughput (veh/hr)', 'Throughput MA',
+      'Travel Time (sec)',
+      'Wait Time (sec)',
+      'Throughput (veh/hr)',
+      ...(hasCpu ? ['CPU Utilization (%)'] : []),
     ]
     const n = algo.episodes.travelTime.length
     const rows = Array.from({ length: n }, (_, i) => [
       algo.episodes.travelTime[i].episode,
-      algo.episodes.travelTime[i].value, algo.episodes.travelTime[i].ma,
-      algo.episodes.waitTime[i]?.value ?? '', algo.episodes.waitTime[i]?.ma ?? '',
-      algo.episodes.throughput[i]?.value ?? '', algo.episodes.throughput[i]?.ma ?? '',
+      algo.episodes.travelTime[i].value,
+      algo.episodes.waitTime[i]?.value ?? '',
+      algo.episodes.throughput[i]?.value ?? '',
+      ...(hasCpu ? [evalCpuMeans[i] ?? ''] : []),
     ])
+
+    const lines: string[] = [
+      headers.join(','),
+      ...rows.map(r => r.join(',')),
+      '',
+      '# Aggregate environmental metrics (mean across all evaluation episodes)',
+      `CO2 Emissions (g/km),${algo.co2}`,
+      `Fuel Consumption (L/100km),${algo.fuel}`,
+    ]
+
     downloadFile(
-      `civiq_${algo.id}_episodes.csv`,
-      [headers.join(','), ...rows.map(r => r.join(','))].join('\n'),
+      `${algo.id}_eval_episodes.csv`,
+      lines.join('\n'),
       'text/csv;charset=utf-8;',
     )
-    close()
   }
-
-  // ── CSV: training curve (learning-based only) ──
-  const exportTrainingCsv = () => {
-    const headers = ['Episode', 'Reward', 'Reward MA', 'Reward Lo (CI)', 'Reward Hi (CI)']
-    const rows = algo.system.training.map(p => [p.episode, p.reward, p.ma, p.lo, p.hi])
-    downloadFile(
-      `civiq_${algo.id}_training.csv`,
-      [headers.join(','), ...rows.map(r => r.join(','))].join('\n'),
-      'text/csv;charset=utf-8;',
-    )
-    close()
-  }
-
-  // ── CSV: real SUMO step timeseries (selfish routing) ──
-  const exportSelfishTimeseriesCsv = () => {
-    if (!selfishTimeseries) return
-    const headers = ['Step (s)', 'Active Vehicles', 'Total System Wait (s)']
-    const rows = selfishTimeseries.steps.map((step, i) => [
-      step,
-      selfishTimeseries.activeVehicles[i],
-      selfishTimeseries.totalSystemWait[i],
-    ])
-    downloadFile(
-      `civiq_selfish_timeseries.csv`,
-      [headers.join(','), ...rows.map(r => r.join(','))].join('\n'),
-      'text/csv;charset=utf-8;',
-    )
-    close()
-  }
-
-  // ── JSON: full dump ──
-  const exportJson = () => {
-    const payload: Record<string, unknown> = {
-      exportedAt: new Date().toISOString(),
-      algorithm: { id: algo.id, label: algo.label, sublabel: algo.sublabel, rank: algo.rank },
-      kpi: {
-        travelTime: algo.travelTime, waitTime: algo.waitTime, throughput: algo.throughput,
-        speed: algo.speed, co2: algo.co2, fuel: algo.fuel,
-        bestEpisode: algo.convergence, cumulativeReward: algo.reward,
-      },
-      changes: algo.changes,
-    }
-    if (isSelfish) {
-      // Selfish: export real timeseries instead of synthetic episode/traffic data
-      payload.timeseries = selfishTimeseries ?? null
-      payload.note = 'Selfish Routing is a single-run simulation. No training episodes or MARL diagnostics.'
-    } else {
-      payload.episodes = algo.episodes
-      payload.system = algo.system
-      payload.marl = algo.marl
-    }
-    downloadFile(
-      `civiq_${algo.id}_full.json`,
-      JSON.stringify(payload, null, 2),
-      'application/json',
-    )
-    close()
-  }
-
-  type ExportItem = { label: string; sub: string; tag: string; action: () => void }
-  const ITEMS: ExportItem[] = [
-    { label: 'KPI Summary', sub: 'Key performance metrics', tag: 'CSV', action: exportKpiCsv },
-    // Selfish routing: swap episode series for real SUMO step timeseries
-    ...(isSelfish
-      ? selfishTimeseries
-        ? [{ label: 'Simulation Timeseries', sub: 'Step-level vehicles & wait (real SUMO)', tag: 'CSV', action: exportSelfishTimeseriesCsv }]
-        : []
-      : [{ label: 'Episode Series', sub: 'Per-episode KPI trend data', tag: 'CSV', action: exportEpisodesCsv }]
-    ),
-    ...(!isSelfish && algo.system.training.length
-      ? [{ label: 'Training Curve', sub: 'Reward per training episode', tag: 'CSV', action: exportTrainingCsv }]
-      : []),
-    { label: 'Full Export', sub: 'All metrics and time series', tag: 'JSON', action: exportJson },
-  ]
 
   return (
-    <div ref={ref} className="relative flex-shrink-0">
-      {/* Trigger */}
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all duration-150"
-        style={{
-          background: open ? c.itemBgMd : c.itemBg,
-          border: `1px solid ${open ? c.glassBorder : c.badgeBorder}`,
-          color: open ? c.tp : c.ts,
-        }}
-        onMouseEnter={e => { if (!open) { (e.currentTarget as HTMLElement).style.background = c.itemBgMd; (e.currentTarget as HTMLElement).style.color = c.tp } }}
-        onMouseLeave={e => { if (!open) { (e.currentTarget as HTMLElement).style.background = c.itemBg; (e.currentTarget as HTMLElement).style.color = c.ts } }}
-      >
-        {/* Download icon */}
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Export Metrics
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }}>
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </button>
-
-      {/* Dropdown */}
-      {open && (
-        <div
-          className="absolute right-0 top-[calc(100%+6px)] rounded-xl overflow-hidden"
-          style={{
-            width: '230px', zIndex: 60,
-            background: 'rgba(6,10,26,0.98)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            boxShadow: '0 20px 56px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.07)',
-          }}
-        >
-          <div className="px-3.5 py-2.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-            <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              {algo.label}
-            </p>
-          </div>
-          {ITEMS.map(({ label, sub, tag, action }) => (
-            <button
-              key={label}
-              onClick={action}
-              className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors duration-100"
-              style={{ color: 'rgba(255,255,255,0.78)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-            >
-              {/* Format badge */}
-              <span className="text-[8px] font-black tabular-nums w-9 text-center py-0.5 rounded flex-shrink-0"
-                style={{
-                  background: tag === 'CSV' ? 'rgba(52,211,153,0.15)' : 'rgba(99,102,241,0.18)',
-                  color: tag === 'CSV' ? '#34D399' : '#818CF8',
-                  border: `1px solid ${tag === 'CSV' ? 'rgba(52,211,153,0.3)' : 'rgba(99,102,241,0.3)'}`,
-                }}>
-                {tag}
-              </span>
-              <div className="min-w-0">
-                <div className="text-[11px] font-semibold leading-tight">{label}</div>
-                <div className="text-[9px] mt-0.5 leading-tight" style={{ color: 'rgba(255,255,255,0.35)' }}>{sub}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <button
+      onClick={handleExport}
+      className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all duration-150 flex-shrink-0"
+      style={{ background: c.itemBg, border: `1px solid ${c.badgeBorder}`, color: c.ts }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = c.itemBgMd; (e.currentTarget as HTMLElement).style.color = c.tp }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = c.itemBg; (e.currentTarget as HTMLElement).style.color = c.ts }}
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Export Episodes Data
+    </button>
   )
 }
 
@@ -4253,7 +4099,10 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
           </span>
         )}
       </div>
-      <ExportButton algo={displayAlgo} selfishTimeseries={isSelfish ? realTimeseries : null} />
+      <ExportButton
+        algo={displayAlgo}
+        evalCpuMeans={isQmix ? (qmixData?.evalCpuMeans ?? null) : isCiviq ? (civiqData?.evalCpuMeans ?? null) : null}
+      />
     </div>
 
     {/* Loading gate — show spinner while real data is fetching */}
