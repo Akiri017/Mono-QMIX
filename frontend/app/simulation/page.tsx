@@ -1729,6 +1729,87 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
         </div>
       </div>
     </GlassCard>
+
+    {/* Recommendations */}
+    <GlassCard className="p-6">
+      <div className="mb-5">
+        <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Recommendations</h3>
+        <p className="text-[11px] mt-1" style={{ color: c.tm }}>
+          How different stakeholders can apply the findings of this study.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        {([
+          {
+            role: 'Urban Planners',
+            color: '#38BDF8',
+            icon: (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            ),
+            points: [
+              'Prioritize Civiq-based routing in high-density corridors where traffic regularly exceeds 2,000 vehicles/hr — this is where hierarchical coordination delivers its strongest gains in throughput and travel time.',
+              'Under light traffic, conventional GPS-based routing remains sufficient; AI coordination infrastructure investment is best justified when moderate-to-high demand is sustained.',
+              'Use the three-tier hierarchy as a template for scalable smart city deployments: vehicle agents can be integrated into on-board units, roadside units into existing roadside infrastructure, and the central coordinator hosted on city-managed cloud infrastructure.',
+              'The road blockage analysis confirms near-baseline performance under partial closures, supporting Civiq as a resilient option for cities planning for infrastructure disruptions or events.',
+            ],
+          },
+          {
+            role: 'Traffic Engineers',
+            color: '#A78BFA',
+            icon: (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            ),
+            points: [
+              'Benchmark routing policy decisions against the three demand levels evaluated in this study (1,000 / 1,200 / 2,000 veh/hr on a 2 km² network) to identify which demand tier your target corridor falls in before selecting a coordination strategy.',
+              'At moderate demand, Monolithic QMIX shows lower average travel time but with high variance — treat any single-policy advantage at this tier with caution and prefer policies with stable, consistent behavior like Civiq.',
+              'Use the per-KPI export data for statistical validation: the 50 evaluation episodes per condition support Kruskal-Wallis and Dunn post-hoc testing at your own traffic volumes or network configurations.',
+              'CO₂ and fuel results confirm that routing efficiency improvements directly reduce emissions — a 9.8% CO₂ reduction at high demand provides a concrete environmental KPI for policy reporting.',
+            ],
+          },
+          {
+            role: 'IT / Software Engineers',
+            color: '#4ADE80',
+            icon: (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+              </svg>
+            ),
+            points: [
+              'Civiq\'s real-time factor of 85–102× confirms feasibility for live deployment: the system processes decisions faster than real time across all tested demand conditions, meeting ISO/IEC 25010 Performance Efficiency criteria.',
+              'CPU utilization scales sub-linearly with demand under Civiq (the gap vs. Monolithic QMIX widens from 86 to 179 percentage points as demand grows), making hierarchical decomposition the preferred architecture pattern for high-throughput traffic systems.',
+              'The three-layer edge-cloud pattern — vehicle agents at terminal, RSU agents at edge, central coordinator in cloud — maps directly to standard IoT deployment stacks and can be implemented with existing MARL frameworks such as PyMARL.',
+              'Extend this system by replacing the SUMO simulator with a live TraCI or libsumo interface; the agent APIs and reward structure require no modification for deployment in a production traffic environment.',
+            ],
+          },
+        ] as const).map(({ role, color, icon, points }) => (
+          <div key={role} className="rounded-xl p-4 flex flex-col gap-3"
+            style={{ background: c.itemBg, border: `1px solid ${c.divider}` }}>
+            {/* Role header */}
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}>
+                {icon}
+              </div>
+              <span className="text-[12px] font-bold" style={{ color }}>{role}</span>
+            </div>
+            {/* Bullet points */}
+            <ul className="space-y-2.5">
+              {points.map((pt, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ background: color, opacity: 0.7 }} />
+                  <p className="text-[11px] leading-relaxed" style={{ color: c.tm }}>{pt}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
+
   </div>
   )
 }
