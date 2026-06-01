@@ -1730,8 +1730,50 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
       </div>
     </GlassCard>
 
+    {/* Conclusion */}
+    <GlassCard className="p-6" style={{ background: c.isDark ? 'linear-gradient(155deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.06) 100%)' : undefined }}>
+      <div className="mb-5">
+        <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Conclusion</h3>
+        <p className="text-[11px] mt-1" style={{ color: c.tm }}>
+          A summary of what the Civiq framework achieved across its three evaluation objectives.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        {([
+          {
+            tag: 'Architecture',
+            tagColor: '#38BDF8',
+            headline: 'Three-tier design ran stably and scaled efficiently.',
+            body: 'The vehicle, RSU, and central coordinator layers operated as intended across all test episodes without failure. CPU utilization was consistently lower than Monolithic QMIX, and the performance gap widened as traffic density increased — confirming that hierarchical decomposition is a more computationally efficient architecture under load.',
+          },
+          {
+            tag: 'Simulation Integration',
+            tagColor: '#4ADE80',
+            headline: 'Clean integration with SUMO across all 150 evaluation runs.',
+            body: 'Civiq integrated with the SUMO traffic simulator through the libsumo interface without crashes or instability. All vehicle departures, route traversals, and arrivals were logged successfully across every policy-scenario pair, confirming stable execution under low, moderate, and high demand conditions.',
+          },
+          {
+            tag: 'Routing Performance',
+            tagColor: '#A78BFA',
+            headline: 'Performance improved with congestion — most decisive at high demand.',
+            body: 'Under light traffic, Civiq performed similarly to simpler baselines. Under moderate traffic, it was more consistent than the monolithic approach despite not showing a clear average travel time advantage. Under heavy traffic, it achieved statistically significant travel time improvements over uncoordinated routing and outperformed the monolithic baseline across most metrics. CO₂ emissions per kilometer were marginally higher than shortest-path routing under some conditions — an expected structural trade-off of coordinated signal control.',
+          },
+        ] as const).map(({ tag, tagColor, headline, body }) => (
+          <div key={tag} className="rounded-xl p-4 flex flex-col gap-2"
+            style={{ background: c.isDark ? 'rgba(0,8,30,0.55)' : c.itemBg, border: `1px solid ${c.isDark ? 'rgba(255,255,255,0.12)' : c.divider}` }}>
+            <span className="inline-block self-start text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+              style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44` }}>
+              {tag}
+            </span>
+            <p className="text-[12px] font-semibold leading-snug" style={{ color: c.tp }}>{headline}</p>
+            <p className="text-[11px] leading-relaxed" style={{ color: c.tm }}>{body}</p>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
+
     {/* Recommendations */}
-    <GlassCard className="p-6">
+    <GlassCard className="p-6" style={{ background: c.isDark ? 'linear-gradient(155deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.06) 100%)' : undefined }}>
       <div className="mb-5">
         <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Recommendations</h3>
         <p className="text-[11px] mt-1" style={{ color: c.tm }}>
@@ -1787,7 +1829,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
           },
         ] as const).map(({ role, color, icon, points }) => (
           <div key={role} className="rounded-xl p-4 flex flex-col gap-3"
-            style={{ background: c.itemBg, border: `1px solid ${c.divider}` }}>
+            style={{ background: c.isDark ? 'rgba(0,8,30,0.55)' : c.itemBg, border: `1px solid ${c.isDark ? 'rgba(255,255,255,0.12)' : c.divider}` }}>
             {/* Role header */}
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
