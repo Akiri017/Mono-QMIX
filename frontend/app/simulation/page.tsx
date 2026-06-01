@@ -2477,11 +2477,11 @@ const LOS_FINDINGS: Record<string, Record<string, { headline: string; points: st
       ],
     },
     stable_flow: {
-      headline: 'Mono-QMIX outperforms CiViQ at moderate traffic — centralized control finds a better balance here.',
+      headline: 'Moderate traffic shows no clear winner — Mono-QMIX records lower travel time but with high variance.',
       points: [
-        'CiViQ travel time (122.1 sec) is 12.7% slower than Mono-QMIX (108.3 sec) at this demand level.',
+        'CiViQ travel time (122.1 sec) is 12.7% slower than Mono-QMIX (108.3 sec), but Mono-QMIX\'s high variance suggests this advantage may reflect instability rather than consistent performance.',
         'Throughput (1,193 veh/hr) is 4.4% below Mono-QMIX (1,246) and 5.4% below Selfish Routing (1,258).',
-        'Wait time (11.0 sec) is comparable to the others — the hierarchical design adds no clear advantage here.',
+        'CiViQ shows more stable behavior across episodes — lower variance indicates more reliable routing decisions under moderate congestion.',
       ],
     },
     forced_flow: {
@@ -2503,11 +2503,11 @@ const LOS_FINDINGS: Record<string, Record<string, { headline: string; points: st
       ],
     },
     stable_flow: {
-      headline: 'Moderate traffic is Mono-QMIX\'s strongest scenario — it achieves the fastest travel times of all three.',
+      headline: 'Mono-QMIX shows lower travel time at moderate traffic, but high variance undermines the result.',
       points: [
-        'Travel time (108.3 sec) is 11.3% faster than CiViQ (122.1 sec) and 11.8% faster than Selfish Routing (122.8 sec).',
+        'Travel time (108.3 sec) is lower than CiViQ (122.1 sec) and Selfish Routing (122.8 sec), but Mono-QMIX\'s variance is approximately 2× that of CiViQ — the lower mean may reflect policy instability rather than genuine superiority.',
         'Throughput (1,246 veh/hr) is competitive — only 1.0% below Selfish Routing (1,258) and 4.4% above CiViQ (1,193).',
-        'The AI finds efficient signal coordination at this level without being overwhelmed by too many simultaneous decisions.',
+        'The high episode-to-episode variance indicates the policy has not converged reliably at this demand level.',
       ],
     },
     forced_flow: {
