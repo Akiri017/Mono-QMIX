@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { Clock, ChartLineUp, Timer, Sun, Moon } from '@phosphor-icons/react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { SimulationControls } from '@/components/SimulationControls'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -49,15 +50,18 @@ function useCountUp(target: number, active: boolean, duration = 1400) {
   return val
 }
 
-function useScrolled(threshold = 100) {
-  const [scrolled, setScrolled] = useState(false)
+function useScrolledPast() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [past, setPast] = useState(false)
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > threshold)
-    fn()
-    window.addEventListener('scroll', fn, { passive: true })
-    return () => window.removeEventListener('scroll', fn)
-  }, [threshold])
-  return scrolled
+    const el = ref.current; if (!el) return
+    const obs = new IntersectionObserver(
+      ([e]) => { if (!e.isIntersecting && e.boundingClientRect.top < 0) setPast(true); else if (e.isIntersecting) setPast(false) },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+  return { ref, past }
 }
 
 function useActiveSection(ids: string[]) {
@@ -146,19 +150,7 @@ function ThemeToggle() {
       }}
     >
       <div key={spinKey} style={{ animation: spinKey > 0 ? 'spin-icon 0.42s cubic-bezier(0.34, 1.3, 0.64, 1) forwards' : 'none', display: 'flex' }}>
-        {isDark ? (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="5" />
-            <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-            <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-          </svg>
-        ) : (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-          </svg>
-        )}
+        {isDark ? <Sun size={15} weight="regular" /> : <Moon size={14} weight="regular" />}
       </div>
     </button>
   )
@@ -352,9 +344,10 @@ interface KPICardProps {
   icon: React.ReactNode
   sectionActive: boolean
   staggerMs: number
+  featured?: boolean
 }
 
-function KPICard({ rawValue, format, unit, label, sub, darkColor, lightColor, rgb, icon, sectionActive, staggerMs }: KPICardProps) {
+function KPICard({ rawValue, format, unit, label, sub, darkColor, lightColor, rgb, icon, sectionActive, staggerMs, featured }: KPICardProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [active, setActive] = useState(false)
@@ -372,6 +365,34 @@ function KPICard({ rawValue, format, unit, label, sub, darkColor, lightColor, rg
   const cardBorder = isDark ? `rgba(${rgb},0.65)` : `rgba(${rgb},0.28)`
   const textPrimary = isDark ? '#ffffff' : '#111827'
   const textMuted = isDark ? 'rgba(255,255,255,0.80)' : '#6b7280'
+
+  if (featured) {
+    return (
+      <GlassCard className="p-7 h-full flex flex-col justify-between" style={{
+        border: `1px solid ${cardBorder}`,
+        background: cardBg,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(24px)',
+        transition: 'opacity 0.55s ease, transform 0.55s ease',
+      }}>
+        <div className="flex items-start justify-between mb-5">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: `rgba(${rgb},0.15)`, color }}>
+            {icon}
+          </div>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+            style={{ background: `rgba(${rgb},0.12)`, color, border: `1px solid ${cardBorder}` }}>Civiq</span>
+        </div>
+        <div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="text-[52px] font-black tabular-nums leading-none" style={{ color }}>{format(animVal)}</span>
+            <span className="text-[16px] font-semibold" style={{ color: textMuted }}>{unit}</span>
+          </div>
+          <div className="text-[15px] font-bold mb-1.5" style={{ color: textPrimary }}>{label}</div>
+          <div className="text-[12px] leading-relaxed" style={{ color: textMuted }}>{sub}</div>
+        </div>
+      </GlassCard>
+    )
+  }
 
   return (
     <GlassCard className="p-6" style={{
@@ -491,16 +512,14 @@ export default function Home() {
   const isDark = theme === 'dark'
 
   // Scroll & section state
-  const heroScrolled = useScrolled(600)
-  const activeSection = useActiveSection(['about', 'researchers', 'contact'])
+  const heroSentinel      = useScrolledPast()
+  const heroScrolled      = heroSentinel.past
+  const activeSection     = useActiveSection(['about', 'researchers', 'contact'])
 
   // Reveal observers
   const aboutReveal       = useReveal(0.1)
   const kpiReveal         = useReveal(0.1)
   const researchersReveal = useReveal(0.1)
-
-  // Hero chevron fade
-  const chevronHidden = useScrolled(120)
 
   const c = {
     pageBg:          isDark ? '#16243e' : '#dde9f8',
@@ -550,22 +569,22 @@ export default function Home() {
 
   const kpiData = [
     {
-      rawValue: 2.0, format: (n: number) => n.toFixed(1),
-      unit: 'min', label: 'Average Travel Time', sub: 'High Demand best: 111.8 sec — 8.4% faster than Moderate',
-      darkColor: '#38BDF8', lightColor: '#0369a1', rgb: '56,189,248',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+      rawValue: 2273, format: (n: number) => Math.round(n).toLocaleString(),
+      unit: 'veh/hr', label: 'Peak Network Throughput', sub: 'High Demand (2,000 veh/hr), 37.4% more than Mono-QMIX',
+      darkColor: '#A78BFA', lightColor: '#6d28d9', rgb: '167,139,250',
+      icon: <ChartLineUp size={22} weight="regular" />,
     },
     {
-      rawValue: 2273, format: (n: number) => Math.round(n).toLocaleString(),
-      unit: 'veh/hr', label: 'Peak Network Throughput', sub: 'High Demand (2,000 veh/hr) · 37.4% more than Mono-QMIX',
-      darkColor: '#A78BFA', lightColor: '#6d28d9', rgb: '167,139,250',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+      rawValue: 2.0, format: (n: number) => n.toFixed(1),
+      unit: 'min', label: 'Average Travel Time', sub: 'High Demand best: 111.8 sec, 8.4% faster than Moderate',
+      darkColor: '#38BDF8', lightColor: '#0369a1', rgb: '56,189,248',
+      icon: <Clock size={20} weight="regular" />,
     },
     {
       rawValue: 19.3, format: (n: number) => n.toFixed(1),
-      unit: 'sec', label: 'Wait Time at Peak Load', sub: 'High Demand (2,000 veh/hr) · 18.8% less than Mono-QMIX',
+      unit: 'sec', label: 'Wait Time at Peak Load', sub: 'High Demand (2,000 veh/hr), 18.8% less than Mono-QMIX',
       darkColor: '#4ADE80', lightColor: '#15803d', rgb: '74,222,128',
-      icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+      icon: <Timer size={20} weight="regular" />,
     },
   ]
 
@@ -578,8 +597,10 @@ export default function Home() {
       <StickyNav visible={heroScrolled} activeSection={activeSection} />
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden"
         style={{ zIndex: 2, padding: 'clamp(16px, 3vw, 48px)' }}>
+        {/* Scroll sentinel — when this exits viewport the sticky nav slides in */}
+        <div ref={heroSentinel.ref} className="absolute pointer-events-none" style={{ top: '70%' }} aria-hidden="true" />
         <div className="relative w-full mx-auto" style={{
           maxWidth: 'min(1160px, 100%)',
           background: c.heroBg, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
@@ -587,11 +608,6 @@ export default function Home() {
           border: `1px solid ${c.heroBorder}`,
           boxShadow: c.heroShadow,
         }}>
-          {(['left-2', 'right-2'] as const).map(side => (
-            <div key={side} className={`absolute ${side} top-1/2 -translate-y-1/2 flex flex-col gap-2.5 pointer-events-none`}>
-              {[0, 1, 2].map(i => <div key={i} className="w-2 h-2 rounded-full" style={{ background: c.dotBg, boxShadow: c.dotShadow }} />)}
-            </div>
-          ))}
           <div className="relative w-full flex flex-col overflow-hidden" style={{
             background: c.heroInner, backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
             borderRadius: '14px', border: `1px solid ${c.heroInnerBorder}`,
@@ -613,7 +629,7 @@ export default function Home() {
                 <p className="leading-[1.75] mb-6" style={{ fontSize: 'clamp(12px, 1.1vw, 14px)', color: c.textBody }}>
                   An undergraduate thesis applying{' '}
                   <span className="font-semibold" style={{ color: c.accent }}>Hierarchical Multi-Agent Reinforcement Learning</span>{' '}
-                  to urban traffic management. Vehicles act as intelligent agents that cooperatively learn routing decisions — reducing congestion across a simulated road network.
+                  to urban traffic management. Vehicles act as intelligent agents that cooperatively learn routing decisions, reducing congestion across a simulated road network.
                 </p>
                 {/* CTA button with animated arrow */}
                 <CTAButton isDark={isDark} />
@@ -632,23 +648,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scroll-down chevron — outer fades on scroll, inner bounces */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute', bottom: '28px', left: '50%',
-            transform: 'translateX(-50%)',
-            opacity: chevronHidden ? 0 : 1,
-            transition: 'opacity 0.4s ease',
-            pointerEvents: 'none',
-          }}
-        >
-          <div style={{ animation: 'bounce-chevron 2s ease-in-out infinite', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(15,23,42,0.3)' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </div>
-        </div>
       </section>
 
       {/* ── ABOUT ── */}
@@ -669,7 +668,7 @@ export default function Home() {
               Redefining Urban Traffic Management
             </h2>
             <p className="text-[15px] leading-relaxed max-w-3xl" style={{ color: c.textSecondary }}>
-              CiViQ is a smart traffic coordination system tested on a 2 km² simulation of BGC. It works on three levels: individual vehicles, 17 roadside units that coordinate nearby intersections, and a central server that oversees the whole network. Across three traffic volumes — light, moderate, and heavy — CiViQ moves 37.4% more vehicles per hour than the single-AI baseline and cuts average wait times by 18.8% when roads are at their busiest.
+              CiViQ is a smart traffic coordination system tested on a 2 km² simulation of BGC. It works on three levels: individual vehicles, 17 roadside units that coordinate nearby intersections, and a central server that oversees the whole network. Across three traffic volumes (low, moderate, and high), CiViQ moves 37.4% more vehicles per hour than the single-AI baseline and cuts average wait times by 18.8% when roads are at their busiest.
             </p>
           </div>
 
@@ -680,15 +679,17 @@ export default function Home() {
               transform: kpiReveal.visible ? 'none' : 'translateY(20px)',
               transition: 'opacity 0.5s ease, transform 0.5s ease',
             }}>
-              <SectionLabel>Smart Traffic Routing</SectionLabel>
               <h3 className="text-[24px] md:text-[28px] font-bold mb-8" style={{ color: c.textPrimary }}>
                 Scalable by Design, Fast in Practice
               </h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
-              {kpiData.map((card, i) => (
-                <KPICard key={card.label} {...card} sectionActive={kpiReveal.visible} staggerMs={i * 110} />
-              ))}
+            {/* Asymmetric grid: featured metric left (2fr), two supporting cards right (1fr stacked) */}
+            <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 mb-6">
+              <KPICard key={kpiData[0].label} {...kpiData[0]} sectionActive={kpiReveal.visible} staggerMs={0} featured />
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-5">
+                <KPICard key={kpiData[1].label} {...kpiData[1]} sectionActive={kpiReveal.visible} staggerMs={110} />
+                <KPICard key={kpiData[2].label} {...kpiData[2]} sectionActive={kpiReveal.visible} staggerMs={220} />
+              </div>
             </div>
             <div style={{
               opacity: kpiReveal.visible ? 1 : 0,
@@ -702,7 +703,7 @@ export default function Home() {
               } : {}}>
                 <p className="text-[14px] leading-relaxed" style={{ color: c.textSecondary }}>
                   Simulated on a 2 km² model of BGC, CiViQ was tested at three traffic levels. When roads are at peak load{' '}
-                  <span className="font-semibold" style={{ color: c.accent }}>(2,000 vehicles/hr)</span>, it clears 2,273 vehicles per hour — 37.4% more than the single-AI approach — and cuts average wait time from 23.75 sec to 19.29 sec. At moderate traffic, the single-AI approach is actually 11.3% faster in travel time (108.3 vs. 122.1 sec), showing that CiViQ's coordination pays off most when the network is under pressure. Fuel efficiency also improves: 21.2 L/100km for CiViQ vs. 23.4 L/100km — a 9.4% reduction.
+                  <span className="font-semibold" style={{ color: c.accent }}>(2,000 vehicles/hr)</span>, it clears 2,273 vehicles per hour, 37.4% more than the single-AI approach, and cuts average wait time from 23.75 sec to 19.29 sec. At moderate traffic, the single-AI approach is actually 11.3% faster in travel time (108.3 vs. 122.1 sec), showing that CiViQ's coordination pays off most when the network is under pressure. Fuel efficiency also improves: 21.2 L/100km for CiViQ vs. 23.4 L/100km, a 9.4% reduction.
                 </p>
               </GlassCard>
             </div>
