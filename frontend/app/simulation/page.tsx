@@ -10,6 +10,7 @@ import {
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { SimulationControls } from '@/components/SimulationControls'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useRole } from '@/contexts/RoleContext'
 
 // ─── Dashboard theme context ───────────────────────────────────────────────────
 
@@ -185,6 +186,7 @@ const SURVEY_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfO1J0zUOVJdmIoTM4v
 const StatusBar = () => {
   const router = useRouter()
   const c = useDashColors()
+  const { roleDef, openModal } = useRole()
   const NAV_LINKS = [
     { label: 'About',        href: '/#about' },
     { label: 'Contact Us',   href: '/#contact' },
@@ -221,6 +223,19 @@ const StatusBar = () => {
             {label}
           </button>
         ))}
+        {roleDef && (
+          <button
+            onClick={openModal}
+            title="Change role"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all duration-150"
+            style={{ background: `${roleDef.color}18`, border: `1px solid ${roleDef.color}40`, color: roleDef.color }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${roleDef.color}28` }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${roleDef.color}18` }}
+          >
+            <span className="flex-shrink-0" style={{ width: 13, height: 13 }}>{roleDef.icon}</span>
+            {roleDef.label}
+          </button>
+        )}
         <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
           className="ml-2 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150"
           style={{ background: 'transparent', color: '#06B6D4', border: '1.5px solid #06B6D4' }}
@@ -1302,6 +1317,7 @@ function ComparePage({ config, onBack }: { config: CompareConfig; onBack: () => 
 function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => void }) {
   const c = useDashColors()
   const { reducedMotion, ready } = usePageEntrance()
+  const { role, roleDef } = useRole()
   const [losTab, setLosTab] = useState<'free_flow' | 'stable_flow' | 'forced_flow'>('forced_flow')
   const [visibleAlgos, setVisibleAlgos] = useState<Set<AlgoKey>>(new Set<AlgoKey>(['selfish', 'qmix', 'civiq']))
   const toggleAlgo = (id: AlgoKey) => setVisibleAlgos(prev => {
@@ -1780,8 +1796,10 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
           How different stakeholders can apply the findings of this study.
         </p>
       </div>
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        {([
+      {(() => {
+        const ROLE_MAP: Record<string, string> = { urban_planner: 'Urban Planners', traffic_engineer: 'Traffic Engineers', software_engineer: 'IT / Software Engineers' }
+        const userRoleLabel = role ? ROLE_MAP[role] : null
+        const allRecs = ([
           {
             role: 'Urban Planners',
             color: '#38BDF8',
@@ -1827,29 +1845,33 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
               'Extend this system by replacing the SUMO simulator with a live TraCI or libsumo interface; the agent APIs and reward structure require no modification for deployment in a production traffic environment.',
             ],
           },
-        ] as const).map(({ role, color, icon, points }) => (
-          <div key={role} className="rounded-xl p-4 flex flex-col gap-3"
-            style={{ background: c.isDark ? 'rgba(0,8,30,0.55)' : c.itemBg, border: `1px solid ${c.isDark ? 'rgba(255,255,255,0.12)' : c.divider}` }}>
-            {/* Role header */}
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}>
-                {icon}
+        ] as const)
+        const filtered = userRoleLabel ? allRecs.filter(r => r.role === userRoleLabel) : allRecs
+        return (
+          <div className={`grid gap-4 ${filtered.length === 1 ? 'grid-cols-1 max-w-2xl' : 'grid-cols-1 xl:grid-cols-3'}`}>
+            {filtered.map(({ role: roleLabel, color, icon, points }) => (
+              <div key={roleLabel} className="rounded-xl p-4 flex flex-col gap-3"
+                style={{ background: c.isDark ? 'rgba(0,8,30,0.55)' : c.itemBg, border: `1px solid ${color}45` }}>
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}>
+                    {icon}
+                  </div>
+                  <span className="text-[12px] font-bold" style={{ color }}>{roleLabel}</span>
+                </div>
+                <ul className="space-y-2.5">
+                  {points.map((pt, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ background: color, opacity: 0.7 }} />
+                      <p className="text-[11px] leading-relaxed" style={{ color: c.tm }}>{pt}</p>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <span className="text-[12px] font-bold" style={{ color }}>{role}</span>
-            </div>
-            {/* Bullet points */}
-            <ul className="space-y-2.5">
-              {points.map((pt, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ background: color, opacity: 0.7 }} />
-                  <p className="text-[11px] leading-relaxed" style={{ color: c.tm }}>{pt}</p>
-                </li>
-              ))}
-            </ul>
+            ))}
           </div>
-        ))}
-      </div>
+        )
+      })()}
     </GlassCard>
 
   </div>
@@ -3973,12 +3995,41 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
 
 // ─── Algorithm Detail Page ────────────────────────────────────────────────────
 
+const KPI_DESCRIPTIONS: Record<string, Record<string, string>> = {
+  travelTime: {
+    urban_planner:    'The average time residents spend traveling from start to destination. Lower values mean people move through the city faster — a direct quality-of-life indicator.',
+    traffic_engineer: 'Mean trip completion time across all vehicles. Lower ATT indicates effective routing decisions and reduced network-wide delay accumulation at intersections.',
+    software_engineer:'The mean time it takes for a vehicle agent to complete its route from entry to exit across all vehicles in the simulation. Computed as the mean of per-vehicle trip durations.',
+    default:          'The mean time it takes for a vehicle to complete its route from entry to exit, across all vehicles in the simulation. A lower ATT indicates better traffic coordination.',
+  },
+  waitTime: {
+    urban_planner:    'The average time vehicles spend completely stopped in traffic. Lower values mean less frustration for commuters and better use of road capacity.',
+    traffic_engineer: 'Mean vehicle queue delay per trip. Elevated values signal bottleneck formation, suboptimal signal coordination, or poor routing policy behavior under load.',
+    software_engineer:'The mean time vehicles spent fully stopped in traffic. High values indicate congestion or poor routing decisions from the policy network.',
+    default:          'The mean time vehicles spent stationary in traffic during their journeys. High values indicate congestion or poor routing decisions.',
+  },
+  throughput: {
+    urban_planner:    'How many vehicles successfully complete their journeys per hour. Higher means the city moves more people more efficiently — the core network capacity metric.',
+    traffic_engineer: 'Network-wide vehicle completion rate (veh/hr). The primary indicator of arterial capacity utilization and policy-level coordination effectiveness under load.',
+    software_engineer:'The number of vehicles that successfully completed their routes per hour. Higher values indicate better overall traffic flow and network utilization by the MARL policy.',
+    default:          'The number of vehicles that successfully completed their routes within the simulation time. Higher throughput indicates better network utilization.',
+  },
+  rtf: {
+    urban_planner:    'How fast this system can model traffic conditions — a value above 50× means it can simulate an hour of traffic in about a minute, making real-world deployment feasible.',
+    traffic_engineer: 'Ratio of simulation time to wall-clock execution time. Values ≥50× satisfy operational thresholds for adaptive signal control; this system achieves 85–102× consistently.',
+    software_engineer:'The ratio of simulation time to actual wall-clock time. Values above 1.0 indicate faster-than-real-time execution — required for live deployment viability under ISO/IEC 25010.',
+    default:          'The ratio of simulation time to actual wall-clock time. A higher real-time factor indicates better computational efficiency.',
+  },
+}
+
 const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
   algo: AlgoData; mapSize: string; trafficScale: string
 }) => {
   const c = useDashColors()
   const { reducedMotion, ready } = usePageEntrance()
+  const { role } = useRole()
   const [openModal, setOpenModal] = useState<EpisodeMetricKey | null>(null)
+  const kpiDesc = (key: string) => KPI_DESCRIPTIONS[key]?.[role ?? 'default'] ?? KPI_DESCRIPTIONS[key]?.default ?? ''
   const [congestionDetail, setCongestionDetail] = useState(false)
   const [selfishModal, setSelfishModal] = useState<SelfishMetricKey | null>(null)
   const [openCpuModal, setOpenCpuModal] = useState(false)
@@ -4251,7 +4302,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         change2={isCiviq ? displayAlgo.changes2?.travelTime : undefined}
         changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('travelTime') : () => setOpenModal('travelTime')}
-        description="The mean time it takes for a vehicle to complete its route from entry to exit, across all vehicles in the simulation." />
+        description={kpiDesc('travelTime')} />
       <KpiCard label="Avg. Wait Time" abbr="AWT" value={parseFloat(displayAlgo.waitTime.toFixed(2))} unit="sec"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.waitTime} lowerBetter sparkData={displayAlgo.sparklines.waitTime}
@@ -4259,7 +4310,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         change2={isCiviq ? displayAlgo.changes2?.waitTime : undefined}
         changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('waitTime') : () => setOpenModal('waitTime')}
-        description="The mean time vehicles spent fully stopped in traffic. High values indicate congestion or poor routing decisions." />
+        description={kpiDesc('waitTime')} />
       <KpiCard label="Throughput" abbr="TPT" value={Math.round(displayAlgo.throughput).toLocaleString()} unit="veh/hr"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         change={displayAlgo.changes.throughput} sparkData={displayAlgo.sparklines.throughput}
@@ -4267,13 +4318,13 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
         change2={isCiviq ? displayAlgo.changes2?.throughput : undefined}
         changeLabel2={isCiviq ? 'vs. Selfish' : undefined}
         onClick={isSelfish ? () => setSelfishModal('throughput') : () => setOpenModal('throughput')}
-        description="The number of vehicles that successfully completed their routes per minute. Higher values indicate better overall traffic flow." />
+        description={kpiDesc('throughput')} />
       <KpiCard label="Real-time Factor" abbr="RTF" value={displayAlgo.speed.toFixed(2)} unit="x"
         color={displayAlgo.color} colorDim={displayAlgo.colorDim} borderColor={displayAlgo.border}
         valueAlign="center"
         onClick={undefined}
         descriptionSide="left"
-        description="The ratio of simulation time to actual wall-clock time. A value of 1.0 means the simulation runs in real time; higher values indicate faster-than-real-time execution." />
+        description={kpiDesc('rtf')} />
     </div>
 
     {/* Charts row: left column stack + Map Player */}

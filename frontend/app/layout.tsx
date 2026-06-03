@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/contexts/ThemeContext"
+import { RoleProvider } from "@/contexts/RoleContext"
+import { RoleSelectModal } from "@/components/RoleSelectModal"
 
 export const metadata: Metadata = {
   title: "Civiq - Hierarchical Multi-Agent Coordination Framework",
@@ -15,7 +17,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-inter">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <RoleProvider>
+            {children}
+            <RoleSelectModal />
+          </RoleProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

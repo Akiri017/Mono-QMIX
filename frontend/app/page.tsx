@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { AnimatedBackground } from '@/components/AnimatedBackground'
 import { SimulationControls } from '@/components/SimulationControls'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useRole } from '@/contexts/RoleContext'
 
 const SURVEY_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfO1J0zUOVJdmIoTM4vjY5uVCS0_Ju93zY8xXkVTnxGcvP6fg/viewform'
 
@@ -165,6 +166,24 @@ function ThemeToggle() {
 
 // ── Sticky nav (appears on scroll) ────────────────────────────────────────────
 
+function RoleBadge() {
+  const { roleDef, openModal } = useRole()
+  if (!roleDef) return null
+  return (
+    <button
+      onClick={openModal}
+      title="Change role"
+      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all duration-150"
+      style={{ background: `${roleDef.color}18`, border: `1px solid ${roleDef.color}40`, color: roleDef.color }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${roleDef.color}28` }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${roleDef.color}18` }}
+    >
+      <span className="flex-shrink-0" style={{ width: 12, height: 12, display: 'flex' }}>{roleDef.icon}</span>
+      {roleDef.label}
+    </button>
+  )
+}
+
 function StickyNav({ visible, activeSection }: { visible: boolean; activeSection: string }) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -237,6 +256,7 @@ function StickyNav({ visible, activeSection }: { visible: boolean; activeSection
           }}>
           Evaluate
         </a>
+        <RoleBadge />
         <div className="ml-2"><ThemeToggle /></div>
       </div>
     </div>
@@ -311,6 +331,7 @@ function StatusBar({ activeSection }: { activeSection: string }) {
           }}>
           Evaluate
         </a>
+        <RoleBadge />
         <div className="ml-2"><ThemeToggle /></div>
       </div>
     </div>
