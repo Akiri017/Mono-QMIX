@@ -1749,7 +1749,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
     {/* Conclusion */}
     <GlassCard className="p-6" style={{ background: c.isDark ? 'linear-gradient(155deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.06) 100%)' : undefined }}>
       <div className="mb-5">
-        <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Conclusion</h3>
+        <h3 className="text-[16px] font-bold" style={{ color: c.tp }}>Conclusion</h3>
         <p className="text-[11px] mt-1" style={{ color: c.tm }}>
           A summary of what the Civiq framework achieved across its three evaluation objectives.
         </p>
@@ -1781,7 +1781,7 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
               style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44` }}>
               {tag}
             </span>
-            <p className="text-[12px] font-semibold leading-snug" style={{ color: c.tp }}>{headline}</p>
+            <p className="text-[14px] font-semibold leading-snug" style={{ color: c.tp }}>{headline}</p>
             <p className="text-[11px] leading-relaxed" style={{ color: c.tm }}>{body}</p>
           </div>
         ))}
@@ -1789,90 +1789,129 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
     </GlassCard>
 
     {/* Recommendations */}
-    <GlassCard className="p-6" style={{ background: c.isDark ? 'linear-gradient(155deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.06) 100%)' : undefined }}>
-      <div className="mb-5">
-        <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Recommendations</h3>
-        <p className="text-[11px] mt-1" style={{ color: c.tm }}>
-          How different stakeholders can apply the findings of this study.
-        </p>
-      </div>
-      {(() => {
-        const ROLE_MAP: Record<string, string> = { urban_planner: 'Urban Planners', traffic_engineer: 'Traffic Engineers', software_engineer: 'IT / Software Engineers' }
-        const userRoleLabel = role ? ROLE_MAP[role] : null
-        const allRecs = ([
-          {
-            role: 'Urban Planners',
-            color: '#38BDF8',
-            icon: (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            ),
-            points: [
-              'Prioritize Civiq-based routing in high-density corridors where traffic regularly exceeds 2,000 vehicles/hr — this is where hierarchical coordination delivers its strongest gains in throughput and travel time.',
-              'Under light traffic, conventional GPS-based routing remains sufficient; AI coordination infrastructure investment is best justified when moderate-to-high demand is sustained.',
-              'Use the three-tier hierarchy as a template for scalable smart city deployments: vehicle agents can be integrated into on-board units, roadside units into existing roadside infrastructure, and the central coordinator hosted on city-managed cloud infrastructure.',
-              'The road blockage analysis confirms near-baseline performance under partial closures, supporting Civiq as a resilient option for cities planning for infrastructure disruptions or events.',
-            ],
-          },
-          {
-            role: 'Traffic Engineers',
-            color: '#A78BFA',
-            icon: (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-              </svg>
-            ),
-            points: [
-              'Benchmark routing policy decisions against the three demand levels evaluated in this study (1,000 / 1,200 / 2,000 veh/hr on a 2 km² network) to identify which demand tier your target corridor falls in before selecting a coordination strategy.',
-              'At moderate demand, Monolithic QMIX shows lower average travel time but with high variance — treat any single-policy advantage at this tier with caution and prefer policies with stable, consistent behavior like Civiq.',
-              'Use the per-KPI export data for statistical validation: the 50 evaluation episodes per condition support Kruskal-Wallis and Dunn post-hoc testing at your own traffic volumes or network configurations.',
-              'CO₂ and fuel results confirm that routing efficiency improvements directly reduce emissions — a 9.8% CO₂ reduction at high demand provides a concrete environmental KPI for policy reporting.',
-            ],
-          },
-          {
-            role: 'IT / Software Engineers',
-            color: '#4ADE80',
-            icon: (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-              </svg>
-            ),
-            points: [
-              'Civiq\'s real-time factor of 85–102× confirms feasibility for live deployment: the system processes decisions faster than real time across all tested demand conditions, meeting ISO/IEC 25010 Performance Efficiency criteria.',
-              'CPU utilization scales sub-linearly with demand under Civiq (the gap vs. Monolithic QMIX widens from 86 to 179 percentage points as demand grows), making hierarchical decomposition the preferred architecture pattern for high-throughput traffic systems.',
-              'The three-layer edge-cloud pattern — vehicle agents at terminal, RSU agents at edge, central coordinator in cloud — maps directly to standard IoT deployment stacks and can be implemented with existing MARL frameworks such as PyMARL.',
-              'Extend this system by replacing the SUMO simulator with a live TraCI or libsumo interface; the agent APIs and reward structure require no modification for deployment in a production traffic environment.',
-            ],
-          },
-        ] as const)
-        const filtered = userRoleLabel ? allRecs.filter(r => r.role === userRoleLabel) : allRecs
-        return (
-          <div className={`grid gap-4 ${filtered.length === 1 ? 'grid-cols-1 max-w-2xl' : 'grid-cols-1 xl:grid-cols-3'}`}>
-            {filtered.map(({ role: roleLabel, color, icon, points }) => (
-              <div key={roleLabel} className="rounded-xl p-4 flex flex-col gap-3"
-                style={{ background: c.isDark ? 'rgba(0,8,30,0.55)' : c.itemBg, border: `1px solid ${color}45` }}>
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}>
-                    {icon}
-                  </div>
-                  <span className="text-[12px] font-bold" style={{ color }}>{roleLabel}</span>
-                </div>
-                <ul className="space-y-2.5">
-                  {points.map((pt, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ background: color, opacity: 0.7 }} />
-                      <p className="text-[11px] leading-relaxed" style={{ color: c.tm }}>{pt}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+    {(() => {
+      const ROLE_MAP: Record<string, string> = { urban_planner: 'Urban Planners', traffic_engineer: 'Traffic Engineers', software_engineer: 'IT / Software Engineers' }
+      const SUBTITLE_MAP: Record<string, string> = {
+        urban_planner:    'Deployment and policy guidance derived from the simulation results.',
+        traffic_engineer: 'Technical guidance for benchmarking and policy selection.',
+        software_engineer:'Implementation and architecture guidance for production deployment.',
+      }
+      const userRoleLabel = role ? ROLE_MAP[role] : null
+      const title    = roleDef ? `Recommendations for ${roleDef.label}` : 'Recommendations'
+      const subtitle = role ? (SUBTITLE_MAP[role] ?? 'How different stakeholders can apply the findings of this study.') : 'How different stakeholders can apply the findings of this study.'
+
+      const allRecs = ([
+        {
+          role: 'Urban Planners',
+          color: '#38BDF8',
+          icon: (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          ),
+          points: [
+            'Prioritize Civiq-based routing in high-density corridors where traffic regularly exceeds 2,000 vehicles/hr. This is where hierarchical coordination delivers its strongest gains in throughput and travel time.',
+            'Under light traffic, conventional GPS-based routing remains sufficient; AI coordination infrastructure investment is best justified when moderate-to-high demand is sustained.',
+            'Use the three-tier hierarchy as a template for scalable smart city deployments: vehicle agents can be integrated into on-board units, roadside units into existing roadside infrastructure, and the central coordinator hosted on city-managed cloud infrastructure.',
+            'The road blockage analysis confirms near-baseline performance under partial closures, supporting Civiq as a resilient option for cities planning for infrastructure disruptions or events.',
+          ],
+        },
+        {
+          role: 'Traffic Engineers',
+          color: '#A78BFA',
+          icon: (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          ),
+          points: [
+            'Benchmark routing policy decisions against the three demand levels evaluated in this study (1,000 / 1,200 / 2,000 veh/hr on a 2 km² network) to identify which demand tier your target corridor falls in before selecting a coordination strategy.',
+            'At moderate demand, Monolithic QMIX shows lower average travel time but with high variance. Treat any single-policy advantage at this tier with caution and prefer policies with stable, consistent behavior like Civiq.',
+            'Use the per-KPI export data for statistical validation: the 50 evaluation episodes per condition support Kruskal-Wallis and Dunn post-hoc testing at your own traffic volumes or network configurations.',
+            'CO₂ and fuel results confirm that routing efficiency improvements directly reduce emissions. A 9.8% CO₂ reduction at high demand provides a concrete environmental KPI for policy reporting.',
+          ],
+        },
+        {
+          role: 'IT / Software Engineers',
+          color: '#4ADE80',
+          icon: (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+            </svg>
+          ),
+          points: [
+            'Civiq\'s real-time factor of 85-102x confirms feasibility for live deployment: the system processes decisions faster than real time across all tested demand conditions, meeting ISO/IEC 25010 Performance Efficiency criteria.',
+            'CPU utilization scales sub-linearly with demand under Civiq (the gap vs. Monolithic QMIX widens from 86 to 179 percentage points as demand grows), making hierarchical decomposition the preferred architecture pattern for high-throughput traffic systems.',
+            'The three-layer edge-cloud pattern (vehicle agents at terminal, RSU agents at edge, central coordinator in cloud) maps directly to standard IoT deployment stacks and can be implemented with existing MARL frameworks such as PyMARL.',
+            'Extend this system by replacing the SUMO simulator with a live TraCI or libsumo interface; the agent APIs and reward structure require no modification for deployment in a production traffic environment.',
+          ],
+        },
+      ] as const)
+
+      const filtered = userRoleLabel ? allRecs.filter(r => r.role === userRoleLabel) : allRecs
+      const singleRec = filtered.length === 1 ? filtered[0] : null
+
+      return (
+        <GlassCard className="p-6" style={{ background: c.isDark ? 'linear-gradient(155deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.06) 100%)' : undefined }}>
+          <div className="mb-5 text-center">
+            <h3 className="text-[16px] font-bold" style={{ color: c.tp }}>
+              {roleDef ? (
+                <>Recommendations for <span style={{ color: roleDef.color }}>{roleDef.label}</span></>
+              ) : 'Recommendations'}
+            </h3>
+            <p className="text-[11px] mt-1" style={{ color: c.tm }}>{subtitle}</p>
           </div>
-        )
-      })()}
-    </GlassCard>
+
+          {singleRec ? (
+            /* Single role selected: 4 individual numbered cards in a 2-col grid */
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {singleRec.points.map((pt, i) => (
+                <div key={i} className="rounded-xl p-5 flex flex-col gap-3"
+                  style={c.isDark ? {
+                    background: 'linear-gradient(155deg, rgba(8,18,46,0.96) 0%, rgba(6,14,38,0.98) 100%)',
+                    border: `1px solid ${singleRec.color}55`,
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+                  } : {
+                    background: '#ffffff',
+                    border: `1px solid ${singleRec.color}70`,
+                    boxShadow: `0 4px 20px rgba(15,23,42,0.10), 0 1px 4px rgba(15,23,42,0.07), inset 0 1px 0 rgba(255,255,255,0.9)`,
+                  }}>
+                  <span className="self-start text-[11px] font-bold tabular-nums px-2 py-0.5 rounded"
+                    style={{ background: `${singleRec.color}22`, color: singleRec.color, border: `1px solid ${singleRec.color}50` }}>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <p className="text-[12px] leading-[1.7]" style={{ color: c.isDark ? 'rgba(255,255,255,0.88)' : '#1e293b' }}>{pt}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* No role selected: all three role groups with bullet lists */
+            <div className="grid gap-4 grid-cols-1 xl:grid-cols-3">
+              {filtered.map(({ role: roleLabel, color, icon, points }) => (
+                <div key={roleLabel} className="rounded-xl p-4 flex flex-col gap-3"
+                  style={{ background: c.isDark ? 'rgba(0,8,30,0.55)' : c.itemBg, border: `1px solid ${color}45` }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}>
+                      {icon}
+                    </div>
+                    <span className="text-[12px] font-bold" style={{ color }}>{roleLabel}</span>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {points.map((pt, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ background: color, opacity: 0.7 }} />
+                        <p className="text-[11px] leading-relaxed" style={{ color: c.tm }}>{pt}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </GlassCard>
+      )
+    })()}
 
   </div>
   )
