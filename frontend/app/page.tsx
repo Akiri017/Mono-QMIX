@@ -165,13 +165,13 @@ function RoleBadge() {
     <button
       onClick={openModal}
       title="Change role"
-      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all duration-150"
+      className="flex items-center justify-center sm:justify-start gap-1.5 w-8 h-8 sm:w-auto sm:h-auto px-0 sm:px-3 py-0 sm:py-1 rounded-full text-[11px] font-semibold transition-all duration-150 flex-shrink-0"
       style={{ background: `${roleDef.color}18`, border: `1px solid ${roleDef.color}40`, color: roleDef.color }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${roleDef.color}28` }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${roleDef.color}18` }}
     >
       <span className="flex-shrink-0" style={{ width: 12, height: 12, display: 'flex' }}>{roleDef.icon}</span>
-      {roleDef.label}
+      <span className="hidden sm:inline whitespace-nowrap">{roleDef.label}</span>
     </button>
   )
 }
@@ -203,12 +203,12 @@ function StickyNav({ visible, activeSection }: { visible: boolean; activeSection
           className={`w-5 h-5 object-contain ${isDark ? 'brightness-0 invert opacity-80' : 'opacity-90'}`} />
         <span className="font-bold text-[13px] tracking-widest" style={{ color: isDark ? 'rgba(255,255,255,0.75)' : '#1e293b' }}>CIVIQ</span>
       </div>
-      <div className="flex items-center gap-0.5 sm:gap-1">
+      <div className="flex items-center gap-2">
         {NAV.map(({ label, href, id }) => {
           const isActive = id && activeSection === id
           return (
             <a key={label} href={href}
-              className="px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-medium transition-all duration-150 whitespace-nowrap"
+              className="hidden sm:inline-flex px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-medium transition-all duration-150 whitespace-nowrap"
               style={{
                 color: isActive ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.80)' : '#374151'),
                 background: isActive ? (isDark ? 'rgba(56,189,248,0.18)' : 'rgba(29,78,216,0.08)') : 'transparent',
@@ -230,7 +230,7 @@ function StickyNav({ visible, activeSection }: { visible: boolean; activeSection
           )
         })}
         <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
-          className="ml-2 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150"
+          className="px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all duration-150 whitespace-nowrap"
           style={{
             background: 'transparent',
             color: '#06B6D4',
@@ -249,7 +249,7 @@ function StickyNav({ visible, activeSection }: { visible: boolean; activeSection
           Evaluate
         </a>
         <RoleBadge />
-        <div className="ml-2"><ThemeToggle /></div>
+        <ThemeToggle />
       </div>
     </div>
   )
@@ -265,7 +265,7 @@ function StatusBar({ activeSection }: { activeSection: string }) {
     { label: 'Contact Us',   href: '#contact',  id: 'contact' },
   ]
   return (
-    <div className="flex items-center justify-between px-7 py-2.5 flex-shrink-0" style={{
+    <div className="flex items-center justify-between px-3 sm:px-7 py-2.5 flex-shrink-0" style={{
       background: isDark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.45)',
       borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.6)'}`,
       backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
@@ -278,12 +278,12 @@ function StatusBar({ activeSection }: { activeSection: string }) {
           ·&nbsp; A Hierarchical Multi-Agent Coordination Framework
         </span>
       </div>
-      <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0">
         {NAV.map(({ label, href, id }) => {
           const isActive = id && activeSection === id
           return (
             <a key={label} href={href}
-              className="px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-medium transition-all duration-150 whitespace-nowrap"
+              className="hidden sm:inline-flex px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-medium transition-all duration-150 whitespace-nowrap"
               style={{
                 color: isActive ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.80)' : '#374151'),
                 background: isActive ? (isDark ? 'rgba(56,189,248,0.18)' : 'rgba(29,78,216,0.08)') : 'transparent',
@@ -305,7 +305,7 @@ function StatusBar({ activeSection }: { activeSection: string }) {
           )
         })}
         <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
-          className="ml-2 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150"
+          className="px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all duration-150 whitespace-nowrap"
           style={{
             background: 'transparent',
             color: '#06B6D4',
@@ -324,7 +324,7 @@ function StatusBar({ activeSection }: { activeSection: string }) {
           Evaluate
         </a>
         <RoleBadge />
-        <div className="ml-2"><ThemeToggle /></div>
+        <ThemeToggle />
       </div>
     </div>
   )
@@ -368,7 +368,7 @@ function KPICard({ rawValue, format, unit, label, sub, darkColor, lightColor, rg
 
   if (featured) {
     return (
-      <GlassCard className="p-7 h-full flex flex-col justify-between" style={{
+      <GlassCard className="p-5 sm:p-7 h-full flex flex-col justify-between" style={{
         border: `1px solid ${cardBorder}`,
         background: cardBg,
         opacity: visible ? 1 : 0,
@@ -383,8 +383,8 @@ function KPICard({ rawValue, format, unit, label, sub, darkColor, lightColor, rg
             style={{ background: `rgba(${rgb},0.12)`, color, border: `1px solid ${cardBorder}` }}>Civiq</span>
         </div>
         <div>
-          <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-[52px] font-black tabular-nums leading-none" style={{ color }}>{format(animVal)}</span>
+          <div className="flex items-baseline flex-wrap gap-2 mb-2">
+            <span className="text-[38px] sm:text-[52px] font-black tabular-nums leading-none" style={{ color }}>{format(animVal)}</span>
             <span className="text-[16px] font-semibold" style={{ color: textMuted }}>{unit}</span>
           </div>
           <div className="text-[15px] font-bold mb-1.5" style={{ color: textPrimary }}>{label}</div>
@@ -686,7 +686,7 @@ export default function Home() {
             {/* Asymmetric grid: featured metric left (2fr), two supporting cards right (1fr stacked) */}
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 mb-6">
               <KPICard key={kpiData[0].label} {...kpiData[0]} sectionActive={kpiReveal.visible} staggerMs={0} featured />
-              <div className="grid grid-cols-2 lg:grid-cols-1 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-5">
                 <KPICard key={kpiData[1].label} {...kpiData[1]} sectionActive={kpiReveal.visible} staggerMs={110} />
                 <KPICard key={kpiData[2].label} {...kpiData[2]} sectionActive={kpiReveal.visible} staggerMs={220} />
               </div>
@@ -727,7 +727,7 @@ export default function Home() {
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             }}>The Researchers</h2>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
             {researchers.map((r, i) => (
               <ResearcherCard key={r.name} {...r} staggerMs={i * 80} sectionActive={researchersReveal.visible} />
             ))}

@@ -193,10 +193,10 @@ const StatusBar = () => {
   ]
   return (
     <div className="flex items-center justify-between flex-shrink-0"
-      style={{ padding: '10px clamp(14px, 4vw, 28px)', background: c.statusBg, borderBottom: `1px solid ${c.statusBorder}` }}>
+      style={{ padding: '10px clamp(10px, 4vw, 28px)', background: c.statusBg, borderBottom: `1px solid ${c.statusBorder}` }}>
       <button
         onClick={() => router.push('/')}
-        className="flex items-center gap-2 sm:gap-2.5 min-w-0 transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md"
+        className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-shrink-0 transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md"
       >
         <img src="/icons/civiq-logo.png" alt="Civiq" className={`w-5 h-5 object-contain flex-shrink-0 ${c.logoClass}`} />
         <span className="font-bold text-[13px] tracking-widest flex-shrink-0" style={{ color: c.tp }}>CIVIQ</span>
@@ -204,12 +204,12 @@ const StatusBar = () => {
           ·&nbsp; A Hierarchical Multi-Agent Coordination Framework
         </span>
       </button>
-      <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0">
         {NAV_LINKS.map(({ label, href }) => (
           <button
             key={label}
             onClick={() => router.push(href)}
-            className="px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-medium whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+            className="hidden sm:inline-flex px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-medium whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{ color: c.ts, background: 'transparent' }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.color = c.hoverColor
@@ -227,23 +227,23 @@ const StatusBar = () => {
           <button
             onClick={openModal}
             title="Change role"
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold transition-all duration-150"
+            className="flex items-center justify-center sm:justify-start gap-1.5 w-8 h-8 sm:w-auto sm:h-auto px-0 sm:px-3 py-0 sm:py-1 rounded-full text-[11px] font-semibold transition-all duration-150 flex-shrink-0"
             style={{ background: `${roleDef.color}18`, border: `1px solid ${roleDef.color}40`, color: roleDef.color }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${roleDef.color}28` }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${roleDef.color}18` }}
           >
             <span className="flex-shrink-0" style={{ width: 13, height: 13 }}>{roleDef.icon}</span>
-            {roleDef.label}
+            <span className="hidden sm:inline whitespace-nowrap">{roleDef.label}</span>
           </button>
         )}
         <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
-          className="ml-2 px-4 py-1.5 rounded-full text-[12px] font-bold transition-all duration-150"
+          className="px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold transition-all duration-150 whitespace-nowrap"
           style={{ background: 'transparent', color: '#06B6D4', border: '1.5px solid #06B6D4' }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(6,182,212,0.1)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
           Evaluate
         </a>
-        <div className="ml-2"><DashThemeToggle /></div>
+        <DashThemeToggle />
       </div>
     </div>
   )
@@ -654,7 +654,8 @@ const SparkLine = ({ data, color }: { data: number[]; color: string }) => {
   ].join(' ')
   const gid = `sp-${color.replace('#', '')}`
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'hidden', flexShrink: 0, display: 'block' }}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none"
+      style={{ overflow: 'hidden', display: 'block' }}>
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.25" />
@@ -791,7 +792,11 @@ function KpiCard({ label, abbr, value, unit, color, colorDim, borderColor, chang
             </div>
           )}
         </div>
-        {sparkData && <SparkLine data={sparkData} color={color} />}
+        {sparkData && (
+          <div className="w-24 min-w-[56px] flex-shrink">
+            <SparkLine data={sparkData} color={color} />
+          </div>
+        )}
       </div>
 
     </GlassCard>
@@ -1581,12 +1586,12 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
     {/* Per-LOS Performance */}
     <GlassCard className="p-6 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Per-KPI Performance</h3>
-        <div className="flex gap-1 p-0.5 rounded-xl" style={{ background: c.itemBg }}>
+        <div className="flex flex-col sm:flex-row gap-1 p-0.5 rounded-xl w-full sm:w-auto" style={{ background: c.itemBg }}>
           {LOS_TABS.map(t => (
             <button key={t.key} onClick={() => setLosTab(t.key)}
-              className="px-5 py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-150"
+              className="w-full sm:w-auto px-5 py-1.5 rounded-lg text-[10px] font-semibold text-center transition-all duration-150"
               style={{
                 background: losTab === t.key ? c.itemBgMd : 'transparent',
                 color:      losTab === t.key ? c.tp       : c.ts,
@@ -2131,7 +2136,7 @@ const MapPlayer = ({ algo, mapSize, trafficScale, onCo2Click, onFuelClick }: { a
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 
   return (
-    <GlassCard className="p-4 flex flex-col gap-3 col-span-2">
+    <GlassCard className="p-4 flex flex-col gap-3 xl:col-span-2">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-[13px] font-bold" style={{ color: c.tp }}>Map Player</h3>
@@ -3438,7 +3443,7 @@ function EvalDeviationCard({ algo }: { algo: AlgoData }) {
         <InfoBubble text="Each chart shows how consistently the algorithm performed across all evaluation episodes. The box covers the middle 50% of results (IQR). The solid line is the median, the diamond is the mean — if they differ, the distribution is skewed. Whiskers extend to the furthest non-outlier value (1.5×IQR). Dots beyond the whiskers are outlier episodes. A narrow box with tightly clustered dots means reliable performance; a wide box signals high run-to-run variance." />
         <div className="flex-1 h-px" style={{ background: c.divider }} />
       </div>
-      <div className="grid grid-cols-3 gap-4 min-w-0">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 min-w-0">
         <BoxStripPanel values={tt} color={algo.color} label="Travel Time" unit="min"
           fmt={v => v.toFixed(2)}
           info="Average time a vehicle spends travelling from its origin to its destination across all active vehicles in this evaluation episode. Lower is better. A wide spread here means the algorithm sometimes gets vehicles through quickly but struggles in other runs." />
