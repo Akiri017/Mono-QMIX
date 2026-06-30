@@ -38,10 +38,13 @@ interface GlassDropdownProps {
   openRight?: boolean
 }
 
+const DROPDOWN_W = 224
+
 const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, darkMode, openRight }: GlassDropdownProps) => {
   const selectedOption = options.find(opt => opt.value === selected)
   const triggerRef = useRef<HTMLDivElement>(null)
   const [fixedPos, setFixedPos] = useState({ top: 0, left: 0 })
+  const [openBelow, setOpenBelow] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [focusedIdx, setFocusedIdx] = useState(-1)
 
@@ -52,8 +55,16 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
     const update = () => {
       const r = triggerRef.current!.getBoundingClientRect()
       const estimatedH = options.length * 64 + 50
-      const maxTop = window.innerHeight - estimatedH - 12
-      setFixedPos({ top: Math.max(8, Math.min(r.top, maxTop)), left: r.right + 8 })
+      if (r.right + 8 + DROPDOWN_W > window.innerWidth) {
+        // Not enough room to the right — open below instead
+        const left = Math.max(8, Math.min(r.left, window.innerWidth - DROPDOWN_W - 8))
+        setOpenBelow(true)
+        setFixedPos({ top: r.bottom + 4, left })
+      } else {
+        const maxTop = window.innerHeight - estimatedH - 12
+        setOpenBelow(false)
+        setFixedPos({ top: Math.max(8, Math.min(r.top, maxTop)), left: r.right + 8 })
+      }
     }
     update()
     window.addEventListener('resize', update)
@@ -84,7 +95,7 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
     ? isOpen ? '#06B6D4' : 'rgba(255,255,255,0.35)'
     : isOpen ? '#06B6D4' : '#94a3b8'
 
-  const chevronRotate = openRight
+  const chevronRotate = openRight && !openBelow
     ? isOpen ? 'rotate(270deg)' : 'rotate(-90deg)'
     : isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
 
