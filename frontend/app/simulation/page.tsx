@@ -994,15 +994,16 @@ function CompareModal({ onClose, onConfirm }: {
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center"
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto"
       style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(10px)' }}>
-      <div className="relative w-full max-w-[480px] mx-4 p-6 rounded-2xl" style={{
+      <div className="relative w-full max-w-[480px] mx-4 my-4 sm:my-0 p-6 rounded-2xl max-h-[calc(100dvh-2rem)] sm:max-h-none overflow-y-auto" style={{
         background: 'linear-gradient(155deg, rgba(12,16,40,0.98) 0%, rgba(6,8,24,0.98) 100%)',
         border: '1px solid rgba(255,255,255,0.14)',
         boxShadow: '0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.1)',
       }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="sticky top-0 z-10 flex items-center justify-between mb-5"
+          style={{ background: 'rgba(12,16,40,0.99)', marginLeft: '-24px', marginRight: '-24px', padding: '16px 24px', borderRadius: '16px 16px 0 0', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div>
             <h3 className="text-[15px] font-bold" style={{ color: 'rgba(255,255,255,0.92)' }}>Configure Comparison</h3>
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>Select two algorithms and test conditions</p>
@@ -1435,10 +1436,10 @@ function SummaryPage({ onNavigate }: { onNavigate: (p: Page, los?: string) => vo
         </div>
       </div>
       {/* LOS Selector */}
-      <div className="flex flex-wrap gap-1 p-1 rounded-xl flex-shrink-0" style={{ background: c.itemBg }}>
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1 p-1 rounded-xl sm:flex-shrink-0 w-full sm:w-auto" style={{ background: c.itemBg }}>
         {LOS_TABS.map(t => (
           <button key={t.key} onClick={() => setLosTab(t.key)}
-            className="px-4 md:px-6 py-2 rounded-lg text-[11px] font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+            className="w-full sm:w-auto px-4 md:px-6 py-2 rounded-lg text-[11px] font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 text-center"
             style={{
               background: losTab === t.key ? c.itemBgMd : 'transparent',
               color:      losTab === t.key ? c.tp       : c.ts,
@@ -2078,6 +2079,71 @@ const MapPlayer = ({ algo, mapSize, trafficScale, onCo2Click, onFuelClick }: { a
     return () => el.removeEventListener('wheel', handler)
   }, [])
 
+  // Touch → pinch-zoom / single-finger pan (no native scroll interference)
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    let mode: 'none' | 'drag' | 'pinch' = 'none'
+    let startDist = 0, startZoom = 0, startMidX = 0, startMidY = 0, startPanX = 0, startPanY = 0
+    let singleX = 0, singleY = 0, singlePanX = 0, singlePanY = 0
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        mode = 'pinch'
+        const t0 = e.touches[0], t1 = e.touches[1]
+        startDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY)
+        startZoom = zoomRef.current
+        startMidX = (t0.clientX + t1.clientX) / 2
+        startMidY = (t0.clientY + t1.clientY) / 2
+        startPanX = panRef.current.x; startPanY = panRef.current.y
+      } else if (e.touches.length === 1) {
+        mode = 'drag'
+        singleX = e.touches[0].clientX; singleY = e.touches[0].clientY
+        singlePanX = panRef.current.x; singlePanY = panRef.current.y
+      }
+    }
+    const onTouchMove = (e: TouchEvent) => {
+      if (mode === 'pinch' && e.touches.length === 2) {
+        e.preventDefault()
+        const t0 = e.touches[0], t1 = e.touches[1]
+        const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY)
+        const newZoom = Math.min(8, Math.max(1, startZoom * (dist / startDist)))
+        const rect = el.getBoundingClientRect()
+        const mx = startMidX - rect.left, my = startMidY - rect.top
+        const rawX = mx - (mx - startPanX) * (newZoom / startZoom)
+        const rawY = my - (my - startPanY) * (newZoom / startZoom)
+        setZoom(newZoom)
+        setPan({
+          x: Math.min(0, Math.max(rawX, rect.width  * (1 - newZoom))),
+          y: Math.min(0, Math.max(rawY, rect.height * (1 - newZoom))),
+        })
+      } else if (mode === 'drag' && e.touches.length === 1) {
+        e.preventDefault()
+        const t = e.touches[0]
+        const rawX = singlePanX + (t.clientX - singleX)
+        const rawY = singlePanY + (t.clientY - singleY)
+        const el2 = containerRef.current
+        if (!el2) return
+        const { width, height } = el2.getBoundingClientRect()
+        const z = zoomRef.current
+        setPan({
+          x: Math.min(0, Math.max(rawX, width  * (1 - z))),
+          y: Math.min(0, Math.max(rawY, height * (1 - z))),
+        })
+      }
+    }
+    const onTouchEnd = () => { mode = 'none' }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd)
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [])
+
   const onMouseDown = (e: React.MouseEvent) => {
     dragging.current = true
     dragOrigin.current = { x: e.clientX, y: e.clientY }
@@ -2165,6 +2231,7 @@ const MapPlayer = ({ algo, mapSize, trafficScale, onCo2Click, onFuelClick }: { a
           background: '#000',
           border: `1px solid ${c.divider}`,
           cursor: zoom > 1 ? 'grab' : 'default',
+          touchAction: 'none',
         }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
@@ -2208,7 +2275,7 @@ const MapPlayer = ({ algo, mapSize, trafficScale, onCo2Click, onFuelClick }: { a
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full"
               style={{ background: 'rgba(0,0,0,0.45)', border: '1px solid rgba(255,255,255,0.1)' }}>
               <span className="text-[10px] font-medium" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                Press ▶ to play &nbsp;·&nbsp; scroll to zoom &nbsp;·&nbsp; drag to pan
+                Press ▶ to play &nbsp;·&nbsp; drag to pan &nbsp;·&nbsp; pinch or scroll to zoom
               </span>
             </div>
           </div>
@@ -2366,12 +2433,12 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto"
       style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       onClick={onClose}
     >
       <div
-        className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
+        className="relative w-full mx-4 sm:mx-6 my-4 sm:my-0 rounded-2xl p-6 flex flex-col gap-4 max-h-[calc(100dvh-2rem)] sm:max-h-none overflow-y-auto"
         style={{
           maxWidth: '820px',
           background: 'rgba(4,9,22,0.97)',
@@ -2381,7 +2448,8 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="sticky top-0 z-10 flex items-start justify-between pb-2"
+          style={{ background: 'rgba(4,9,22,0.99)', marginLeft: '-24px', marginRight: '-24px', padding: '0 24px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px 16px 0 0' }}>
           <div>
             <h3 className="text-[17px] font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
               {current.label}{' '}
@@ -2806,7 +2874,7 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto"
       style={{
         background: c.isDark ? 'rgba(0,0,0,0.72)' : 'rgba(15,23,42,0.35)',
         backdropFilter: 'blur(8px)',
@@ -2815,7 +2883,7 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
       onClick={onClose}
     >
       <div
-        className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
+        className="relative w-full mx-4 sm:mx-6 my-4 sm:my-0 rounded-2xl p-6 flex flex-col gap-4 max-h-[calc(100dvh-2rem)] sm:max-h-none overflow-y-auto"
         style={{
           maxWidth: '790px',
           background: c.isDark ? 'rgba(4,9,22,0.97)' : 'rgba(255,255,255,0.96)',
@@ -2827,7 +2895,12 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="sticky top-0 z-10 flex items-start justify-between pb-2"
+          style={{
+            background: c.isDark ? 'rgba(4,9,22,0.99)' : 'rgba(255,255,255,0.99)',
+            marginLeft: '-24px', marginRight: '-24px', padding: '0 24px 12px',
+            borderBottom: `1px solid ${c.divider}`, borderRadius: '16px 16px 0 0',
+          }}>
           <div>
             <h3 className="text-[17px] font-bold leading-tight" style={{ color: c.tp }}>
               {meta.label}{' '}
@@ -3002,12 +3075,12 @@ const CpuDetailModal = ({ algo, evalCpuMeans, onClose }: {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto"
       style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       onClick={onClose}
     >
       <div
-        className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
+        className="relative w-full mx-4 sm:mx-6 my-4 sm:my-0 rounded-2xl p-6 flex flex-col gap-4 max-h-[calc(100dvh-2rem)] sm:max-h-none overflow-y-auto"
         style={{
           maxWidth: '790px',
           background: 'rgba(4,9,22,0.97)',
@@ -3017,7 +3090,8 @@ const CpuDetailModal = ({ algo, evalCpuMeans, onClose }: {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="sticky top-0 z-10 flex items-start justify-between pb-2"
+          style={{ background: 'rgba(4,9,22,0.99)', marginLeft: '-24px', marginRight: '-24px', padding: '0 24px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px 16px 0 0' }}>
           <div>
             <h3 className="text-[17px] font-bold leading-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
               CPU Utilization <span style={{ color: algo.color }}>(CPU)</span>
@@ -3936,14 +4010,14 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
   const sampled = data.filter((_, i) => i % step === 0)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center"
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto"
       style={{
         background: c.isDark ? 'rgba(0,0,0,0.72)' : 'rgba(15,23,42,0.35)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
       }}
       onClick={onClose}>
-      <div className="relative w-full mx-6 rounded-2xl p-6 flex flex-col gap-4"
+      <div className="relative w-full mx-4 sm:mx-6 my-4 sm:my-0 rounded-2xl p-6 flex flex-col gap-4 max-h-[calc(100dvh-2rem)] sm:max-h-none overflow-y-auto"
         style={{
           maxWidth: '780px',
           background: c.isDark ? 'rgba(4,9,22,0.97)' : 'rgba(255,255,255,0.96)',
@@ -3955,7 +4029,12 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="sticky top-0 z-10 flex items-start justify-between pb-2"
+          style={{
+            background: c.isDark ? 'rgba(4,9,22,0.99)' : 'rgba(255,255,255,0.99)',
+            marginLeft: '-24px', marginRight: '-24px', padding: '0 24px 12px',
+            borderBottom: `1px solid ${c.divider}`, borderRadius: '16px 16px 0 0',
+          }}>
           <div>
             <h3 className="text-[17px] font-bold leading-tight" style={{ color: c.tp }}>
               {meta.label} <span style={{ color: algoColor }}>· Selfish Routing</span>

@@ -289,7 +289,7 @@ export const SimulationControls = ({
       )}
 
       {/* Dropdowns */}
-      <div className={`flex ${vertical ? 'flex-col' : 'flex-row'} gap-2 mb-3`}>
+      <div className={`flex ${vertical ? 'flex-row xl:flex-col' : 'flex-row'} gap-2 mb-3`}>
         <GlassDropdown label="Traffic Scale" options={trafficScaleOptions} selected={trafficScale} onSelect={setTrafficScale}
           isOpen={openDropdown === 'trafficScale'} onToggle={() => toggleDropdown('trafficScale')}
           darkMode={darkMode} openRight={vertical} />
@@ -299,7 +299,7 @@ export const SimulationControls = ({
       </div>
 
       {/* Buttons */}
-      <div className={`flex ${vertical ? 'flex-col' : 'flex-row'} gap-2`}>
+      <div className={`flex ${vertical ? 'flex-row xl:flex-col' : 'flex-row'} gap-2`}>
         <button
           onClick={handleSelectDefault}
           className="flex-1 py-2.5 font-semibold transition-all duration-200 rounded-full"
