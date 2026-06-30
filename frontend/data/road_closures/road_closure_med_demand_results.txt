@@ -1,0 +1,75 @@
+Selfish Routing:
+============================================================
+Evaluation Results
+============================================================
+Policy       : selfish_routing
+Episodes     : 50
+Mean Return  : -53674.21 ± 5292.40
+
+--- Traffic Metrics ---
+  Mean Travel Time (s)               : 120.360 ± 7.761
+  Mean Waiting Time (s)              : 10.831 ± 1.094
+  Network Throughput (veh/h)         : 1296.432 ± 211.501
+  Real-Time Factor                   : 56.998 ± 17.558
+  CO2 Emissions (g/episode)          : 166248.850 ± 13596.728
+  Fuel Consumption (ml/episode)      : 71700.592 ± 5861.697
+  CO2 Emissions (g/km)               : 470.007 ± 9.255
+  Fuel Consumption (L/100km)         : 20.271 ± 0.399
+  Avg Route Length (m)               : 930.520 ± 20.983
+  Total Stops                        : 17218.760 ± 1827.109
+  Arrival Rate                       : 0.872 ± 0.009
+  Controlled Mean Travel Time (s)    : 110.261 ± 11.764
+  CPU Usage Mean (%)                 : 90.268 ± 7.080
+  CPU Usage Peak (%)                 : 841.010 ± 244.154
+  Process CPU Time (s)               : 392.469 ± 246.692
+
+Mono-QMIX:
+============================================================
+Evaluation Results
+============================================================
+Policy       : ..\..\results\mono-qmix\mono-qmix-los-c\seed_1802\best
+Episodes     : 50
+Mean Return  : -54622.36 ± 1632.14
+
+--- Traffic Metrics ---
+  Mean Travel Time (s)               : 114.724 ± 27.752
+  Mean Waiting Time (s)              : 11.605 ± 2.770
+  Network Throughput (veh/h)         : 1187.676 ± 310.110
+  Real-Time Factor                   : 64.914 ± 7.709
+  CO2 Emissions (g/episode)          : 164626.380 ± 3877.265
+  Fuel Consumption (ml/episode)      : 71010.033 ± 1669.987
+  CO2 Emissions (g/km)               : 535.974 ± 19.341
+  Fuel Consumption (L/100km)         : 23.119 ± 0.836
+  Avg Route Length (m)               : 927.981 ± 27.620
+  Total Stops                        : 22865.140 ± 2024.437
+  Arrival Rate                       : 0.853 ± 0.032
+  Controlled Mean Travel Time (s)    : 105.185 ± 34.504
+  CPU Usage Mean (%)                 : 299.012 ± 35.420
+  CPU Usage Peak (%)                 : 3193.986 ± 360.042
+  Process CPU Time (s)               : 1110.076 ± 618.164
+
+
+Civiq:
+============================================================
+Evaluation Results
+============================================================
+Policy       : ..\..\results\civiq\civiq-los-c\best
+Episodes     : 50
+Mean Return  : -53807.32 ± 4547.60
+
+--- Traffic Metrics ---
+  Mean Travel Time (s)               : 122.307 ± 13.932
+  Mean Waiting Time (s)              : 11.457 ± 1.455
+  Network Throughput (veh/h)         : 1192.711 ± 185.278
+  Real-Time Factor                   : 35.133 ± 2.732
+  CO2 Emissions (g/episode)          : 166252.244 ± 11258.691
+  Fuel Consumption (ml/episode)      : 71702.618 ± 4853.953
+  CO2 Emissions (g/km)               : 498.524 ± 18.437
+  Fuel Consumption (L/100km)         : 21.501 ± 0.795
+  Avg Route Length (m)               : 933.566 ± 14.995
+  Total Stops                        : 19482.540 ± 2608.125
+  Arrival Rate                       : 0.860 ± 0.016
+  Controlled Mean Travel Time (s)    : 113.102 ± 18.562
+  CPU Usage Mean (%)                 : 216.294 ± 30.939
+  CPU Usage Peak (%)                 : 2347.608 ± 356.969
+  Process CPU Time (s)               : 1438.986 ± 857.550

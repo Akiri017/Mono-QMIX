@@ -3,7 +3,7 @@
     <net-file value="../../../bgc_full/final_map.net.xml"/>
     <!-- Med demand: wardrop_routes_med.rou.xml (~1800 veh/hr, period=2.0s) -->
     <route-files value="controlled_init.rou.xml,../../../bgc_full/wardrop_routes_med.rou.xml"/>
-    <additional-files value="../../../bgc_full/vtypes.add.xml"/>
+    <additional-files value="../../../bgc_full/vtypes.add.xml,../../../bgc_full/osm.poly.xml"/>
   </input>
 
   <processing>

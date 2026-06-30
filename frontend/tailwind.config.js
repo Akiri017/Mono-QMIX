@@ -16,8 +16,8 @@ export default {
         },
       },
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
-        roboto: ['Roboto', 'sans-serif'],
+        sans:  ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        inter: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },
     },
   },

@@ -404,6 +404,11 @@ class SUMOGridRerouteEnv:
 
         sumo_cmd.extend(["--ignore-route-errors", "true"])
 
+        if self.sumo_gui:
+            _view_file = self._resolve_path("bgc_full/osm.view.xml")
+            if os.path.exists(_view_file):
+                sumo_cmd.extend(["--gui-settings-file", _view_file])
+
         # Start TraCI
         traci.start(sumo_cmd)
         self.traci_connection = traci

@@ -12,15 +12,15 @@ interface DropdownOption {
 }
 
 const trafficScaleOptions: DropdownOption[] = [
-  { label: 'Free Flow (LOS A)', value: 'free_flow', description: 'Minimal congestion — vehicles move freely at desired speeds' },
-  { label: 'Stable Flow (LOS C)', value: 'stable_flow', description: 'Moderate traffic density with acceptable delays' },
-  { label: 'Forced Flow (LOS E)', value: 'forced_flow', description: 'Near-capacity traffic with significant congestion' },
+  { label: 'Low Demand',      value: 'free_flow',   description: '1,000 veh/hr — light load on the traffic network; minimal queueing' },
+  { label: 'Moderate Demand', value: 'stable_flow', description: '1,200 veh/hr — emerging congestion; noticeable queueing onset' },
+  { label: 'High Demand',     value: 'forced_flow', description: '2,000 veh/hr — saturated network; significant queueing and delay' },
 ]
 
 const algorithmOptions: DropdownOption[] = [
-  { label: 'Selfish Routing', value: 'selfish_routing', description: 'Each vehicle independently optimizes its own route' },
-  { label: 'Monolithic QMIX', value: 'monolithic_qmix', description: 'Centralized multi-agent reinforcement learning control' },
   { label: 'Hierarchical QMIX (Civiq)', value: 'hierarchical_qmix', description: "Civiq's hierarchical coordination framework for urban optimization" },
+  { label: 'Monolithic QMIX', value: 'monolithic_qmix', description: 'Centralized multi-agent reinforcement learning control' },
+  { label: 'Selfish Routing', value: 'selfish_routing', description: 'Each vehicle independently optimizes its own route' },
 ]
 
 const DEFAULT_MAP_SIZE    = '2km'
@@ -43,6 +43,7 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
   const triggerRef = useRef<HTMLDivElement>(null)
   const [fixedPos, setFixedPos] = useState({ top: 0, left: 0 })
   const [mounted, setMounted] = useState(false)
+  const [focusedIdx, setFocusedIdx] = useState(-1)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -107,8 +108,17 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
       {options.map((option, index) => (
         <div
           key={option.value}
+          role="option"
+          aria-selected={option.value === selected}
+          tabIndex={0}
           onClick={(e) => { e.stopPropagation(); onSelect(option.value); onToggle() }}
-          className="px-4 py-3 cursor-pointer transition-colors duration-150"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(option.value); onToggle() }
+            if (e.key === 'ArrowDown') { e.preventDefault(); const next = e.currentTarget.parentElement?.children[index + 1] as HTMLElement; next?.focus() }
+            if (e.key === 'ArrowUp')   { e.preventDefault(); const prev = e.currentTarget.parentElement?.children[index - 1] as HTMLElement; prev?.focus() }
+            if (e.key === 'Escape')    { e.preventDefault(); onToggle(); triggerRef.current?.focus() }
+          }}
+          className="px-4 py-3 cursor-pointer transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400/60"
           style={{
             borderBottom: index < options.length - 1
               ? darkMode ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.05)'
@@ -135,8 +145,17 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
     <div className="relative flex-1 min-w-0">
       <div
         ref={triggerRef}
+        role="combobox"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        tabIndex={0}
         onClick={onToggle}
-        className="w-full px-3 py-3 flex items-center justify-between cursor-pointer transition-all duration-200"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle() }
+          if (e.key === 'Escape' && isOpen) { e.preventDefault(); onToggle() }
+          if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !isOpen) { e.preventDefault(); onToggle() }
+        }}
+        className="w-full px-3 py-3 flex items-center justify-between cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
         style={{
           background: triggerBg,
           backdropFilter: 'blur(8px)',
@@ -172,7 +191,7 @@ interface SimulationControlsProps {
   hideHeader?: boolean
   initialTrafficScale?: string
   initialAlgorithm?: string
-  onRunAlgorithm?: (algorithm: string) => void
+  onRunAlgorithm?: (algorithm: string, trafficScale: string) => void
   // initialMapSize kept for compatibility but ignored — always uses 2km
   initialMapSize?: string
 }
@@ -210,7 +229,7 @@ export const SimulationControls = ({
     params.set('trafficScale', trafficScale)
     params.set('view', 'focused')
     params.set('algorithm1', algorithm)
-    onRunAlgorithm?.(algorithm)
+    onRunAlgorithm?.(algorithm, trafficScale)
     router.push(`/simulation?${params.toString()}`)
   }
 
