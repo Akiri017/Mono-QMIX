@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Selfish routing demo — MEDIUM demand (~1800 veh/hr, period=2.0s)
+     Vehicles use online shortest-path rerouting (selfish/Nash behaviour).
+     Run with:  sumo-gui -c bgc_full/selfish_med.sumocfg
+-->
+<sumoConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="final_map.net.xml"/>
+        <route-files value="trips_med.xml"/>
+        <additional-files value="osm.poly.xml.gz,vtypes.add.xml"/>
+    </input>
+
+    <output>
+        <tripinfo-output value="data/selfish_med_tripinfo.xml"/>
+        <summary-output value="data/selfish_med_summary.xml"/>
+    </output>
+
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+        <step-length value="1.0"/>
+    </time>
+
+    <processing>
+        <time-to-teleport value="300"/>
+        <ignore-route-errors value="true"/>
+        <tls.actuated.jam-threshold value="30"/>
+    </processing>
+
+    <!-- Selfish online rerouting: every vehicle re-routes based on current travel times -->
+    <routing>
+        <device.rerouting.probability value="1.0"/>
+        <device.rerouting.period value="60"/>
+        <device.rerouting.adaptation-steps value="18"/>
+        <device.rerouting.adaptation-interval value="10"/>
+    </routing>
+
+    <report>
+        <verbose value="true"/>
+        <duration-log.statistics value="true"/>
+        <no-step-log value="true"/>
+    </report>
+
+    <gui_only>
+        <gui-settings-file value="selfish_demo.view.xml"/>
+    </gui_only>
+
+</sumoConfiguration>

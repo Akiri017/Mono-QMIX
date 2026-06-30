@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<viewsettings>
+    <scheme name="selfish_demo">
+        <background backgroundColor="20,20,20" showGrid="0" gridXSize="100" gridYSize="100"/>
+
+        <edges laneEdgeMode="6" scaleMode="0" edgeExaggeration="1" minEdgeSize="1"
+               laneShowBorders="0" showBikeMarkings="0" showLinkDecals="1"
+               showLinkRules="1" showRails="1" hideConnectors="0" widthExaggeration="1">
+            <!-- Color edges by mean vehicle speed: blue=slow/congested, green=free-flow -->
+            <colorScheme name="by mean speed">
+                <entry color="220,50,50"   value="0"/>
+                <entry color="220,160,0"   value="7"/>
+                <entry color="60,200,60"   value="14"/>
+            </colorScheme>
+        </edges>
+
+        <vehicles vehicleMode="4" vehicleQuality="2" minVehicleSize="2"
+                  vehicleExaggeration="2" showBlinker="1">
+            <!-- Color vehicles by speed: red=stopped, yellow=slow, green=free-flow -->
+            <colorScheme name="by speed">
+                <entry color="220,30,30"  value="0"/>
+                <entry color="220,160,0"  value="7"/>
+                <entry color="50,200,50"  value="14"/>
+            </colorScheme>
+        </vehicles>
+
+        <junctions junctionMode="0" drawShape="1" drawCrossingsAndWalkingareas="1"
+                   showLane2LaneConnections="0">
+            <colorScheme name="uniform">
+                <entry color="60,60,60"/>
+            </colorScheme>
+        </junctions>
+
+        <pois poiMode="0" poiExaggeration="1" poiSize="0"/>
+        <polys polyMode="0" polyExaggeration="1"/>
+        <legend showColorLegend="1" showSizeLegend="1"/>
+    </scheme>
+
+    <delay value="20"/>
+</viewsettings>

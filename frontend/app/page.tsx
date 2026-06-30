@@ -181,21 +181,21 @@ function StickyNav({ visible, activeSection }: { visible: boolean; activeSection
         backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
         borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)'}`,
         boxShadow: isDark ? '0 4px 24px rgba(0,0,0,0.45)' : '0 4px 20px rgba(15,23,42,0.09)',
-        padding: '10px 28px',
+        padding: '10px clamp(14px, 4vw, 28px)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}
     >
       <div className="flex items-center gap-2.5">
         <img src="/icons/civiq-logo.png" alt="Civiq"
-          className={`w-5 h-5 object-contain ${isDark ? 'brightness-0 invert opacity-80' : 'opacity-90'}`} />
+          className={`w-5 h-5 object-contain flex-shrink-0 ${isDark ? 'brightness-0 invert opacity-80' : 'opacity-90'}`} />
         <span className="font-bold text-[13px] tracking-widest" style={{ color: isDark ? 'rgba(255,255,255,0.75)' : '#1e293b' }}>CIVIQ</span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1">
         {NAV.map(({ label, href, id }) => {
           const isActive = id && activeSection === id
           return (
             <a key={label} href={href}
-              className="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150"
+              className="px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-medium transition-all duration-150 whitespace-nowrap"
               style={{
                 color: isActive ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.52)' : '#374151'),
                 background: isActive ? (isDark ? 'rgba(56,189,248,0.1)' : 'rgba(29,78,216,0.08)') : 'transparent',
@@ -232,25 +232,26 @@ function StatusBar({ activeSection }: { activeSection: string }) {
     { label: 'Contact Us',   href: '#contact',  id: 'contact' },
   ]
   return (
-    <div className="flex items-center justify-between px-7 py-2.5 flex-shrink-0" style={{
+    <div className="flex items-center justify-between flex-shrink-0" style={{
+      padding: '10px clamp(14px, 4vw, 28px)',
       background: isDark ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.45)',
       borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.6)'}`,
       backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
     }}>
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
         <img src="/icons/civiq-logo.png" alt="Civiq"
-          className={`w-5 h-5 object-contain ${isDark ? 'brightness-0 invert opacity-80' : 'opacity-90'}`} />
-        <span className="font-bold text-[13px] tracking-widest" style={{ color: isDark ? 'rgba(255,255,255,0.75)' : '#1e293b' }}>CIVIQ</span>
-        <span className="hidden sm:inline text-[10px] font-medium" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#64748b' }}>
+          className={`w-5 h-5 object-contain flex-shrink-0 ${isDark ? 'brightness-0 invert opacity-80' : 'opacity-90'}`} />
+        <span className="font-bold text-[13px] tracking-widest flex-shrink-0" style={{ color: isDark ? 'rgba(255,255,255,0.75)' : '#1e293b' }}>CIVIQ</span>
+        <span className="hidden md:inline text-[10px] font-medium truncate" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : '#64748b' }}>
           ·&nbsp; A Hierarchical Multi-Agent Coordination Framework
         </span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
         {NAV.map(({ label, href, id }) => {
           const isActive = id && activeSection === id
           return (
             <a key={label} href={href}
-              className="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150"
+              className="px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-medium transition-all duration-150 whitespace-nowrap"
               style={{
                 color: isActive ? (isDark ? '#38BDF8' : '#1d4ed8') : (isDark ? 'rgba(255,255,255,0.52)' : '#374151'),
                 background: isActive ? (isDark ? 'rgba(56,189,248,0.1)' : 'rgba(29,78,216,0.08)') : 'transparent',

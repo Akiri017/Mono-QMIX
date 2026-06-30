@@ -188,24 +188,24 @@ const StatusBar = () => {
     { label: 'Contact Us',   href: '/#contact' },
   ]
   return (
-    <div className="flex items-center justify-between px-7 py-2.5 flex-shrink-0"
-      style={{ background: c.statusBg, borderBottom: `1px solid ${c.statusBorder}` }}>
+    <div className="flex items-center justify-between flex-shrink-0"
+      style={{ padding: '10px clamp(14px, 4vw, 28px)', background: c.statusBg, borderBottom: `1px solid ${c.statusBorder}` }}>
       <button
         onClick={() => router.push('/')}
-        className="flex items-center gap-2.5 transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md"
+        className="flex items-center gap-2 sm:gap-2.5 min-w-0 transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md"
       >
-        <img src="/icons/civiq-logo.png" alt="Civiq" className={`w-5 h-5 object-contain ${c.logoClass}`} />
-        <span className="font-bold text-[13px] tracking-widest" style={{ color: c.tp }}>CIVIQ</span>
-        <span className="text-[10px] font-medium" style={{ color: c.tu }}>
+        <img src="/icons/civiq-logo.png" alt="Civiq" className={`w-5 h-5 object-contain flex-shrink-0 ${c.logoClass}`} />
+        <span className="font-bold text-[13px] tracking-widest flex-shrink-0" style={{ color: c.tp }}>CIVIQ</span>
+        <span className="hidden md:inline text-[10px] font-medium truncate" style={{ color: c.tu }}>
           ·&nbsp; A Hierarchical Multi-Agent Coordination Framework
         </span>
       </button>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
         {NAV_LINKS.map(({ label, href }) => (
           <button
             key={label}
             onClick={() => router.push(href)}
-            className="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+            className="px-2.5 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-medium whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
             style={{ color: c.ts, background: 'transparent' }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.color = c.hoverColor
@@ -2210,7 +2210,7 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
               </ComposedChart>
             </ResponsiveContainer>
             {/* Summary stats */}
-            <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
               {(() => {
                 const vals = algo.queue.map(p => p[selInt])
                 return [
@@ -2233,8 +2233,8 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
         {/* ── Road Occupancy ── */}
         {tab === 'density' && (
           <>
-            <div className="flex items-center gap-4 justify-between">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 justify-between flex-wrap">
+              <div className="flex items-center gap-4 flex-wrap">
                 {[
                   { color: algo.color, label: 'Occupancy rate' },
                   { color: 'rgba(255,255,255,0.65)', label: 'MA-8', dashed: true },
@@ -2265,7 +2265,7 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
                   dot={false} activeDot={false} strokeDasharray="5 3" isAnimationActive={false} />
               </ComposedChart>
             </ResponsiveContainer>
-            <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
               {(() => {
                 const vals = algo.density.map(p => p.density)
                 return [
@@ -2288,8 +2288,8 @@ function CongestionDetailModal({ algo, onClose }: { algo: AlgoData; onClose: () 
         {/* ── Congestion Index ── */}
         {tab === 'congestion' && (
           <>
-            <div className="flex items-center gap-4 justify-between">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 justify-between flex-wrap">
+              <div className="flex items-center gap-4 flex-wrap">
                 {[
                   { color: algo.color, label: 'Raw index', opacity: 0.4 },
                   { color: algo.color, label: 'Rolling avg. (MA-10)' },
@@ -2578,7 +2578,7 @@ const EpisodeDetailModal = ({ algo, metricKey, labelOverride, unitOverride, onCl
         </ResponsiveContainer>
 
         {/* Summary stats row */}
-        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
           {[
             { label: 'First ep.', value: data[0]?.value.toFixed(2) },
             { label: 'Last ep.',  value: data[data.length - 1]?.value.toFixed(2) },
@@ -2756,7 +2756,7 @@ const CpuDetailModal = ({ algo, evalCpuMeans, onClose }: {
         </ResponsiveContainer>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           {[
             { label: 'Mean CPU',   value: `${fmt(mean)}%`,                    sub: `${(mean / 100).toFixed(2)} cores` },
             { label: 'Min CPU',    value: `${fmt(Math.min(...data.map(d => d.cpu)))}%`, sub: `${(Math.min(...data.map(d => d.cpu)) / 100).toFixed(2)} cores` },
@@ -2877,14 +2877,14 @@ function TrainingCurveChart({ algo }: { algo: AlgoData }) {
   )
   return (
     <GlassCard className="p-5 flex flex-col gap-3 col-span-2">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
         <div>
           <span className="text-[13px] font-bold" style={{ color: c.tp }}>Training Curve</span>
           <p className="text-[11px] mt-0.5" style={{ color: c.tu }}>
             Cumulative reward per episode · shaded area = seed confidence band
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
           {[
             { color: algo.color, label: 'Mean reward' },
             { color: maLineColor, label: 'Moving avg.', dashed: true },
@@ -2969,7 +2969,7 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
 
       {/* ── 1. Episode Cumulative Reward (full-width, prominent) ── */}
       <GlassCard className="p-5 flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[13px] font-bold" style={{ color: c.tp }}>Episode Cumulative Reward</span>
@@ -2979,7 +2979,7 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
               Primary training health indicator · shaded = seed confidence band
             </p>
           </div>
-          <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap sm:flex-shrink-0">
             {[
               { color: algo.color, label: 'Per-episode reward' },
               { color: maLineColor, label: 'MA-10', dashed: true },
@@ -3014,7 +3014,7 @@ function MarlMetricsSection({ algo }: { algo: AlgoData }) {
       </GlassCard>
 
       {/* ── 2–4. Bottom row: TD Loss | Q-values | Gradient Norm ── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
         {/* TD Loss — log Y-axis */}
         <GlassCard className="p-4 flex flex-col gap-2">
@@ -3821,7 +3821,7 @@ const SelfishDetailModal = ({ metricKey, algoColor, data, onClose }: {
         </ResponsiveContainer>
 
         {/* Summary stats */}
-        <div className="grid grid-cols-4 gap-3 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3" style={{ borderTop: `1px solid ${c.divider}` }}>
           {[
             { label: 'First ep.', value: data[0]?.value.toFixed(2) },
             { label: 'Last ep.',  value: data[data.length - 1]?.value.toFixed(2) },
@@ -4063,7 +4063,7 @@ const AlgoDetailPage = ({ algo, mapSize, trafficScale }: {
       <div>
         <h2 className="text-xl font-bold leading-tight" style={{ color: c.tp }}>{displayAlgo.label}</h2>
       </div>
-      <div className="flex items-center gap-2 flex-1">
+      <div className="flex items-center gap-2 flex-1 flex-wrap">
         {mapSize && (
           <span className="text-[11px] font-medium px-2.5 py-1 rounded-full"
             style={{ background: c.badgeBg, border: `1px solid ${c.badgeBorder}`, color: c.ts }}>
@@ -4302,53 +4302,68 @@ interface SidebarProps {
 
 function Sidebar({ activePage, setActivePage, onRunAlgorithm, mapSize, trafficScale, algorithm1 }: SidebarProps) {
   const c = useDashColors()
+  const [controlsOpen, setControlsOpen] = useState(false)
   return (
-  <div className="flex flex-col flex-shrink-0 w-full xl:w-[248px]"
+  <div className="flex flex-col flex-shrink-0 w-full xl:w-[248px] max-h-[60vh] xl:max-h-none overflow-y-auto xl:overflow-visible"
     style={{ background: c.sidebarBg, borderRight: `1px solid ${c.sidebarBorder}`, borderBottom: `1px solid ${c.sidebarBorder}` }}>
 
     {/* Analytics nav */}
-    <div className="px-5 pt-6 pb-3 flex-shrink-0">
+    <div className="px-5 pt-3 pb-2 xl:pt-6 xl:pb-3 flex-shrink-0">
       <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: c.tu }}>
         Analytics
       </span>
     </div>
 
-    <nav className="px-3 pb-2 xl:pb-0 flex xl:block gap-2 xl:space-y-1 overflow-x-auto flex-shrink-0">
-      {NAV.map((item) => {
-        const isActive = activePage === item.id
-        const col = PAGE_COLOR[item.id]
-        return (
-          <button key={item.id} onClick={() => setActivePage(item.id)}
-            className="w-full min-w-max xl:min-w-0 flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
-            style={{
-              background: isActive ? `${col}18` : 'transparent',
-              border: isActive ? `1px solid ${col}40` : '1px solid transparent',
-              color: isActive ? col : c.ts,
-            }}
-            onMouseEnter={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = c.hoverBg; (e.currentTarget as HTMLElement).style.color = c.hoverColor } }}
-            onMouseLeave={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = c.ts } }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d={item.d} />
-            </svg>
-            <span className="text-[13px] font-medium">{item.label}</span>
-          </button>
-        )
-      })}
-    </nav>
+    <div className="relative xl:contents flex-shrink-0">
+      <nav className="scrollbar-hide px-3 pb-2 xl:pb-0 flex xl:block gap-2 xl:space-y-1 overflow-x-auto flex-shrink-0">
+        {NAV.map((item) => {
+          const isActive = activePage === item.id
+          const col = PAGE_COLOR[item.id]
+          return (
+            <button key={item.id} onClick={() => setActivePage(item.id)}
+              className="w-full min-w-max xl:min-w-0 flex items-center gap-3 px-3 py-2 xl:py-2.5 rounded-xl text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+              style={{
+                background: isActive ? `${col}18` : 'transparent',
+                border: isActive ? `1px solid ${col}40` : '1px solid transparent',
+                color: isActive ? col : c.ts,
+              }}
+              onMouseEnter={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = c.hoverBg; (e.currentTarget as HTMLElement).style.color = c.hoverColor } }}
+              onMouseLeave={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = c.ts } }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d={item.d} />
+              </svg>
+              <span className="text-[13px] font-medium">{item.label}</span>
+            </button>
+          )
+        })}
+      </nav>
+      {/* Scroll-right affordance — only relevant when nav is a horizontal strip (below xl) */}
+      <div className="xl:hidden pointer-events-none absolute right-0 top-0 bottom-2 w-10"
+        style={{ background: `linear-gradient(to right, transparent, ${c.sidebarBg})` }} />
+    </div>
 
     {/* Divider */}
-    <div className="mx-4 my-4 flex-shrink-0" style={{ height: '1px', background: c.divider }} />
+    <div className="mx-4 my-2 xl:my-4 flex-shrink-0" style={{ height: '1px', background: c.divider }} />
 
-    {/* Simulation Controls section label */}
-    <div className="px-5 pb-3 flex-shrink-0">
+    {/* Simulation Controls section label — collapsible toggle on mobile, static on xl+ */}
+    <button
+      onClick={() => setControlsOpen(v => !v)}
+      className="w-full px-5 pb-2 xl:pb-3 flex-shrink-0 flex items-center justify-between xl:pointer-events-none"
+      aria-expanded={controlsOpen}
+    >
       <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: c.tu }}>
         Simulation Controls
       </span>
-    </div>
+      <div className="xl:hidden transition-transform duration-200" style={{ transform: controlsOpen ? 'rotate(180deg)' : 'rotate(0deg)', color: c.tu }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+    </button>
 
     {/* Controls */}
-    <div className="px-4 pb-4 xl:pb-0 flex-shrink-0">
+    <div className={`px-4 pb-3 xl:pb-0 flex-shrink-0 ${controlsOpen ? 'block' : 'hidden'} xl:block`}>
       <SimulationControls
         darkMode={c.isDark}
         vertical
@@ -4422,7 +4437,7 @@ function SimulationDashboardContent() {
 
   return (
     <DashColorsContext.Provider value={c}>
-    <main className="w-full h-screen overflow-hidden" style={{ position: 'relative' }}>
+    <main className="w-full overflow-hidden" style={{ position: 'relative', height: '100dvh' }}>
       {/* Base gradient */}
       <div className="fixed inset-0 pointer-events-none"
         style={{ background: c.pageBgGrad, zIndex: -1 }} />
@@ -4430,20 +4445,20 @@ function SimulationDashboardContent() {
 
       {/* Outer wrapper */}
       <div className="flex items-stretch justify-center"
-        style={{ height: '100vh', padding: 'clamp(8px, 1.2vw, 16px)', zIndex: 2, position: 'relative' }}>
+        style={{ height: '100dvh', padding: 'clamp(0px, 1.2vw, 16px)', zIndex: 2, position: 'relative' }}>
 
         {/* OBU Bezel */}
         <div className="relative w-full flex flex-col" style={{
           maxWidth: '1640px',
           background: c.obuBg,
           backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)',
-          borderRadius: '24px', padding: '12px',
+          borderRadius: 'clamp(0px, 2vw, 24px)', padding: 'clamp(0px, 1.5vw, 12px)',
           border: `1px solid ${c.obuBorder}`,
           boxShadow: c.obuShadow,
         }}>
-          {/* Side screws */}
+          {/* Side screws — decorative, desktop only */}
           {['left-2', 'right-2'].map((side) => (
-            <div key={side} className={`absolute ${side} top-1/2 -translate-y-1/2 flex flex-col gap-2.5 pointer-events-none`}>
+            <div key={side} className={`hidden xl:flex absolute ${side} top-1/2 -translate-y-1/2 flex-col gap-2.5 pointer-events-none`}>
               {[0, 1, 2].map((i) => (
                 <div key={i} className="w-2 h-2 rounded-full"
                   style={{ background: c.screwBg, boxShadow: c.screwShadow }} />
@@ -4457,7 +4472,7 @@ function SimulationDashboardContent() {
               flex: 1,
               background: c.screenBg,
               backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-              borderRadius: '14px', border: `1px solid ${c.screenBorder}`,
+              borderRadius: 'clamp(0px, 1.5vw, 14px)', border: `1px solid ${c.screenBorder}`,
               boxShadow: c.screenShadow,
             }}>
             {/* Top gloss */}
@@ -4524,7 +4539,7 @@ function SimulationDashboardContent() {
 
 export default function SimulationDashboard() {
   return (
-    <Suspense fallback={<main className="w-full h-screen" style={{ background: '#060112' }} />}>
+    <Suspense fallback={<main className="w-full" style={{ background: '#060112', height: '100dvh' }} />}>
       <SimulationDashboardContent />
     </Suspense>
   )
