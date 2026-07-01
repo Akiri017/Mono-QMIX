@@ -1940,13 +1940,13 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
   const percent = Math.min(1, Math.max(0, value / max))
 
   return (
-    <GlassCard className="group relative z-0 hover:z-20 flex-1 flex flex-col items-center justify-center py-2 px-2 gap-1"
+    <GlassCard className="group relative z-0 hover:z-20 flex-1 flex flex-col py-2 px-2 gap-1"
       style={{ minWidth: 0, cursor: onClick ? 'pointer' : undefined }}
       onClick={onClick}>
-      {/* Top-right: View detail badge + tooltip, side by side */}
-      <div className="absolute top-2 right-2 z-20 flex items-center gap-1">
+      {/* Header row: badge + info pinned to the right, always above the arc */}
+      <div className="flex justify-end items-center gap-1 min-h-[20px] w-full">
         {onClick && (
-          <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full transition-all duration-200 group-hover:-translate-y-[1px] group-hover:translate-x-0.5 group-hover:scale-[1.03]"
+          <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full transition-all duration-200 group-hover:-translate-y-[1px] group-hover:scale-[1.03]"
             style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.22)', color: c.isDark ? 'rgba(186,230,253,0.65)' : 'rgba(3,105,161,0.9)', whiteSpace: 'nowrap' }}>
             View detail ↗
           </span>
@@ -1978,6 +1978,8 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
         )}
       </div>
 
+      {/* Gauge + value centered in remaining space */}
+      <div className="flex-1 flex flex-col items-center justify-center">
       <GaugeComponent
         id={`gauge-${label.replace(/\W/g, '')}`}
         percent={percent}
@@ -1999,6 +2001,7 @@ const GaugeChart = memo(function GaugeChart({ value, max, label, unit, accentCol
         <span className="text-[10px] font-semibold mt-0.5" style={{ color: c.ts }}>{unit}</span>
         <span className="text-[9px] font-bold uppercase tracking-wider mt-1.5 text-center"
           style={{ color: c.tm }}>{label}</span>
+      </div>
       </div>
     </GlassCard>
   )

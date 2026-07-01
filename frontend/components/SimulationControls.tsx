@@ -43,27 +43,35 @@ const DROPDOWN_W = 224
 const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, darkMode, openRight }: GlassDropdownProps) => {
   const selectedOption = options.find(opt => opt.value === selected)
   const triggerRef = useRef<HTMLDivElement>(null)
-  const [fixedPos, setFixedPos] = useState({ top: 0, left: 0 })
+  const [fixedPos, setFixedPos] = useState({ top: 0, left: 0, width: 0 })
   const [openBelow, setOpenBelow] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [focusedIdx, setFocusedIdx] = useState(-1)
 
   useEffect(() => { setMounted(true) }, [])
 
+  // Always compute portal position whenever the dropdown opens
   useEffect(() => {
-    if (!isOpen || !openRight || !triggerRef.current) return
+    if (!isOpen || !triggerRef.current) return
     const update = () => {
       const r = triggerRef.current!.getBoundingClientRect()
       const estimatedH = options.length * 64 + 50
-      if (r.right + 8 + DROPDOWN_W > window.innerWidth) {
-        // Not enough room to the right — open below instead
-        const left = Math.max(8, Math.min(r.left, window.innerWidth - DROPDOWN_W - 8))
-        setOpenBelow(true)
-        setFixedPos({ top: r.bottom + 4, left })
+      if (openRight) {
+        if (r.right + 8 + DROPDOWN_W > window.innerWidth) {
+          // Not enough room to the right — open below instead
+          const left = Math.max(8, Math.min(r.left, window.innerWidth - DROPDOWN_W - 8))
+          setOpenBelow(true)
+          setFixedPos({ top: r.bottom + 4, left, width: DROPDOWN_W })
+        } else {
+          const maxTop = window.innerHeight - estimatedH - 12
+          setOpenBelow(false)
+          setFixedPos({ top: Math.max(8, Math.min(r.top, maxTop)), left: r.right + 8, width: DROPDOWN_W })
+        }
       } else {
-        const maxTop = window.innerHeight - estimatedH - 12
-        setOpenBelow(false)
-        setFixedPos({ top: Math.max(8, Math.min(r.top, maxTop)), left: r.right + 8 })
+        // Open below trigger, align to trigger left edge, same width as trigger
+        const top = r.bottom + 4
+        const left = Math.max(8, Math.min(r.left, window.innerWidth - r.width - 8))
+        setOpenBelow(true)
+        setFixedPos({ top, left, width: r.width })
       }
     }
     update()
@@ -103,16 +111,18 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
     <div
       data-dropdown-portal
       style={{
-        ...(openRight
-          ? { position: 'fixed' as const, top: fixedPos.top, left: fixedPos.left, width: '224px', zIndex: 9999 }
-          : { position: 'absolute' as const, top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 200 }),
+        position: 'fixed' as const,
+        top: fixedPos.top,
+        left: fixedPos.left,
+        width: fixedPos.width || DROPDOWN_W,
+        zIndex: 9999,
         background: darkMode ? '#0d1a2d' : 'rgba(255,255,255,0.96)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         borderRadius: '14px',
         border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.8)',
         boxShadow: darkMode ? '0 16px 48px rgba(0,0,0,0.7)' : '0 12px 40px rgba(0,0,0,0.12)',
-        maxHeight: 'calc(100vh - 24px)',
+        maxHeight: `calc(100vh - ${fixedPos.top + 12}px)`,
         overflowY: 'auto' as const,
       }}
     >
@@ -187,11 +197,7 @@ const GlassDropdown = ({ label, options, selected, onSelect, isOpen, onToggle, d
         </div>
       </div>
 
-      {isOpen && (
-        openRight && mounted
-          ? createPortal(panelContent, document.body)
-          : panelContent
-      )}
+      {isOpen && mounted && createPortal(panelContent, document.body)}
     </div>
   )
 }
